@@ -1,0 +1,51 @@
+{
+  "name": "Journal",
+  "version": "2.1",
+  "author": "Ghost Foundation",
+  "homepage": "https://ghost.org",
+  "description": "Journal theme by Ghost.org ported to HTMLy.",
+  "settings": [
+    {
+      "type": "checkbox",
+      "name": "popular_posts",
+      "label": "Popular Posts",
+      "value": "",
+      "info": "Enable Popular Posts widget. The views counter need to be enabled first."
+    },
+    {
+      "type": "checkbox",
+      "name": "category_list",
+      "label": "Category List",
+      "value": "",
+      "info": "Enable Category List widget"
+    },
+    {
+      "type": "checkbox",
+      "name": "archive",
+      "label": "Archive",
+      "value": "",
+      "info": "Enable Archive widget"
+    },
+    {
+      "type": "checkbox",
+      "name": "tagcloud",
+      "label": "TagCloud",
+      "value": "",
+      "info": "Enable TagCloud widget"
+    },
+    {
+      "type": "checkbox",
+      "name": "frontpage_widget",
+      "label": "Static Frontpage Widget",
+      "value": "",
+      "info": "Show widget on static frontpage"
+    },
+    {
+      "type": "text",
+      "name": "featured",
+      "label": "Featured Posts",
+      "value": "",
+      "info": "The posts that are featured will be taken from the tag above (the tag slug). <br>If leave empty it will use the default tag: <code>featured</code>"
+    }
+  ]
+}

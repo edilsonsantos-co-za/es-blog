@@ -1,0 +1,72 @@
+{
+  "name": "Clean Blog",
+  "version": "1.9",
+  "author": "Start Bootstrap",
+  "homepage": "https://startbootstrap.com",
+  "description": "A clean Bootstrap blog theme created by Start Bootstrap ported to HTMLy.",
+  "settings": [
+    {
+      "type": "url",
+      "name": "cleanblog_homebg",
+      "label": "Homepage background",
+      "value": "",
+      "info": "Frontpage custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_categorybg",
+      "label": "Category background",
+      "value": "",
+      "info": "Category page custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_tagbg",
+      "label": "Tag background",
+      "value": "",
+      "info": "Tag page custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_pagebg",
+      "label": "Page background",
+      "value": "",
+      "info": "Page and subpage custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_profilebg",
+      "label": "Profile background",
+      "value": "",
+      "info": "Profile page custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_archivebg",
+      "label": "Archive background",
+      "value": "",
+      "info": "Archive page custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_searchbg",
+      "label": "Search background",
+      "value": "",
+      "info": "Search page custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_404bg",
+      "label": "404 background",
+      "value": "",
+      "info": "Error 404 page custom header background. Please specify image URL."
+    },
+    {
+      "type": "url",
+      "name": "cleanblog_blogbg",
+      "label": "/blog background",
+      "value": "",
+      "info": "/blog page custom header background. Please specify image URL."
+    }
+  ]
+}
