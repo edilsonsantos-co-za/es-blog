@@ -1,0 +1,74 @@
+{% extends 'auth/layout.html.twig' %}
+
+{% block title %}Enable Two-Factor Authentication — EdFolio Blog{% endblock %}
+
+{% block auth_content %}
+    <p class="login-box-msg">
+        <i class="fas fa-shield-alt text-success"></i>
+        Set up Two-Factor Authentication
+    </p>
+
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ type == 'error' ? 'danger' : type }}">{{ message }}</div>
+        {% endfor %}
+    {% endfor %}
+
+    <p class="text-muted" style="font-size:.9rem;">
+        Scan the QR code below with your authenticator app (e.g. Google Authenticator, Authy, 1Password),
+        then enter the 6-digit code to confirm.
+    </p>
+
+    <div class="text-center mb-3">
+        {# QR code rendered client-side from the URI #}
+        <canvas id="qrcode" style="max-width:200px;"></canvas>
+    </div>
+
+    <div class="text-center mb-3">
+        <small class="text-muted">Can't scan? Enter this secret manually:</small><br>
+        <code style="font-size:1rem;letter-spacing:.15em;">{{ secret }}</code>
+    </div>
+
+    <form action="{{ path('app_mfa_enable') }}" method="post">
+        <div class="input-group mb-3">
+            <input
+                type="text"
+                name="code"
+                class="form-control text-center"
+                placeholder="Enter 6-digit code"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                maxlength="6"
+                autofocus
+                required
+            >
+            <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-key"></span></div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success btn-block">Enable 2FA</button>
+    </form>
+
+    <hr>
+    <p class="text-center">
+        <a href="{{ path('app_admin_profile') }}">
+            <i class="fas fa-arrow-left"></i> Back to profile
+        </a>
+    </p>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {# Lightweight QR code library (loaded from CDN only on this page) #}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSe1V+NvgaGbKUzmJXB5OTmaRMEL1BIy4ucw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        new QRCode(document.getElementById('qrcode'), {
+            text: {{ qr_code_uri|json_encode|raw }},
+            width: 200,
+            height: 200,
+            colorDark: '#000',
+            colorLight: '#fff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    </script>
+{% endblock %}

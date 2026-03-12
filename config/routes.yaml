@@ -3,3 +3,12 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+# scheb/2fa-bundle routes — must be under the secured firewall
+app_2fa:
+    path: /2fa
+    defaults:
+        _controller: "scheb_two_factor.form_controller::form"
+
+app_2fa_check:
+    path: /2fa_check

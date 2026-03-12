@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body_class %}hold-transition login-page{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/source-sans.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/fontawesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/solid.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/adminlte.min.css') }}">
+    <style>
+        .login-page { background: #1a1a2e; }
+        .login-box-body { border-radius: 0 0 8px 8px; }
+        .login-logo { padding-top: 2rem; }
+        .login-logo a { color: #fff; font-size: 1.8rem; font-weight: 700; }
+        .login-logo small { display: block; color: rgba(255,255,255,.6); font-size: .85rem; font-weight: 400; letter-spacing: .05em; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="login-box">
+    <div class="login-logo">
+        <a href="{{ path('app_login') }}">
+            <i class="fas fa-pen-nib"></i> EdFolio Blog
+            <small>Admin Panel</small>
+        </a>
+    </div>
+    <div class="card">
+        <div class="card-body login-card-body">
+            {% block auth_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('assets/admin/js/jquery.min.js') }}"></script>
+    <script src="{{ asset('assets/admin/js/adminlte.min.js') }}"></script>
+{% endblock %}

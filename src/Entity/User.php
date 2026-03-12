@@ -9,6 +9,9 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
+use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
+use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -18,7 +21,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['username'], message: 'This username is already taken.')]
 #[UniqueEntity(fields: ['email'], message: 'This email is already registered.')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -180,6 +183,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function isMfaEnabled(): bool
     {
         return $this->mfaSecret !== 'disabled' && $this->mfaSecret !== '';
+    }
+
+    // --- scheb/TwoFactorBundle TOTP interface ---
+
+    public function isTotpAuthenticationEnabled(): bool
+    {
+        return $this->isMfaEnabled();
+    }
+
+    public function getTotpAuthenticationUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getTotpAuthenticationConfiguration(): ?TotpConfigurationInterface
+    {
+        if (!$this->isMfaEnabled()) {
+            return null;
+        }
+
+        return new TotpConfiguration($this->mfaSecret, TotpConfiguration::ALGORITHM_SHA1, 30, 6);
     }
 
     public function getAbout(): ?string

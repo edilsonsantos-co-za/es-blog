@@ -1,5 +1,19 @@
-# See the configuration reference at https://symfony.com/bundles/SchebTwoFactorBundle/6.x/configuration.html
+# scheb/2fa-bundle v8 — TOTP configuration
+# Reference: https://github.com/scheb/2fa/blob/master/doc/configuration.md
 scheb_two_factor:
     security_tokens:
-        - Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken
         - Symfony\Component\Security\Http\Authenticator\Token\PostAuthenticationToken
+
+    totp:
+        enabled: true
+        server_name: '%env(SITE_TITLE)%'
+        issuer: 'EdFolio Blog'
+        parameters:
+            image: '%env(SITE_URL)%/favicon.png'
+
+    # Persist trusted devices in a cookie (30-day window)
+    # trusted_device requires a separate scheb/2fa-trusted-device package in v8
+    # Uncomment after installing: composer require scheb/2fa-trusted-device
+
+    # backup_codes:
+    #     enabled: false

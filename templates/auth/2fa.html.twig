@@ -1,0 +1,58 @@
+{% extends 'auth/layout.html.twig' %}
+
+{% block title %}Two-Factor Authentication — EdFolio Blog{% endblock %}
+
+{% block auth_content %}
+    <p class="login-box-msg">
+        <i class="fas fa-shield-alt text-primary"></i>
+        Enter your authentication code
+    </p>
+    <p class="text-muted text-center" style="font-size:.9rem;">
+        Open your authenticator app and enter the 6-digit code for <strong>EdFolio Blog</strong>.
+    </p>
+
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-danger">{{ message }}</div>
+    {% endfor %}
+
+    <form action="{{ path('app_2fa_check') }}" method="post">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('2fa') }}">
+
+        <div class="input-group mb-3">
+            <input
+                type="text"
+                name="_auth_code"
+                class="form-control text-center"
+                placeholder="000000"
+                autocomplete="one-time-code"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                maxlength="6"
+                autofocus
+                required
+            >
+            <div class="input-group-append">
+                <div class="input-group-text"><span class="fas fa-key"></span></div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-6">
+                <div class="icheck-primary">
+                    <input type="checkbox" name="_trusted" id="trusted_device">
+                    <label for="trusted_device">Trust this device</label>
+                </div>
+            </div>
+            <div class="col-6">
+                <button type="submit" class="btn btn-primary btn-block">Verify</button>
+            </div>
+        </div>
+    </form>
+
+    <hr>
+    <p class="text-center">
+        <a href="{{ path('app_logout') }}">
+            <i class="fas fa-sign-out-alt"></i> Sign out
+        </a>
+    </p>
+{% endblock %}

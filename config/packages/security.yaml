@@ -1,39 +1,63 @@
 security:
-    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+        # Legacy SHA-512 hashes from v1 are re-hashed on next login via PasswordUpgrader
+        App\Entity\User:
+            algorithm: bcrypt
+            cost: 13
+
     providers:
-        users_in_memory: { memory: null }
+        app_users:
+            entity:
+                class: App\Entity\User
+                property: username
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_users
 
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#the-firewall
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                username_parameter: _username
+                password_parameter: _password
+                default_target_path: app_admin_dashboard
+                enable_csrf: true
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            two_factor:
+                auth_form_path: app_2fa
+                check_path: app_2fa_check
+                default_target_path: app_admin_dashboard
+                auth_code_parameter_name: _auth_code
+                trusted_parameter_name: _trusted
+                enable_csrf: true
 
-    # Easy way to control access for large sections of your site
-    # Note: Only the *first* access control that matches will be used
+            logout:
+                path: app_logout
+                target: app_login
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+
+    role_hierarchy:
+        ROLE_ADMIN:  [ROLE_EDITOR, ROLE_AUTHOR]
+        ROLE_EDITOR: [ROLE_AUTHOR]
+
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/login,   roles: PUBLIC_ACCESS }
+        - { path: ^/2fa,     roles: IS_AUTHENTICATED_2FA_IN_PROGRESS }
+        - { path: ^/admin,   roles: ROLE_AUTHOR }
+        - { path: ^/api,     roles: ROLE_AUTHOR }
 
 when@test:
     security:
         password_hashers:
-            # By default, password hashers are resource intensive and take time. This is
-            # important to generate secure password hashes. In tests however, secure hashes
-            # are not important, waste resources and increase test times. The following
-            # reduces the work factor to the lowest possible values.
-            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-                algorithm: auto
-                cost: 4 # Lowest possible value for bcrypt
-                time_cost: 3 # Lowest possible value for argon
-                memory_cost: 10 # Lowest possible value for argon
+            App\Entity\User:
+                algorithm: bcrypt
+                cost: 4
