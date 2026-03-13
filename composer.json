@@ -11,6 +11,7 @@
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6",
         "knplabs/knp-paginator-bundle": "^6.10",
+        "league/commonmark": "^2.8",
         "nelmio/security-bundle": "^3.9",
         "scheb/2fa-bundle": "^8.0",
         "scheb/2fa-totp": "^8.0",
