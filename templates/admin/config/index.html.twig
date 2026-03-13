@@ -1,0 +1,269 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Configuration{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">Configuration</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Configuration</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{% set tab = active_tab|default('general') %}
+{% set c = config|default({}) %}
+
+<div class="card">
+    <div class="card-header p-0 pt-1">
+        <ul class="nav nav-tabs" id="config-tabs">
+            <li class="nav-item">
+                <a href="{{ path('app_admin_config') }}" class="nav-link {{ tab == 'general' ? 'active' : '' }}">
+                    <i class="fa fa-globe"></i> General
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('app_admin_config_reading') }}" class="nav-link {{ tab == 'reading' ? 'active' : '' }}">
+                    <i class="fa fa-book-open"></i> Reading
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('app_admin_config_writing') }}" class="nav-link {{ tab == 'writing' ? 'active' : '' }}">
+                    <i class="fa fa-pen"></i> Writing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{{ path('app_admin_config_security') }}" class="nav-link {{ tab == 'security' ? 'active' : '' }}">
+                    <i class="fa fa-lock"></i> Security
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    {# ── General tab ── #}
+    {% if tab == 'general' %}
+    <form method="post" action="{{ path('app_admin_config') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('config_general') }}">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="site_title">Site Title</label>
+                        <input type="text" class="form-control" id="site_title" name="site_title"
+                               value="{{ c['site.title']|default('') }}" placeholder="My Blog">
+                    </div>
+                    <div class="form-group">
+                        <label for="site_description">Site Description</label>
+                        <textarea class="form-control" id="site_description" name="site_description" rows="3">{{ c['site.description']|default('') }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="site_url">Site URL</label>
+                        <input type="url" class="form-control" id="site_url" name="site_url"
+                               value="{{ c['site.url']|default('') }}" placeholder="https://example.com">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="site_logo">Logo URL</label>
+                        <input type="url" class="form-control" id="site_logo" name="site_logo"
+                               value="{{ c['site.logo']|default('') }}" placeholder="https://example.com/logo.png">
+                    </div>
+                    <div class="form-group">
+                        <label for="site_cover">Cover Image URL</label>
+                        <input type="url" class="form-control" id="site_cover" name="site_cover"
+                               value="{{ c['site.cover']|default('') }}" placeholder="https://example.com/cover.jpg">
+                    </div>
+                    <div class="form-group">
+                        <label for="theme">Theme</label>
+                        <input type="text" class="form-control" id="theme" name="theme"
+                               value="{{ c['theme']|default('default') }}" placeholder="default">
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="language">Language</label>
+                        <select class="form-control" id="language" name="language">
+                            <option value="en" {{ c['language']|default('en') == 'en' ? 'selected' : '' }}>English</option>
+                            <option value="af" {{ c['language']|default('en') == 'af' ? 'selected' : '' }}>Afrikaans</option>
+                            <option value="fr" {{ c['language']|default('en') == 'fr' ? 'selected' : '' }}>French</option>
+                            <option value="de" {{ c['language']|default('en') == 'de' ? 'selected' : '' }}>German</option>
+                            <option value="es" {{ c['language']|default('en') == 'es' ? 'selected' : '' }}>Spanish</option>
+                            <option value="pt" {{ c['language']|default('en') == 'pt' ? 'selected' : '' }}>Portuguese</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="timezone">Timezone</label>
+                        <select class="form-control" id="timezone" name="timezone">
+                            {% for tz in ['UTC', 'Africa/Johannesburg', 'Europe/London', 'Europe/Berlin', 'America/New_York', 'America/Los_Angeles', 'Asia/Tokyo', 'Australia/Sydney'] %}
+                            <option value="{{ tz }}" {{ c['timezone']|default('UTC') == tz ? 'selected' : '' }}>{{ tz }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="admin_theme">Admin Theme</label>
+                        <select class="form-control" id="admin_theme" name="admin_theme">
+                            <option value="light" {{ c['admin.theme']|default('light') == 'light' ? 'selected' : '' }}>Light</option>
+                            <option value="dark"  {{ c['admin.theme']|default('light') == 'dark'  ? 'selected' : '' }}>Dark</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save General Settings</button>
+        </div>
+    </form>
+
+    {# ── Reading tab ── #}
+    {% elseif tab == 'reading' %}
+    <form method="post" action="{{ path('app_admin_config_reading') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('config_reading') }}">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="perpage">Posts Per Page</label>
+                        <input type="number" class="form-control" id="perpage" name="perpage" min="1" max="100"
+                               value="{{ c['blog.post.perpage']|default('10') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="summary_type">Summary Type</label>
+                        <select class="form-control" id="summary_type" name="summary_type">
+                            <option value="excerpt" {{ c['blog.summary.type']|default('excerpt') == 'excerpt' ? 'selected' : '' }}>Excerpt</option>
+                            <option value="full"    {{ c['blog.summary.type']|default('excerpt') == 'full'    ? 'selected' : '' }}>Full post</option>
+                        </select>
+                        <small class="form-text text-muted">How posts are displayed in the listing view.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Views Counter</label>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="views_counter"
+                                   name="views_counter" value="true"
+                                   {{ c['views.counter']|default('false') == 'true' ? 'checked' : '' }}>
+                            <label class="custom-control-label" for="views_counter">Enable post view counter</label>
+                        </div>
+                        <input type="hidden" name="views_counter" value="false">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Reading Settings</button>
+        </div>
+    </form>
+
+    {# ── Writing tab ── #}
+    {% elseif tab == 'writing' %}
+    <form method="post" action="{{ path('app_admin_config_writing') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('config_writing') }}">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label>Markdown Extra</label>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="markdown_extra"
+                                   name="markdown_extra" value="true"
+                                   {{ c['markdown.extra']|default('false') == 'true' ? 'checked' : '' }}>
+                            <label class="custom-control-label" for="markdown_extra">Enable Markdown Extra (tables, footnotes, etc.)</label>
+                        </div>
+                        <input type="hidden" name="markdown_extra" value="false">
+                    </div>
+                    <div class="form-group">
+                        <label for="thumbnail_width">Thumbnail Width (px)</label>
+                        <input type="number" class="form-control" id="thumbnail_width" name="thumbnail_width" min="50" max="2000"
+                               value="{{ c['thumbnail.width']|default('250') }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="twitter_username">Twitter Username</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend"><span class="input-group-text">@</span></div>
+                            <input type="text" class="form-control" id="twitter_username" name="twitter_username"
+                                   value="{{ c['twitter.username']|default('') }}" placeholder="username">
+                        </div>
+                        <small class="form-text text-muted">Used for Twitter Card meta tags.</small>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-group">
+                        <label for="disqus_id">Disqus Shortname</label>
+                        <input type="text" class="form-control" id="disqus_id" name="disqus_id"
+                               value="{{ c['disqus.id']|default('') }}" placeholder="your-disqus-shortname">
+                        <small class="form-text text-muted">Leave blank to disable Disqus comments.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="google_analytics">Google Analytics ID</label>
+                        <input type="text" class="form-control" id="google_analytics" name="google_analytics"
+                               value="{{ c['google.analytics']|default('') }}" placeholder="G-XXXXXXXXXX">
+                        <small class="form-text text-muted">Leave blank to disable Google Analytics.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Writing Settings</button>
+        </div>
+    </form>
+
+    {# ── Security tab ── #}
+    {% elseif tab == 'security' %}
+    <form method="post" action="{{ path('app_admin_config_security') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('config_security') }}">
+        <div class="card-body">
+            <div class="alert alert-warning">
+                <i class="fa fa-exclamation-triangle"></i>
+                <strong>Warning:</strong> Misconfiguring security settings may lock you out. Proceed with care.
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="protect_system">Admin Protection</label>
+                        <select class="form-control" id="protect_system" name="protect_system">
+                            <option value="none"        {{ c['login.protect.system']|default('none') == 'none'        ? 'selected' : '' }}>None</option>
+                            <option value="google"      {{ c['login.protect.system']|default('none') == 'google'      ? 'selected' : '' }}>Google reCAPTCHA</option>
+                            <option value="cloudflare"  {{ c['login.protect.system']|default('none') == 'cloudflare'  ? 'selected' : '' }}>Cloudflare Turnstile</option>
+                        </select>
+                        <small class="form-text text-muted">Protection on the admin login page.</small>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="protect_public">Public Pages Protection</label>
+                        <select class="form-control" id="protect_public" name="protect_public">
+                            <option value="none"       {{ c['login.protect.public']|default('none') == 'none'       ? 'selected' : '' }}>None</option>
+                            <option value="google"     {{ c['login.protect.public']|default('none') == 'google'     ? 'selected' : '' }}>Google reCAPTCHA</option>
+                            <option value="cloudflare" {{ c['login.protect.public']|default('none') == 'cloudflare' ? 'selected' : '' }}>Cloudflare Turnstile</option>
+                        </select>
+                        <small class="form-text text-muted">Protection on public-facing pages.</small>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="form-group">
+                        <label for="protect_private">Private Pages Protection</label>
+                        <select class="form-control" id="protect_private" name="protect_private">
+                            <option value="none"       {{ c['login.protect.private']|default('none') == 'none'       ? 'selected' : '' }}>None</option>
+                            <option value="google"     {{ c['login.protect.private']|default('none') == 'google'     ? 'selected' : '' }}>Google reCAPTCHA</option>
+                            <option value="cloudflare" {{ c['login.protect.private']|default('none') == 'cloudflare' ? 'selected' : '' }}>Cloudflare Turnstile</option>
+                        </select>
+                        <small class="form-text text-muted">Protection on authenticated pages.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary"><i class="fa fa-save"></i> Save Security Settings</button>
+        </div>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

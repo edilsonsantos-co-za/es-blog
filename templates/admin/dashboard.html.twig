@@ -1,0 +1,111 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">Dashboard</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+{# Stats row #}
+<div class="row">
+    <div class="col-12 col-sm-4">
+        <div class="info-box">
+            <span class="info-box-icon bg-success elevation-1"><i class="fa fa-check-circle"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Published</span>
+                <span class="info-box-number">{{ stats.published }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="info-box">
+            <span class="info-box-icon bg-secondary elevation-1"><i class="fa fa-pencil-alt"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Drafts</span>
+                <span class="info-box-number">{{ stats.draft }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-sm-4">
+        <div class="info-box">
+            <span class="info-box-icon bg-warning elevation-1"><i class="fa fa-clock"></i></span>
+            <div class="info-box-content">
+                <span class="info-box-text">Scheduled</span>
+                <span class="info-box-number">{{ stats.scheduled }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Recent posts #}
+<div class="card">
+    <div class="card-header d-flex">
+        <h3 class="card-title">My Recent Posts</h3>
+        <div class="card-tools ml-auto">
+            <a href="{{ path('app_admin_post_new') }}" class="btn btn-sm btn-primary">
+                <i class="fa fa-plus"></i> New Post
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Views</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in recent_posts %}
+                <tr>
+                    <td>
+                        <a href="{{ path('app_admin_post_edit', {id: post.id}) }}">{{ post.title }}</a>
+                    </td>
+                    <td>
+                        {% if post.status.value == 'published' %}
+                            <span class="badge badge-published badge-success">Published</span>
+                        {% elseif post.status.value == 'draft' %}
+                            <span class="badge badge-secondary">Draft</span>
+                        {% else %}
+                            <span class="badge badge-warning">Scheduled</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ post.views }}</td>
+                    <td>{{ post.createdAt|date('Y-m-d') }}</td>
+                    <td>
+                        <a href="{{ path('app_admin_post_edit', {id: post.id}) }}" class="btn btn-xs btn-default">
+                            <i class="fa fa-edit"></i> Edit
+                        </a>
+                        <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}" style="display:inline;"
+                              onsubmit="return confirm('Delete this post?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ post.id) }}">
+                            <button type="submit" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center text-muted">No posts yet. <a href="{{ path('app_admin_post_new') }}">Create your first post</a>.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if recent_posts|length > 0 %}
+    <div class="card-footer text-right">
+        <a href="{{ path('app_admin_posts_mine') }}" class="btn btn-sm btn-default">View all my posts →</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

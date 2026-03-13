@@ -1,0 +1,102 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% set is_new = is_new ?? true %}
+{% set page_title = is_new ? 'New User' : 'Edit User: ' ~ user.username %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">{{ page_title }}</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_users') }}">Users</a></li>
+            <li class="breadcrumb-item active">{{ is_new ? 'New' : 'Edit' }}</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fa fa-{{ is_new ? 'user-plus' : 'user-edit' }}"></i> {{ page_title }}
+                </h3>
+            </div>
+            <form method="post" action="{{ is_new ? path('app_admin_user_new') : path('app_admin_user_edit', {id: user.id}) }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('user_form') }}">
+                <div class="card-body">
+
+                    {# Username (only for new users) #}
+                    {% if is_new %}
+                    <div class="form-group">
+                        <label for="username">Username <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username"
+                               placeholder="Username" required autocomplete="username">
+                    </div>
+                    {% else %}
+                    <div class="form-group">
+                        <label>Username</label>
+                        <p class="form-control-static"><strong>{{ user.username }}</strong>
+                            <small class="text-muted ml-2">(cannot be changed)</small>
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    {# Email #}
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               value="{{ user ? user.email : '' }}"
+                               placeholder="user@example.com">
+                    </div>
+
+                    {# Role #}
+                    <div class="form-group">
+                        <label for="role">Role</label>
+                        <select class="form-control" id="role" name="role">
+                            <option value="author"  {{ (user and user.role.value == 'author')  ? 'selected' : (is_new ? 'selected' : '') }}>Author</option>
+                            <option value="editor"  {{ (user and user.role.value == 'editor')  ? 'selected' : '' }}>Editor</option>
+                            <option value="admin"   {{ (user and user.role.value == 'admin')   ? 'selected' : '' }}>Administrator</option>
+                        </select>
+                    </div>
+
+                    <hr>
+
+                    {# Password #}
+                    <div class="form-group">
+                        <label for="password">{{ is_new ? 'Password' : 'New Password' }} {% if is_new %}<span class="text-danger">*</span>{% endif %}</label>
+                        <input type="password" class="form-control" id="password" name="{{ is_new ? 'password' : 'new_password' }}"
+                               placeholder="{{ is_new ? 'Password' : 'Leave blank to keep current password' }}"
+                               {{ is_new ? 'required' : '' }} autocomplete="new-password">
+                        {% if not is_new %}
+                        <small class="form-text text-muted">Leave blank to keep the existing password.</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save"></i> {{ is_new ? 'Create User' : 'Save Changes' }}
+                    </button>
+                    <a href="{{ path('app_admin_users') }}" class="btn btn-default ml-2">Cancel</a>
+                    {% if not is_new and is_granted('USER_DELETE', user) %}
+                    <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}"
+                          class="d-inline ml-2" onsubmit="return confirm('Delete user {{ user.username }}?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('user_delete_' ~ user.id) }}">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fa fa-trash"></i> Delete User
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

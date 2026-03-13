@@ -1,0 +1,86 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}LinkedIn Integration{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">LinkedIn Integration</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">LinkedIn</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        {# Status card #}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fab fa-linkedin text-primary"></i> Connection Status
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fa fa-info-circle"></i>
+                    <strong>Coming soon</strong> — LinkedIn OAuth integration is planned for a future release.
+                </div>
+
+                <div class="d-flex align-items-center p-3 bg-light rounded">
+                    <div class="mr-3">
+                        <i class="fab fa-linkedin fa-3x text-secondary"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-1">Not connected</h5>
+                        <p class="mb-0 text-muted">Connect your LinkedIn account to automatically share new posts to your LinkedIn profile or company page.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Planned features card #}
+        <div class="card card-outline card-secondary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-list-check"></i> Planned Features</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> OAuth 2.0 connection to LinkedIn API v2</li>
+                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> Auto-share published posts as LinkedIn articles</li>
+                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> Share to personal profile or company page</li>
+                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> Custom share message per post</li>
+                    <li class="mb-0"><i class="fa fa-circle-notch text-muted mr-2"></i> View share history and engagement stats</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-info-circle"></i> Setup Guide</h3>
+            </div>
+            <div class="card-body">
+                <p class="text-muted text-sm">When available, setup will require:</p>
+                <ol class="text-sm pl-3">
+                    <li>Create a LinkedIn Developer App</li>
+                    <li>Add OAuth redirect URI</li>
+                    <li>Enter App ID and Secret in <code>.env</code></li>
+                    <li>Click "Connect" to authorise</li>
+                </ol>
+                <hr>
+                <p class="text-muted text-sm mb-0">
+                    <i class="fa fa-external-link-alt mr-1"></i>
+                    <a href="https://developer.linkedin.com/" target="_blank" rel="noopener">LinkedIn Developer Portal</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

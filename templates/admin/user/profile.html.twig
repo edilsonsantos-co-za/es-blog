@@ -1,0 +1,205 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">My Profile</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Profile</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    {# ── Profile form ── #}
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-user"></i> Profile Details</h3>
+            </div>
+            <form method="post" action="{{ path('app_admin_profile') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('profile_form') }}">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Username</label>
+                                <p class="form-control-static"><strong>{{ user.username }}</strong></p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Role</label>
+                                <p class="form-control-static">
+                                    <span class="badge badge-{{ user.role.value == 'admin' ? 'danger' : (user.role.value == 'editor' ? 'warning' : 'secondary') }}">
+                                        {{ user.role.label() }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" name="email"
+                               value="{{ user.email }}" placeholder="your@email.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="about">About</label>
+                        <textarea class="form-control" id="about" name="about" rows="4"
+                                  placeholder="Tell us about yourself…">{{ user.about }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="avatar">Avatar URL</label>
+                        <div class="input-group">
+                            {% if user.avatar %}
+                            <div class="input-group-prepend">
+                                <span class="input-group-text p-1">
+                                    <img src="{{ user.avatar }}" style="width:28px;height:28px;object-fit:cover;border-radius:50%;" alt="">
+                                </span>
+                            </div>
+                            {% endif %}
+                            <input type="url" class="form-control" id="avatar" name="avatar"
+                                   value="{{ user.avatar }}" placeholder="https://example.com/avatar.jpg">
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-3"><i class="fa fa-share-alt"></i> Social Links</h6>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="twitter"><i class="fab fa-twitter text-info"></i> Twitter / X</label>
+                                <input type="url" class="form-control" id="twitter" name="twitter"
+                                       value="{{ user.twitter }}" placeholder="https://twitter.com/username">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="facebook"><i class="fab fa-facebook text-primary"></i> Facebook</label>
+                                <input type="url" class="form-control" id="facebook" name="facebook"
+                                       value="{{ user.facebook }}" placeholder="https://facebook.com/username">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="instagram"><i class="fab fa-instagram text-danger"></i> Instagram</label>
+                                <input type="url" class="form-control" id="instagram" name="instagram"
+                                       value="{{ user.instagram }}" placeholder="https://instagram.com/username">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="linkedin"><i class="fab fa-linkedin text-primary"></i> LinkedIn</label>
+                                <input type="url" class="form-control" id="linkedin" name="linkedin"
+                                       value="{{ user.linkedin }}" placeholder="https://linkedin.com/in/username">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="github"><i class="fab fa-github"></i> GitHub</label>
+                                <input type="url" class="form-control" id="github" name="github"
+                                       value="{{ user.github }}" placeholder="https://github.com/username">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="bluesky"><i class="fa fa-cloud text-info"></i> Bluesky</label>
+                                <input type="url" class="form-control" id="bluesky" name="bluesky"
+                                       value="{{ user.bluesky }}" placeholder="https://bsky.app/profile/...">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6 class="text-muted mb-3"><i class="fa fa-lock"></i> Change Password</h6>
+                    <div class="form-group">
+                        <label for="new_password">New Password</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password"
+                               placeholder="Leave blank to keep current password" autocomplete="new-password">
+                        <small class="form-text text-muted">Leave blank to keep your existing password.</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save"></i> Save Profile
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# ── MFA card ── #}
+    <div class="col-lg-4">
+        <div class="card {{ user.mfaEnabled ? 'card-success' : 'card-secondary' }}">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-shield-alt"></i> Two-Factor Authentication</h3>
+            </div>
+            <div class="card-body">
+                {% if user.mfaEnabled %}
+                    <div class="text-center mb-3">
+                        <i class="fa fa-shield-alt fa-3x text-success"></i>
+                    </div>
+                    <p class="text-center"><strong>2FA is enabled</strong></p>
+                    <p class="text-muted text-sm">Your account is protected with time-based one-time passwords (TOTP).</p>
+                    <hr>
+                    <p class="text-muted text-sm mb-0">To disable 2FA, enter your password below:</p>
+                    <form method="post" action="{{ path('app_mfa_disable') }}" class="mt-2">
+                        <input type="hidden" name="_token" value="{{ csrf_token('mfa_disable') }}">
+                        <div class="input-group mb-2">
+                            <input type="password" class="form-control form-control-sm" name="password"
+                                   placeholder="Your password" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-block btn-sm"
+                                onclick="return confirm('Are you sure you want to disable 2FA?')">
+                            <i class="fa fa-times"></i> Disable 2FA
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="text-center mb-3">
+                        <i class="fa fa-shield-alt fa-3x text-muted"></i>
+                    </div>
+                    <p class="text-center text-muted">2FA is not enabled</p>
+                    <p class="text-muted text-sm">Enable two-factor authentication to add an extra layer of security to your account.</p>
+                    <a href="{{ path('app_mfa_enable') }}" class="btn btn-success btn-block">
+                        <i class="fa fa-shield-alt"></i> Enable 2FA
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Account info card #}
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-info-circle"></i> Account Info</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <tr>
+                        <th class="pl-3">Member since</th>
+                        <td>{{ user.createdAt|date('F j, Y') }}</td>
+                    </tr>
+                    <tr>
+                        <th class="pl-3">Total posts</th>
+                        <td>{{ user.posts|length }}</td>
+                    </tr>
+                    <tr>
+                        <th class="pl-3">Encryption</th>
+                        <td><code>{{ user.encryption }}</code></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

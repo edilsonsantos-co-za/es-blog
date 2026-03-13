@@ -1,0 +1,77 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Clear Cache{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">Cache Management</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Clear Cache</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-broom"></i> Clear Application Cache</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fa fa-info-circle"></i>
+                    <strong>What this does:</strong> Clears the Symfony application cache, Twig template cache, and cached site configuration.
+                    The site may be temporarily slower while the cache rebuilds after clearing.
+                </div>
+                <p>Use this when:</p>
+                <ul>
+                    <li>Templates are not reflecting recent changes</li>
+                    <li>Configuration changes are not taking effect</li>
+                    <li>After deploying code updates</li>
+                    <li>Troubleshooting unexpected behaviour</li>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <form method="post" action="{{ path('app_admin_cache_clear') }}"
+                      onsubmit="return confirm('Clear the application cache? The site may be briefly slower while rebuilding.')">
+                    <input type="hidden" name="_token" value="{{ csrf_token('cache_clear') }}">
+                    <button type="submit" class="btn btn-warning btn-block">
+                        <i class="fa fa-broom"></i> Clear Cache Now
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-info-circle"></i> Cache Info</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <th>Environment</th>
+                        <td>{{ app.environment }}</td>
+                    </tr>
+                    <tr>
+                        <th>Debug mode</th>
+                        <td>{{ app.debug ? '<span class="badge badge-warning">On</span>' : '<span class="badge badge-secondary">Off</span>' }}</td>
+                    </tr>
+                </table>
+                <hr>
+                <p class="text-muted text-sm mb-0">
+                    <i class="fa fa-exclamation-triangle text-warning"></i>
+                    Clearing cache in production briefly interrupts the site. For zero-downtime deployments, use <code>cache:warmup</code> after clearing.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

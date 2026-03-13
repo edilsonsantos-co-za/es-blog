@@ -1,0 +1,102 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}{{ list_title|default('Posts') }}{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">{{ list_title|default('Posts') }}</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">{{ list_title|default('Posts') }}</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex">
+        <h3 class="card-title">{{ list_title|default('Posts') }}</h3>
+        <div class="card-tools ml-auto">
+            <a href="{{ path('app_admin_post_new') }}" class="btn btn-sm btn-primary">
+                <i class="fa fa-plus"></i> New Post
+            </a>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover table-responsive-md" style="font-size:.9rem;">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Author</th>
+                    <th>Category</th>
+                    <th>Tags</th>
+                    <th>Views</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>
+                        <a href="{{ path('app_admin_post_edit', {id: post.id}) }}">{{ post.title|u.truncate(60, '…') }}</a>
+                    </td>
+                    <td>
+                        <span class="badge badge-info">{{ post.type.label() }}</span>
+                    </td>
+                    <td>
+                        {% if post.status.value == 'published' %}
+                            <span class="badge badge-success">Published</span>
+                        {% elseif post.status.value == 'draft' %}
+                            <span class="badge badge-secondary">Draft</span>
+                        {% else %}
+                            <span class="badge badge-warning">Scheduled</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ post.author.username }}</td>
+                    <td>{{ post.category ? post.category.title : '—' }}</td>
+                    <td>
+                        {% for tag in post.tags %}
+                            <span class="badge badge-light">{{ tag.name }}</span>
+                        {% endfor %}
+                    </td>
+                    <td>{{ post.views }}</td>
+                    <td>{{ post.createdAt|date('Y-m-d') }}</td>
+                    <td style="white-space:nowrap;">
+                        <a href="{{ path('app_admin_post_edit', {id: post.id}) }}" class="btn btn-xs btn-default" title="Edit">
+                            <i class="fa fa-edit"></i>
+                        </a>
+                        {% if is_granted('POST_DELETE', post) %}
+                        <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}" style="display:inline;"
+                              onsubmit="return confirm('Delete this post?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ post.id) }}">
+                            <button type="submit" class="btn btn-xs btn-danger" title="Delete">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center text-muted py-4">
+                        No posts found. <a href="{{ path('app_admin_post_new') }}">Create one now</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if posts.pageCount > 1 %}
+    <div class="card-footer">
+        {{ knp_pagination_render(posts) }}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

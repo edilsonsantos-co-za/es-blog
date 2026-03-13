@@ -1,0 +1,265 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% set is_edit = post is not null %}
+{% set form_title = page_mode ? (is_edit ? 'Edit Page' : 'New Page') : (is_edit ? 'Edit Post' : 'New Post') %}
+{% set cancel_route = page_mode ? 'app_admin_pages' : 'app_admin_posts' %}
+{% set form_action = is_edit
+    ? (page_mode ? path('app_admin_page_edit', {id: post.id}) : path('app_admin_post_edit', {id: post.id}))
+    : (page_mode ? path('app_admin_page_new') : path('app_admin_post_new')) %}
+
+{% block title %}{{ form_title }}{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/toolbar.css') }}">
+{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">{{ form_title }}</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item">
+                <a href="{{ path(cancel_route) }}">{{ page_mode ? 'Pages' : 'Posts' }}</a>
+            </li>
+            <li class="breadcrumb-item active">{{ form_title }}</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<form method="post" action="{{ form_action }}" id="post-form">
+    <input type="hidden" name="_token" value="{{ csrf_token('post_form') }}">
+
+    <div class="row">
+        {# ── Left column: main content ── #}
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    {# Title #}
+                    <div class="form-group">
+                        <label for="title">Title <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title"
+                               value="{{ post ? post.title : '' }}"
+                               placeholder="Post title" required>
+                    </div>
+
+                    {# Slug (auto-generated, readonly) #}
+                    <div class="form-group">
+                        <label for="slug">Slug</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="slug" name="slug"
+                                   value="{{ post ? post.slug : '' }}"
+                                   placeholder="auto-generated">
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-default" id="generate-slug" title="Re-generate slug">
+                                    <i class="fa fa-sync"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Leave blank to auto-generate from title.</small>
+                    </div>
+
+                    {# Body (Markdown) #}
+                    <div class="form-group">
+                        <label for="body">Content <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="body" name="body" rows="20"
+                                  placeholder="Write your content in Markdown…" required>{{ post ? post.body : '' }}</textarea>
+                    </div>
+
+                    {# Description / Excerpt #}
+                    <div class="form-group">
+                        <label for="description">Excerpt / Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  placeholder="Short description or excerpt (optional)">{{ post ? post.description : '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            {# Media fields (collapsed by default) #}
+            <div class="card card-secondary card-outline">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fa fa-photo-video"></i> Media Fields</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                            <i class="fa fa-{{ (post and (post.image or post.video or post.audio or post.link or post.quote)) ? 'minus' : 'plus' }}"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body {{ (post and (post.image or post.video or post.audio or post.link or post.quote)) ? '' : 'collapse' }}">
+                    <div class="form-group">
+                        <label for="image">Image URL</label>
+                        <input type="url" class="form-control" id="image" name="image"
+                               value="{{ post ? post.image : '' }}" placeholder="https://example.com/image.jpg">
+                    </div>
+                    <div class="form-group">
+                        <label for="video">Video URL</label>
+                        <input type="url" class="form-control" id="video" name="video"
+                               value="{{ post ? post.video : '' }}" placeholder="https://youtube.com/watch?v=...">
+                    </div>
+                    <div class="form-group">
+                        <label for="audio">Audio URL</label>
+                        <input type="url" class="form-control" id="audio" name="audio"
+                               value="{{ post ? post.audio : '' }}" placeholder="https://example.com/audio.mp3">
+                    </div>
+                    <div class="form-group">
+                        <label for="link">Link URL</label>
+                        <input type="url" class="form-control" id="link" name="link"
+                               value="{{ post ? post.link : '' }}" placeholder="https://example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote">Quote</label>
+                        <textarea class="form-control" id="quote" name="quote" rows="3"
+                                  placeholder="Quote text…">{{ post ? post.quote : '' }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ── Right column: meta ── #}
+        <div class="col-lg-4">
+            {# Publish card #}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fa fa-paper-plane"></i> Publish</h3>
+                </div>
+                <div class="card-body">
+                    {# Type #}
+                    <div class="form-group">
+                        <label for="type">Type</label>
+                        {% if page_mode %}
+                            <select class="form-control" id="type" name="type">
+                                <option value="page" {{ (post and post.type.value == 'page') ? 'selected' : (post is null ? 'selected' : '') }}>Page</option>
+                                <option value="subpage" {{ (post and post.type.value == 'subpage') ? 'selected' : '' }}>Sub-page</option>
+                            </select>
+                        {% else %}
+                            <select class="form-control" id="type" name="type">
+                                <option value="post" {{ (post and post.type.value == 'post') ? 'selected' : (post is null ? 'selected' : '') }}>Post</option>
+                                <option value="profile" {{ (post and post.type.value == 'profile') ? 'selected' : '' }}>Profile</option>
+                            </select>
+                        {% endif %}
+                    </div>
+
+                    {# Status #}
+                    <div class="form-group">
+                        <label for="status">Status</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="published" {{ (post and post.status.value == 'published') ? 'selected' : (post is null and not page_mode ? '' : 'selected') }}>Published</option>
+                            <option value="draft" {{ (post and post.status.value == 'draft') ? 'selected' : (post is null and not page_mode ? 'selected' : '') }}>Draft</option>
+                            <option value="scheduled" {{ (post and post.status.value == 'scheduled') ? 'selected' : '' }}>Scheduled</option>
+                        </select>
+                    </div>
+
+                    {# Publish date #}
+                    <div class="form-group" id="publish-date-group">
+                        <label for="published_at">Publish Date</label>
+                        <input type="datetime-local" class="form-control" id="published_at" name="published_at"
+                               value="{{ post and post.publishedAt ? post.publishedAt|date('Y-m-d\\TH:i') : '' }}">
+                        <small class="form-text text-muted">Required for scheduled posts.</small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa fa-save"></i> {{ is_edit ? 'Update' : 'Publish' }}
+                    </button>
+                    <a href="{{ path(cancel_route) }}" class="btn btn-default btn-block mt-1">Cancel</a>
+                    {% if is_edit %}
+                    <form method="post" action="{{ page_mode ? path('app_admin_page_delete', {id: post.id}) : path('app_admin_post_delete', {id: post.id}) }}"
+                          class="mt-2" onsubmit="return confirm('Permanently delete this {{ page_mode ? 'page' : 'post' }}?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ post.id) }}">
+                        <button type="submit" class="btn btn-danger btn-block btn-sm">
+                            <i class="fa fa-trash"></i> Delete
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Category (not shown in page_mode) #}
+            {% if not page_mode %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fa fa-folder"></i> Category</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-0">
+                        <select class="form-control" name="category_id">
+                            <option value="">— None —</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {{ (post and post.category and post.category.id == category.id) ? 'selected' : '' }}>
+                                {{ category.title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Tags (not shown in page_mode) #}
+            {% if not page_mode %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><i class="fa fa-tags"></i> Tags</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group mb-0">
+                        <input type="text" class="form-control" name="tags"
+                               value="{{ post ? post.tags|map(t => t.name)|join(', ') : '' }}"
+                               placeholder="php, symfony, web (comma-separated)">
+                        <small class="form-text text-muted">Separate tags with commas.</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Auto-generate slug from title
+function slugify(text) {
+    return text.toString().toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]+/g, '')
+        .replace(/\-\-+/g, '-')
+        .replace(/^-+/, '')
+        .replace(/-+$/, '');
+}
+
+var titleInput = document.getElementById('title');
+var slugInput  = document.getElementById('slug');
+var manualSlug = slugInput.value !== '';
+
+titleInput.addEventListener('input', function() {
+    if (!manualSlug) {
+        slugInput.value = slugify(this.value);
+    }
+});
+
+slugInput.addEventListener('input', function() {
+    manualSlug = this.value !== '';
+});
+
+document.getElementById('generate-slug').addEventListener('click', function() {
+    slugInput.value = slugify(titleInput.value);
+    manualSlug = false;
+});
+
+// Show/hide publish date based on status
+var statusSelect = document.getElementById('status');
+function togglePublishDate() {
+    var group = document.getElementById('publish-date-group');
+    group.style.display = statusSelect.value === 'scheduled' ? '' : 'none';
+}
+statusSelect.addEventListener('change', togglePublishDate);
+if (statusSelect.value !== 'scheduled') {
+    document.getElementById('publish-date-group').style.display = 'none';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,207 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Navigation Menu{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <h1 class="m-0">Navigation Menu</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Menu</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    {# ── Add new item form ── #}
+    <div class="col-lg-4">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fa fa-plus"></i> Add Menu Item</h3>
+            </div>
+            <form method="post" action="{{ path('app_admin_menu') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('menu_form') }}">
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="name">Label <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name"
+                               placeholder="e.g. About" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="slug">URL / Path <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="slug" name="slug"
+                               placeholder="e.g. /about or https://example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="parent_id">Parent Item</label>
+                        <select class="form-control" id="parent_id" name="parent_id">
+                            <option value="">— None (top-level) —</option>
+                            {% for item in items %}
+                                {% if item.parent is null %}
+                                <option value="{{ item.id }}">{{ item.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="target">Open in</label>
+                        <select class="form-control" id="target" name="target">
+                            <option value="">Same window</option>
+                            <option value="_blank">New window (_blank)</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0">
+                        <label for="class">CSS Class</label>
+                        <input type="text" class="form-control" id="class" name="class"
+                               placeholder="optional CSS class">
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fa fa-plus"></i> Add Item
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# ── Menu items list ── #}
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex">
+                <h3 class="card-title"><i class="fa fa-bars"></i> Menu Items</h3>
+                <div class="card-tools ml-auto">
+                    <small class="text-muted">Drag to reorder</small>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if items|length == 0 %}
+                <div class="p-4 text-center text-muted">
+                    No menu items yet. Add your first item on the left.
+                </div>
+                {% else %}
+                <ul class="list-group list-group-flush" id="menu-sortable">
+                    {% for item in items %}
+                    <li class="list-group-item" data-id="{{ item.id }}" style="cursor:move;">
+                        <div class="d-flex align-items-center">
+                            <i class="fa fa-grip-vertical text-muted mr-3"></i>
+                            <div class="flex-grow-1">
+                                <strong>{{ item.name }}</strong>
+                                {% if item.parent %}
+                                    <span class="badge badge-light ml-1">child of: {{ item.parent.name }}</span>
+                                {% endif %}
+                                <br>
+                                <code style="font-size:.8rem;">{{ item.slug }}</code>
+                                {% if item.target %}
+                                    <span class="badge badge-secondary ml-1">{{ item.target }}</span>
+                                {% endif %}
+                                {% if item.class %}
+                                    <span class="badge badge-light ml-1">.{{ item.class }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="ml-2" style="white-space:nowrap;">
+                                <button type="button" class="btn btn-xs btn-default"
+                                        data-toggle="collapse" data-target="#edit-{{ item.id }}">
+                                    <i class="fa fa-edit"></i>
+                                </button>
+                                <form method="post" action="{{ path('app_admin_menu_delete', {id: item.id}) }}" style="display:inline;"
+                                      onsubmit="return confirm('Remove this menu item?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('menu_delete_' ~ item.id) }}">
+                                    <button type="submit" class="btn btn-xs btn-danger">
+                                        <i class="fa fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        {# Inline edit form #}
+                        <div class="collapse mt-2" id="edit-{{ item.id }}">
+                            <form method="post" action="{{ path('app_admin_menu_edit', {id: item.id}) }}" class="bg-light p-2 rounded">
+                                <input type="hidden" name="_token" value="{{ csrf_token('menu_edit_' ~ item.id) }}">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <div class="form-group form-group-sm">
+                                            <label>Label</label>
+                                            <input type="text" class="form-control form-control-sm" name="name"
+                                                   value="{{ item.name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group form-group-sm">
+                                            <label>URL / Path</label>
+                                            <input type="text" class="form-control form-control-sm" name="slug"
+                                                   value="{{ item.slug }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group form-group-sm">
+                                            <label>Parent</label>
+                                            <select class="form-control form-control-sm" name="parent_id">
+                                                <option value="">None</option>
+                                                {% for other in items %}
+                                                    {% if other.id != item.id and other.parent is null %}
+                                                    <option value="{{ other.id }}" {{ item.parent and item.parent.id == other.id ? 'selected' : '' }}>
+                                                        {{ other.name }}
+                                                    </option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group form-group-sm">
+                                            <label>Target</label>
+                                            <select class="form-control form-control-sm" name="target">
+                                                <option value="" {{ item.target is null or item.target == '' ? 'selected' : '' }}>Same window</option>
+                                                <option value="_blank" {{ item.target == '_blank' ? 'selected' : '' }}>New window</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="form-group form-group-sm">
+                                            <label>CSS Class</label>
+                                            <input type="text" class="form-control form-control-sm" name="class"
+                                                   value="{{ item.class }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-warning">
+                                    <i class="fa fa-save"></i> Save
+                                </button>
+                                <button type="button" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#edit-{{ item.id }}">
+                                    Cancel
+                                </button>
+                            </form>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script src="{{ asset('assets/admin/js/jquery-ui.min.js') }}"></script>
+<script>
+$('#menu-sortable').sortable({
+    handle: '.fa-grip-vertical',
+    update: function() {
+        var ids = $(this).children('li').map(function() {
+            return parseInt($(this).data('id'));
+        }).get();
+        $.post('{{ path('app_admin_menu_reorder') }}', {
+            _token: '{{ csrf_token('menu_reorder') }}',
+            ids: ids
+        });
+    }
+});
+</script>
+{% endblock %}
