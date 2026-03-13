@@ -10,11 +10,13 @@ use App\Entity\Tag;
 use App\Entity\User;
 use App\Enum\PostStatus;
 use App\Enum\PostType;
+use App\Message\SyncLinkedInPostMessage;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\Pagination\PaginationInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Encapsulates all post business logic: creation, update, deletion, listing, search.
@@ -31,6 +33,7 @@ final class PostService
         private readonly SlugService $slugService,
         private readonly EntityManagerInterface $em,
         private readonly PaginatorInterface $paginator,
+        private readonly MessageBusInterface $bus,
     ) {}
 
     // -------------------------------------------------------------------------
@@ -227,6 +230,10 @@ final class PostService
         $this->em->persist($post);
         $this->em->flush();
 
+        if ($post->getStatus() === PostStatus::Published) {
+            $this->bus->dispatch(new SyncLinkedInPostMessage($post->getId()));
+        }
+
         return $post;
     }
 
@@ -237,6 +244,10 @@ final class PostService
     {
         $this->hydrate($post, $data);
         $this->em->flush();
+
+        if ($post->getStatus() === PostStatus::Published) {
+            $this->bus->dispatch(new SyncLinkedInPostMessage($post->getId()));
+        }
 
         return $post;
     }

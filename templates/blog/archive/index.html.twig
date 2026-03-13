@@ -1,0 +1,15 @@
+{% extends 'blog/layout.html.twig' %}
+
+{% set heading = month ? "Archive: #{year}/#{month|format('%02d', month)}" : "Archive: #{year}" %}
+
+{% block title %}{{ heading }} — {{ site_title }}{% endblock %}
+
+{% block content %}
+<header class="archive-header">
+    <h1>{{ heading }}</h1>
+</header>
+
+{% set route_params = month ? {year: year, month: month} : {year: year} %}
+{% set route_name = month ? 'app_blog_archive_month' : 'app_blog_archive_year' %}
+{% include 'blog/_post_list.html.twig' with {posts: posts, route: route_name, route_params: route_params} %}
+{% endblock %}

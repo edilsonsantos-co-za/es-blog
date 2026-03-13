@@ -1,0 +1,11 @@
+{% extends 'blog/layout.html.twig' %}
+
+{% block title %}Tag: {{ tag.name }} — {{ site_title }}{% endblock %}
+
+{% block content %}
+<header class="archive-header">
+    <h1>Tag: {{ tag.name }}</h1>
+</header>
+
+{% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_tag', route_params: {slug: tag.slug}} %}
+{% endblock %}

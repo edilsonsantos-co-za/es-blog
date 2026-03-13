@@ -1,0 +1,14 @@
+{% extends 'blog/layout.html.twig' %}
+
+{% block title %}Category: {{ category.title }} — {{ site_title }}{% endblock %}
+
+{% block content %}
+<header class="archive-header">
+    <h1>Category: {{ category.title }}</h1>
+    {% if category.description %}
+    <p class="archive-description">{{ category.description }}</p>
+    {% endif %}
+</header>
+
+{% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_category', route_params: {slug: category.slug}} %}
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'blog/layout.html.twig' %}
+
+{% block title %}Search{% if q %}: {{ q }}{% endif %} — {{ site_title }}{% endblock %}
+
+{% block content %}
+<header class="archive-header">
+    <h1>Search</h1>
+</header>
+
+<form action="{{ path('app_blog_search') }}" method="get" class="search-form search-form-large">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search posts…" class="search-input" autofocus>
+    <button type="submit" class="search-btn">Search</button>
+</form>
+
+{% if q %}
+    {% if posts and posts.totalItemCount > 0 %}
+    <p class="search-results-count">Found {{ posts.totalItemCount }} result{{ posts.totalItemCount != 1 ? 's' : '' }} for "<strong>{{ q }}</strong>".</p>
+    {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_search', route_params: {q: q}} %}
+    {% else %}
+    <p class="no-posts">No results found for "<strong>{{ q }}</strong>". Try different keywords.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

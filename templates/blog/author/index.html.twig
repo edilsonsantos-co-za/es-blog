@@ -1,0 +1,29 @@
+{% extends 'blog/layout.html.twig' %}
+
+{% block title %}{{ author.username }} — {{ site_title }}{% endblock %}
+
+{% block content %}
+<header class="author-header">
+    {% if author.avatar %}
+    <img src="{{ author.avatar }}" alt="{{ author.username }}" class="author-avatar-large">
+    {% endif %}
+    <div class="author-header-info">
+        <h1>{{ author.username }}</h1>
+        {% if author.about %}
+        <p class="author-bio">{{ author.about }}</p>
+        {% endif %}
+        <div class="author-social">
+            {% if author.twitter %}<a href="{{ author.twitter }}" rel="noopener noreferrer" target="_blank">Twitter</a>{% endif %}
+            {% if author.github %}<a href="{{ author.github }}" rel="noopener noreferrer" target="_blank">GitHub</a>{% endif %}
+            {% if author.linkedin %}<a href="{{ author.linkedin }}" rel="noopener noreferrer" target="_blank">LinkedIn</a>{% endif %}
+            {% if author.bluesky %}<a href="{{ author.bluesky }}" rel="noopener noreferrer" target="_blank">Bluesky</a>{% endif %}
+            {% if author.instagram %}<a href="{{ author.instagram }}" rel="noopener noreferrer" target="_blank">Instagram</a>{% endif %}
+            {% if author.facebook %}<a href="{{ author.facebook }}" rel="noopener noreferrer" target="_blank">Facebook</a>{% endif %}
+        </div>
+    </div>
+</header>
+
+<hr>
+
+{% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_author', route_params: {username: author.username}} %}
+{% endblock %}
