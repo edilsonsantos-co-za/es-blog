@@ -41,6 +41,7 @@ class LinkedInIntegration
 
     #[ORM\OneToOne(targetEntity: User::class, inversedBy: 'linkedInIntegration')]
     #[ORM\JoinColumn(name: 'app_user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    #[ORM\Column(name: 'app_user_id', type: 'integer', options: ['unsigned' => true])]
     private User $user;
 
     public function __construct()
