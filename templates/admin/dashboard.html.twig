@@ -16,35 +16,60 @@
 {% endblock %}
 
 {% block content %}
+{% set dashboard_stats = [
+    {
+        label: 'Published',
+        value: stats.published,
+        icon: 'fa-newspaper',
+        icon_background: 'bg-gradient-success',
+        badge: 'Live',
+        badge_class: 'badge-success',
+        helper_icon: 'fa-circle-check',
+        helper_text: 'Visible on the site'
+    },
+    {
+        label: 'Drafts',
+        value: stats.draft,
+        icon: 'fa-pen-to-square',
+        icon_background: 'bg-gradient-secondary',
+        badge: 'In progress',
+        badge_class: 'badge-secondary',
+        helper_icon: 'fa-pen',
+        helper_text: 'Ready for more editing'
+    },
+    {
+        label: 'Scheduled',
+        value: stats.scheduled,
+        icon: 'fa-calendar-days',
+        icon_background: 'bg-gradient-warning',
+        badge: 'Queued',
+        badge_class: 'badge-warning',
+        helper_icon: 'fa-clock',
+        helper_text: 'Waiting for publish time'
+    }
+] %}
+
 {# Stats row #}
 <div class="row">
-    <div class="col-12 col-sm-4">
-        <div class="info-box">
-            <span class="info-box-icon bg-success elevation-1"><i class="fa fa-check-circle"></i></span>
+    {% for item in dashboard_stats %}
+    <div class="col-12 col-md-6 col-xl-4">
+        <div class="info-box shadow-sm">
+            <span class="info-box-icon {{ item.icon_background }} elevation-2">
+                <i class="fas {{ item.icon }}"></i>
+            </span>
             <div class="info-box-content">
-                <span class="info-box-text">Published</span>
-                <span class="info-box-number">{{ stats.published }}</span>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="info-box-text text-uppercase text-muted mb-0">{{ item.label }}</span>
+                    <span class="badge {{ item.badge_class }}">{{ item.badge }}</span>
+                </div>
+                <span class="info-box-number mb-1">{{ item.value }}</span>
+                <span class="text-muted text-sm">
+                    <i class="fas {{ item.helper_icon }} mr-1"></i>{{ item.helper_text }}
+                </span>
             </div>
         </div>
     </div>
-    <div class="col-12 col-sm-4">
-        <div class="info-box">
-            <span class="info-box-icon bg-secondary elevation-1"><i class="fa fa-pencil-alt"></i></span>
-            <div class="info-box-content">
-                <span class="info-box-text">Drafts</span>
-                <span class="info-box-number">{{ stats.draft }}</span>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-sm-4">
-        <div class="info-box">
-            <span class="info-box-icon bg-warning elevation-1"><i class="fa fa-clock"></i></span>
-            <div class="info-box-content">
-                <span class="info-box-text">Scheduled</span>
-                <span class="info-box-number">{{ stats.scheduled }}</span>
-            </div>
-        </div>
-    </div>
+    {% endfor %}
 </div>
 
 {# Recent posts #}
@@ -53,7 +78,7 @@
         <h3 class="card-title">My Recent Posts</h3>
         <div class="card-tools ml-auto">
             <a href="{{ path('app_admin_post_new') }}" class="btn btn-sm btn-primary">
-                <i class="fa fa-plus"></i> New Post
+                <i class="fas fa-plus"></i> New Post
             </a>
         </div>
     </div>
@@ -87,12 +112,12 @@
                     <td>{{ post.createdAt|date('Y-m-d') }}</td>
                     <td>
                         <a href="{{ path('app_admin_post_edit', {id: post.id}) }}" class="btn btn-xs btn-default">
-                            <i class="fa fa-edit"></i> Edit
+                            <i class="fas fa-pen-to-square"></i> Edit
                         </a>
                         <form method="post" action="{{ path('app_admin_post_delete', {id: post.id}) }}" style="display:inline;"
                               onsubmit="return confirm('Delete this post?')">
                             <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ post.id) }}">
-                            <button type="submit" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                            <button type="submit" class="btn btn-xs btn-danger"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>

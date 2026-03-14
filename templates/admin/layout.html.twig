@@ -1,5 +1,11 @@
 {% set admin_theme = config('admin.theme') %}
 {% set is_dark = (admin_theme is not null and admin_theme == 'dark') %}
+{% set current_route = app.request.attributes.get('_route')|default('') %}
+{% set dashboard_active = current_route == 'app_admin_dashboard' %}
+{% set add_content_active = current_route == 'app_admin_post_new' %}
+{% set posts_active = current_route starts with 'app_admin_post' or current_route starts with 'app_admin_posts' or current_route starts with 'app_admin_categor' or current_route starts with 'app_admin_page' %}
+{% set settings_active = current_route starts with 'app_admin_config' or current_route starts with 'app_admin_user' or current_route starts with 'app_admin_menu' %}
+{% set maint_active = current_route starts with 'app_admin_cache' or current_route starts with 'app_admin_linkedin' %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,6 +21,18 @@
     {% block stylesheets %}{% endblock %}
     <style>
         .error-message ul { margin:0; padding:0; list-style-type:none; }
+        .brand-link {
+            display: flex;
+            align-items: center;
+            gap: .65rem;
+        }
+        .brand-link .brand-icon {
+            width: 1.5rem;
+            font-size: 1.25rem;
+            text-align: center;
+            opacity: .85;
+            flex-shrink: 0;
+        }
         .nav-sidebar .nav-item .nav-treeview { display: none; }
         .nav-sidebar .nav-item.menu-open > .nav-treeview { display: block !important; }
         .nav-sidebar .nav-item.menu-open > .nav-link .right { transform: rotate(-90deg); transition: transform .3s ease; }
@@ -29,49 +47,48 @@
     </style>
 </head>
 <body class="hold-transition sidebar-mini {{ is_dark ? 'dark-mode' : 'light-mode' }}">
-<script>
-(function(){
-    var s=localStorage.getItem('open_dropdown_index');
-    if(s!==null){document.addEventListener('DOMContentLoaded',function(){
-        var d=document.querySelectorAll('.nav-sidebar .nav-item.has-treeview');
-        var el=d[parseInt(s)];
-        if(el){el.classList.add('menu-open');var t=el.querySelector('.nav-treeview');if(t)t.style.display='block';}
-    });}
-})();
-</script>
 <div class="wrapper">
 
 {# ── Navbar ── #}
 <nav class="main-header navbar navbar-expand {{ is_dark ? 'navbar-gray-dark navbar-dark' : 'navbar-white navbar-light' }}" id="main-navbar">
     <ul class="navbar-nav">
         <li class="nav-item">
-            <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fa fa-bars"></i></a>
+            <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
         </li>
     </ul>
     <ul class="navbar-nav ml-auto">
         <li class="nav-item">
             <a href="/" target="_blank" class="nav-link" title="View Site">
-                <i class="fa fa-external-link-alt" style="font-size:18px;"></i>
+                <i class="fas fa-external-link-alt" style="font-size:18px;"></i>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="theme-toggle" href="#" role="button" title="Toggle Dark Mode">
-                <i class="fa {{ is_dark ? 'fa-sun' : 'fa-moon' }}" id="theme-icon" style="font-size:18px;"></i>
+                <i class="fas {{ is_dark ? 'fa-sun' : 'fa-moon' }}" id="theme-icon" style="font-size:18px;"></i>
             </a>
         </li>
         <li class="nav-item dropdown">
-            <a class="nav-link" data-toggle="dropdown" href="#">
+            <a
+                class="nav-link d-flex align-items-center justify-content-center"
+                id="admin-profile-menu"
+                data-toggle="dropdown"
+                href="#"
+                role="button"
+                aria-haspopup="true"
+                aria-expanded="false"
+                title="Account"
+            >
                 {% if app.user and app.user.avatar %}
                     <img src="{{ app.user.avatar }}" class="img-circle elevation-2" style="width:30px;height:30px;object-fit:cover;" alt="Avatar">
                 {% else %}
-                    <i class="fa fa-user-circle" style="font-size:22px;"></i>
+                    <i class="fas fa-user-circle" style="font-size:22px;"></i>
                 {% endif %}
             </a>
-            <div class="dropdown-menu dropdown-menu-right">
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="admin-profile-menu">
                 <span class="dropdown-item-text text-muted">{{ app.user ? app.user.username : '' }}</span>
                 <div class="dropdown-divider"></div>
-                <a href="{{ path('app_admin_profile') }}" class="dropdown-item"><i class="fa fa-user mr-2"></i> Profile</a>
-                <a href="{{ path('app_logout') }}" class="dropdown-item"><i class="fa fa-sign-out-alt mr-2"></i> Logout</a>
+                <a href="{{ path('app_admin_profile') }}" class="dropdown-item"><i class="fas fa-user mr-2"></i> Profile</a>
+                <a href="{{ path('app_logout') }}" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
             </div>
         </li>
     </ul>
@@ -80,74 +97,73 @@
 {# ── Sidebar ── #}
 <aside class="main-sidebar sidebar-dark-primary elevation-4" id="main-sidebar">
     <a href="{{ path('app_admin_dashboard') }}" class="brand-link">
-        <i class="fa fa-pen-nib brand-image" style="font-size:24px;margin-left:8px;opacity:.8;"></i>
+        <i class="fas fa-pen-nib brand-icon" aria-hidden="true"></i>
         <span class="brand-text font-weight-light">EdFolio Blog</span>
     </a>
     <div class="sidebar">
         <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+            <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
 
                 {# Dashboard #}
                 <li class="nav-item">
-                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link {{ app.request.pathInfo == '/admin' ? 'active' : '' }}">
-                        <i class="nav-icon fa fa-tachometer-alt"></i>
+                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link {{ dashboard_active ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
                 </li>
 
                 {# Add Content #}
                 <li class="nav-item">
-                    <a href="{{ path('app_admin_post_new') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/post/new' ? 'active' : '' }}">
-                        <i class="nav-icon fa fa-plus"></i>
+                    <a href="{{ path('app_admin_post_new') }}" class="nav-link {{ add_content_active ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-plus"></i>
                         <p>Add Content</p>
                     </a>
                 </li>
 
                 {# Posts expandable #}
-                {% set posts_active = app.request.pathInfo starts with '/admin/posts' or app.request.pathInfo starts with '/admin/post/' or app.request.pathInfo starts with '/admin/categories' or app.request.pathInfo starts with '/admin/pages' %}
                 <li class="nav-item has-treeview {{ posts_active ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ posts_active ? 'active' : '' }}">
-                        <i class="nav-icon fa fa-thumbtack"></i>
-                        <p>Posts <i class="right fa fa-angle-left"></i></p>
+                        <i class="nav-icon fas fa-thumbtack"></i>
+                        <p>Posts <i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         {% if is_granted('ROLE_EDITOR') or is_granted('ROLE_ADMIN') %}
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_posts') }}" class="nav-link {{ app.request.pathInfo == '/admin/posts' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>All Posts</p>
+                            <a href="{{ path('app_admin_posts') }}" class="nav-link {{ current_route == 'app_admin_posts' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>All Posts</p>
                             </a>
                         </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_posts_mine') }}" class="nav-link {{ app.request.pathInfo == '/admin/posts/mine' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>My Posts</p>
+                            <a href="{{ path('app_admin_posts_mine') }}" class="nav-link {{ current_route == 'app_admin_posts_mine' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>My Posts</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_posts_scheduled') }}" class="nav-link {{ app.request.pathInfo == '/admin/posts/scheduled' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Scheduled</p>
+                            <a href="{{ path('app_admin_posts_scheduled') }}" class="nav-link {{ current_route == 'app_admin_posts_scheduled' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Scheduled</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_posts_drafts') }}" class="nav-link {{ app.request.pathInfo == '/admin/posts/drafts' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Drafts</p>
+                            <a href="{{ path('app_admin_posts_drafts') }}" class="nav-link {{ current_route == 'app_admin_posts_drafts' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Drafts</p>
                             </a>
                         </li>
                         {% if is_granted('ROLE_EDITOR') or is_granted('ROLE_ADMIN') %}
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_posts_popular') }}" class="nav-link {{ app.request.pathInfo == '/admin/posts/popular' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Popular</p>
+                            <a href="{{ path('app_admin_posts_popular') }}" class="nav-link {{ current_route == 'app_admin_posts_popular' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Popular</p>
                             </a>
                         </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_categories') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/categories' or app.request.pathInfo starts with '/admin/category' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Categories</p>
+                            <a href="{{ path('app_admin_categories') }}" class="nav-link {{ current_route starts with 'app_admin_categor' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Categories</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_pages') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/pages' or app.request.pathInfo starts with '/admin/page' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Pages</p>
+                            <a href="{{ path('app_admin_pages') }}" class="nav-link {{ current_route starts with 'app_admin_page' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Pages</p>
                             </a>
                         </li>
                     </ul>
@@ -155,28 +171,27 @@
 
                 {# Settings expandable #}
                 {% if is_granted('ROLE_EDITOR') or is_granted('ROLE_ADMIN') %}
-                {% set settings_active = app.request.pathInfo starts with '/admin/config' or app.request.pathInfo starts with '/admin/users' or app.request.pathInfo starts with '/admin/user' or app.request.pathInfo starts with '/admin/menu' %}
                 <li class="nav-item has-treeview {{ settings_active ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ settings_active ? 'active' : '' }}">
-                        <i class="nav-icon fa fa-cog"></i>
-                        <p>Settings <i class="right fa fa-angle-left"></i></p>
+                        <i class="nav-icon fas fa-cog"></i>
+                        <p>Settings <i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_config') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/config' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Configuration</p>
+                            <a href="{{ path('app_admin_config') }}" class="nav-link {{ current_route starts with 'app_admin_config' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Configuration</p>
                             </a>
                         </li>
                         {% if is_granted('ROLE_ADMIN') %}
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_users') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/users' or app.request.pathInfo starts with '/admin/user/' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Users</p>
+                            <a href="{{ path('app_admin_users') }}" class="nav-link {{ current_route starts with 'app_admin_user' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Users</p>
                             </a>
                         </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_menu') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/menu' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Navigation Menu</p>
+                            <a href="{{ path('app_admin_menu') }}" class="nav-link {{ current_route starts with 'app_admin_menu' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Navigation Menu</p>
                             </a>
                         </li>
                     </ul>
@@ -185,21 +200,20 @@
 
                 {# Maintenance expandable #}
                 {% if is_granted('ROLE_ADMIN') %}
-                {% set maint_active = app.request.pathInfo starts with '/admin/cache' or app.request.pathInfo starts with '/admin/linkedin' %}
                 <li class="nav-item has-treeview {{ maint_active ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ maint_active ? 'active' : '' }}">
-                        <i class="nav-icon fa fa-tools"></i>
-                        <p>Maintenance <i class="right fa fa-angle-left"></i></p>
+                        <i class="nav-icon fas fa-tools"></i>
+                        <p>Maintenance <i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_cache_clear') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/cache' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>Clear Cache</p>
+                            <a href="{{ path('app_admin_cache_clear') }}" class="nav-link {{ current_route starts with 'app_admin_cache' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>Clear Cache</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{{ path('app_admin_linkedin') }}" class="nav-link {{ app.request.pathInfo starts with '/admin/linkedin' ? 'active' : '' }}">
-                                <i class="fa fa-circle nav-icon" style="font-size:.5rem;"></i><p>LinkedIn</p>
+                            <a href="{{ path('app_admin_linkedin') }}" class="nav-link {{ current_route starts with 'app_admin_linkedin' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon" style="font-size:.5rem;"></i><p>LinkedIn</p>
                             </a>
                         </li>
                     </ul>
@@ -249,7 +263,9 @@
 </div>{# /.wrapper #}
 
 <script src="{{ asset('assets/admin/js/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/admin/js/bootstrap.min.js') }}"></script>
 <script src="{{ asset('assets/admin/js/adminlte.min.js') }}"></script>
+<script src="{{ asset('assets/admin/js/admin-sidebar.js') }}"></script>
 <script>
 document.getElementById('theme-toggle').addEventListener('click', function(e) {
     e.preventDefault();
@@ -260,14 +276,6 @@ document.getElementById('theme-toggle').addEventListener('click', function(e) {
         headers: {'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
         body: '_token={{ csrf_token('config_general') }}&section=general&admin_theme=' + (isDark ? 'light' : 'dark')
     }).then(function() { window.location.reload(); });
-});
-// Persist sidebar dropdown state
-document.querySelectorAll('.nav-sidebar .nav-item.has-treeview > .nav-link').forEach(function(link, idx) {
-    link.addEventListener('click', function() {
-        var item = this.parentElement;
-        var isOpen = item.classList.contains('menu-open');
-        localStorage.setItem('open_dropdown_index', isOpen ? '' : idx);
-    });
 });
 </script>
 {% block javascripts %}{% endblock %}
