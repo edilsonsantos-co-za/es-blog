@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Twig;
 
+use App\Service\AppVersion;
 use App\Service\MenuService;
 use App\Service\PostService;
 use App\Service\SiteConfigService;
@@ -29,6 +30,7 @@ use Twig\TwigFunction;
  *   {{ recent_posts }} (last 5 published posts)
  *   {{ tag_cloud }}   (all tags with counts)
  *   {{ categories }}  (all categories)
+ *   {{ app_version }}, {{ app_release_tag }}
  *
  * Functions:
  *   {{ config('site.title') }}
@@ -47,10 +49,13 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
         private readonly PostService $posts,
         private readonly TagService $tags,
         private readonly CategoryService $categories,
+        private readonly AppVersion $appVersion,
     ) {}
 
     public function getGlobals(): array
     {
+        $version = $this->appVersion->getVersion();
+
         return [
             'site_title'       => $this->config->get('site.title', 'EdFolio Blog'),
             'site_description' => $this->config->get('site.description', ''),
@@ -63,6 +68,8 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             'recent_posts'     => $this->posts->findLatest(5),
             'all_categories'   => $this->categories->findAll(),
             'tag_cloud'        => $this->tags->findAllWithCounts(),
+            'app_version'      => $version,
+            'app_release_tag'  => $this->appVersion->getReleaseTag(),
         ];
     }
 

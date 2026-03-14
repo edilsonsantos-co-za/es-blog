@@ -23,6 +23,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Service\AppVersion:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     # Twig BlogExtension — tagged automatically via autoconfigure (GlobalsInterface)
     App\Twig\BlogExtension:
         tags: ['twig.extension']
