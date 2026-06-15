@@ -85,8 +85,15 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="9" class="text-center text-muted py-4">
-                        No posts found. <a href="{{ path('app_admin_post_new') }}">Create one now</a>.
+                    <td colspan="9" class="text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="fa fa-inbox fa-2x mb-2"></i>
+                            <p class="mb-1 font-weight-bold text-dark">No posts found</p>
+                            <p class="mb-0">Create a new post or adjust your filters to see more content.</p>
+                        </div>
+                        <a href="{{ path('app_admin_post_new') }}" class="btn btn-sm btn-primary">
+                            <i class="fa fa-plus"></i> New Post
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}

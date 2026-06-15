@@ -56,7 +56,15 @@
         </div>
     </article>
     {% else %}
-    <p class="no-posts">No posts found.</p>
+    <div class="empty-state">
+        <p class="empty-state-eyebrow">Nothing to show yet</p>
+        <h2>No posts found</h2>
+        <p>Try a different search, browse the latest posts, or check back soon for new writing.</p>
+        <div class="empty-state-actions">
+            <a class="empty-state-link" href="{{ path('app_blog_index') }}">Browse latest posts</a>
+            <a class="empty-state-secondary" href="{{ path('app_blog_search') }}">Search again</a>
+        </div>
+    </div>
     {% endfor %}
 </div>
 

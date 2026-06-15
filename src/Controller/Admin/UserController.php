@@ -42,10 +42,15 @@ class UserController extends AbstractController
             $username = trim($request->request->get('username', ''));
             $email    = trim($request->request->get('email', ''));
             $password = $request->request->get('password', '');
-            $roleStr  = $request->request->get('role', UserRole::Author->value);
+            $roleStr  = (string) $request->request->get('role', UserRole::Author->value);
 
             if ($username === '' || $email === '' || $password === '') {
                 $this->addFlash('error', 'Username, email and password are required.');
+                return $this->redirectToRoute('app_admin_user_new');
+            }
+
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                $this->addFlash('error', 'Please enter a valid email address.');
                 return $this->redirectToRoute('app_admin_user_new');
             }
 
@@ -60,7 +65,12 @@ class UserController extends AbstractController
             }
 
             try {
-                $role = UserRole::from($roleStr);
+                $role = UserRole::tryFrom($roleStr);
+                if ($role === null) {
+                    $this->addFlash('error', 'Invalid user role.');
+                    return $this->redirectToRoute('app_admin_user_new');
+                }
+
                 $this->userService->create($username, $password, $role, $email);
                 $this->addFlash('success', 'User created successfully.');
                 return $this->redirectToRoute('app_admin_users');
@@ -94,9 +104,24 @@ class UserController extends AbstractController
 
             try {
                 $email = trim($request->request->get('email', ''));
+                if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                    $this->addFlash('error', 'Please enter a valid email address.');
+                    return $this->redirectToRoute('app_admin_user_edit', ['id' => $id]);
+                }
+
                 if ($email !== '' && $this->userService->emailExists($email, $user)) {
                     $this->addFlash('error', 'Email already registered to another user.');
                     return $this->redirectToRoute('app_admin_user_edit', ['id' => $id]);
+                }
+
+                $role = null;
+                $roleStr = (string) $request->request->get('role', '');
+                if ($roleStr !== '') {
+                    $role = UserRole::tryFrom($roleStr);
+                    if ($role === null) {
+                        $this->addFlash('error', 'Invalid user role.');
+                        return $this->redirectToRoute('app_admin_user_edit', ['id' => $id]);
+                    }
                 }
 
                 $this->userService->updateProfile($user, [
@@ -104,9 +129,7 @@ class UserController extends AbstractController
                 ]);
 
                 // Role change (admin only)
-                $roleStr = $request->request->get('role', '');
-                if ($roleStr !== '') {
-                    $role = UserRole::from($roleStr);
+                if ($role !== null) {
                     $this->denyAccessUnlessGranted(UserVoter::CHANGE_ROLE, $user);
                     $this->userService->changeRole($user, $role);
                 }
@@ -170,8 +193,19 @@ class UserController extends AbstractController
             }
 
             try {
+                $email = trim($request->request->get('email', ''));
+                if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                    $this->addFlash('error', 'Please enter a valid email address.');
+                    return $this->redirectToRoute('app_admin_profile');
+                }
+
+                if ($email !== '' && $this->userService->emailExists($email, $user)) {
+                    $this->addFlash('error', 'Email already registered to another user.');
+                    return $this->redirectToRoute('app_admin_profile');
+                }
+
                 $profileData = [
-                    'email'     => trim($request->request->get('email', '')),
+                    'email'     => $email,
                     'about'     => $request->request->get('about', ''),
                     'avatar'    => trim($request->request->get('avatar', '')),
                     'facebook'  => trim($request->request->get('facebook', '')),

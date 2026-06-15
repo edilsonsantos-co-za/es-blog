@@ -17,7 +17,14 @@
     <p class="search-results-count">Found {{ posts.totalItemCount }} result{{ posts.totalItemCount != 1 ? 's' : '' }} for "<strong>{{ q }}</strong>".</p>
     {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_search', route_params: {q: q}} %}
     {% else %}
-    <p class="no-posts">No results found for "<strong>{{ q }}</strong>". Try different keywords.</p>
+    <div class="empty-state">
+        <p class="empty-state-eyebrow">No matches</p>
+        <h2>No results for “{{ q }}”</h2>
+        <p>Try a shorter phrase, use different keywords, or browse the latest posts instead.</p>
+        <div class="empty-state-actions">
+            <a class="empty-state-link" href="{{ path('app_blog_index') }}">Browse latest posts</a>
+        </div>
+    </div>
     {% endif %}
 {% endif %}
 {% endblock %}

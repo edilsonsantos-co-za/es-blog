@@ -122,7 +122,18 @@
                     </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="5" class="text-center text-muted">No posts yet. <a href="{{ path('app_admin_post_new') }}">Create your first post</a>.</td></tr>
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="text-muted mb-3">
+                            <i class="fas fa-newspaper fa-2x mb-2"></i>
+                            <p class="mb-1 font-weight-bold text-dark">No recent posts yet</p>
+                            <p class="mb-0">Start with a draft and it will appear here for quick access.</p>
+                        </div>
+                        <a href="{{ path('app_admin_post_new') }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Create your first post
+                        </a>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>

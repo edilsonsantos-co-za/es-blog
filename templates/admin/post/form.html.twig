@@ -167,13 +167,9 @@
                     </button>
                     <a href="{{ path(cancel_route) }}" class="btn btn-default btn-block mt-1">Cancel</a>
                     {% if is_edit %}
-                    <form method="post" action="{{ page_mode ? path('app_admin_page_delete', {id: post.id}) : path('app_admin_post_delete', {id: post.id}) }}"
-                          class="mt-2" onsubmit="return confirm('Permanently delete this {{ page_mode ? 'page' : 'post' }}?')">
-                        <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ post.id) }}">
-                        <button type="submit" class="btn btn-danger btn-block btn-sm">
-                            <i class="fa fa-trash"></i> Delete
-                        </button>
-                    </form>
+                    <button type="submit" form="post-delete-form" class="btn btn-danger btn-block btn-sm mt-2">
+                        <i class="fa fa-trash"></i> Delete
+                    </button>
                     {% endif %}
                 </div>
             </div>
@@ -218,6 +214,12 @@
         </div>
     </div>
 </form>
+{% if is_edit %}
+<form method="post" action="{{ page_mode ? path('app_admin_page_delete', {id: post.id}) : path('app_admin_post_delete', {id: post.id}) }}"
+      id="post-delete-form" onsubmit="return confirm('Permanently delete this {{ page_mode ? 'page' : 'post' }}?')">
+    <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ post.id) }}">
+</form>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}

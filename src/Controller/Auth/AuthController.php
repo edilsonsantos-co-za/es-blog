@@ -53,9 +53,9 @@ class AuthController extends AbstractController
         TotpAuthenticatorInterface $totpAuthenticator,
         EntityManagerInterface $em,
     ): Response {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /** @var User $user */
         $user = $this->getUser();
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         if ($request->isMethod('POST')) {
             $code = $request->request->get('code', '');
@@ -88,9 +88,9 @@ class AuthController extends AbstractController
         UserPasswordHasherInterface $hasher,
         EntityManagerInterface $em,
     ): Response {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
         /** @var User $user */
         $user = $this->getUser();
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
         if (!$this->isCsrfTokenValid('mfa_disable', $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid CSRF token.');

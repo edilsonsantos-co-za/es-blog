@@ -47,8 +47,8 @@
             <ul>
                 <li><a href="{{ path('app_blog_index') }}">Home</a></li>
                 {% for item in menu_items %}
-                    <li>
-                        <a href="{{ item.url }}">{{ item.label }}</a>
+                    <li{% if item.children is defined and item.children|length > 0 %} class="has-sub-menu"{% endif %}>
+                        <a href="{{ item.url }}"{% if item.children is defined and item.children|length > 0 %} aria-haspopup="true"{% endif %}>{{ item.label }}</a>
                         {% if item.children is defined and item.children|length > 0 %}
                         <ul class="sub-menu">
                             {% for child in item.children %}

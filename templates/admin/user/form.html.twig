@@ -86,16 +86,18 @@
                     </button>
                     <a href="{{ path('app_admin_users') }}" class="btn btn-default ml-2">Cancel</a>
                     {% if not is_new and is_granted('USER_DELETE', user) %}
-                    <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}"
-                          class="d-inline ml-2" onsubmit="return confirm('Delete user {{ user.username }}?')">
-                        <input type="hidden" name="_token" value="{{ csrf_token('user_delete_' ~ user.id) }}">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fa fa-trash"></i> Delete User
-                        </button>
-                    </form>
+                    <button type="submit" form="user-delete-form" class="btn btn-danger ml-2">
+                        <i class="fa fa-trash"></i> Delete User
+                    </button>
                     {% endif %}
                 </div>
             </form>
+            {% if not is_new and is_granted('USER_DELETE', user) %}
+            <form method="post" action="{{ path('app_admin_user_delete', {id: user.id}) }}"
+                  id="user-delete-form" onsubmit="return confirm('Delete user {{ user.username }}?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('user_delete_' ~ user.id) }}">
+            </form>
+            {% endif %}
         </div>
     </div>
 </div>
