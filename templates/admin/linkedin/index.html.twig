@@ -5,6 +5,7 @@
 {% block page_header %}
 <div class="row mb-2">
     <div class="col-sm-6">
+        <p class="admin-kicker">Distribution</p>
         <h1 class="m-0">LinkedIn Integration</h1>
     </div>
     <div class="col-sm-6">
@@ -20,7 +21,7 @@
 <div class="row">
     <div class="col-lg-8">
         {# Status card #}
-        <div class="card">
+        <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="fab fa-linkedin text-primary"></i> Connection Status
@@ -32,7 +33,7 @@
                     <strong>Coming soon</strong> — LinkedIn OAuth integration is planned for a future release.
                 </div>
 
-                <div class="d-flex align-items-center p-3 bg-light rounded">
+                <div class="d-flex align-items-center admin-panel-note">
                     <div class="mr-3">
                         <i class="fab fa-linkedin fa-3x text-secondary"></i>
                     </div>
@@ -45,9 +46,9 @@
         </div>
 
         {# Planned features card #}
-        <div class="card card-outline card-secondary">
+        <div class="card card-outline card-secondary admin-card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fa fa-list-check"></i> Planned Features</h3>
+                <h3 class="card-title"><i class="fa fa-list"></i> Planned Features</h3>
             </div>
             <div class="card-body">
                 <ul class="list-unstyled">
@@ -62,7 +63,7 @@
     </div>
 
     <div class="col-lg-4">
-        <div class="card card-info">
+        <div class="card card-info admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-info-circle"></i> Setup Guide</h3>
             </div>

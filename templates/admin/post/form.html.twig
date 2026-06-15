@@ -16,6 +16,7 @@
 {% block page_header %}
 <div class="row mb-2">
     <div class="col-sm-6">
+        <p class="admin-kicker">{{ page_mode ? 'Pages' : 'Posts' }}</p>
         <h1 class="m-0">{{ form_title }}</h1>
     </div>
     <div class="col-sm-6">
@@ -37,8 +38,9 @@
     <div class="row">
         {# ── Left column: main content ── #}
         <div class="col-lg-8">
-            <div class="card">
+            <div class="card admin-card">
                 <div class="card-body">
+                    <h3 class="admin-section-title"><i class="fa fa-feather-alt" aria-hidden="true"></i> Main content</h3>
                     {# Title #}
                     <div class="form-group">
                         <label for="title">Title <span class="text-danger">*</span></label>
@@ -80,7 +82,7 @@
             </div>
 
             {# Media fields (collapsed by default) #}
-            <div class="card card-secondary card-outline">
+            <div class="card card-secondary card-outline admin-card">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fa fa-photo-video"></i> Media Fields</h3>
                     <div class="card-tools">
@@ -122,7 +124,7 @@
         {# ── Right column: meta ── #}
         <div class="col-lg-4">
             {# Publish card #}
-            <div class="card">
+            <div class="card admin-card admin-sticky-panel">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fa fa-paper-plane"></i> Publish</h3>
                 </div>
@@ -176,7 +178,7 @@
 
             {# Category (not shown in page_mode) #}
             {% if not page_mode %}
-            <div class="card">
+            <div class="card admin-card">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fa fa-folder"></i> Category</h3>
                 </div>
@@ -197,7 +199,7 @@
 
             {# Tags (not shown in page_mode) #}
             {% if not page_mode %}
-            <div class="card">
+            <div class="card admin-card">
                 <div class="card-header">
                     <h3 class="card-title"><i class="fa fa-tags"></i> Tags</h3>
                 </div>

@@ -3,10 +3,13 @@
 {% block title %}Category: {{ category.title }} — {{ site_title }}{% endblock %}
 
 {% block content %}
-<header class="archive-header">
-    <h1>Category: {{ category.title }}</h1>
+<header class="archive-header taxonomy-header">
+    <p class="archive-eyebrow">Category</p>
+    <h1>{{ category.title }}</h1>
     {% if category.description %}
     <p class="archive-description">{{ category.description }}</p>
+    {% else %}
+    <p class="archive-description">Posts grouped under {{ category.title }}.</p>
     {% endif %}
 </header>
 

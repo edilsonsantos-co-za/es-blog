@@ -8,6 +8,7 @@
 {% block page_header %}
 <div class="row mb-2">
     <div class="col-sm-6">
+        <p class="admin-kicker">Account management</p>
         <h1 class="m-0">{{ page_title }}</h1>
     </div>
     <div class="col-sm-6">
@@ -23,7 +24,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-6">
-        <div class="card">
+        <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="fa fa-{{ is_new ? 'user-plus' : 'user-edit' }}"></i> {{ page_title }}
@@ -32,7 +33,9 @@
             <form method="post" action="{{ is_new ? path('app_admin_user_new') : path('app_admin_user_edit', {id: user.id}) }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('user_form') }}">
                 <div class="card-body">
+                    <p class="admin-form-help mb-4">Set identity, contact details, role, and sign-in credentials for this admin account.</p>
 
+                    <div class="admin-form-grid">
                     {# Username (only for new users) #}
                     {% if is_new %}
                     <div class="form-group">
@@ -65,6 +68,7 @@
                             <option value="editor"  {{ (user and user.role.value == 'editor')  ? 'selected' : '' }}>Editor</option>
                             <option value="admin"   {{ (user and user.role.value == 'admin')   ? 'selected' : '' }}>Administrator</option>
                         </select>
+                    </div>
                     </div>
 
                     <hr>

@@ -5,6 +5,7 @@
 {% block page_header %}
 <div class="row mb-2">
     <div class="col-sm-6">
+        <p class="admin-kicker">System settings</p>
         <h1 class="m-0">Configuration</h1>
     </div>
     <div class="col-sm-6">
@@ -20,9 +21,9 @@
 {% set tab = active_tab|default('general') %}
 {% set c = config|default({}) %}
 
-<div class="card">
+<div class="card admin-card">
     <div class="card-header p-0 pt-1">
-        <ul class="nav nav-tabs" id="config-tabs">
+        <ul class="nav nav-tabs" id="config-tabs" role="tablist">
             <li class="nav-item">
                 <a href="{{ path('app_admin_config') }}" class="nav-link {{ tab == 'general' ? 'active' : '' }}">
                     <i class="fa fa-globe"></i> General
@@ -51,6 +52,7 @@
     <form method="post" action="{{ path('app_admin_config') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('config_general') }}">
         <div class="card-body">
+            <h3 class="admin-section-title"><i class="fa fa-globe" aria-hidden="true"></i> Site identity and display</h3>
             <div class="row">
                 <div class="col-lg-6">
                     <div class="form-group">
@@ -129,6 +131,7 @@
     <form method="post" action="{{ path('app_admin_config_reading') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('config_reading') }}">
         <div class="card-body">
+            <h3 class="admin-section-title"><i class="fa fa-book-open" aria-hidden="true"></i> Reading experience</h3>
             <div class="row">
                 <div class="col-lg-6">
                     <div class="form-group">
@@ -167,6 +170,7 @@
     <form method="post" action="{{ path('app_admin_config_writing') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('config_writing') }}">
         <div class="card-body">
+            <h3 class="admin-section-title"><i class="fa fa-pen" aria-hidden="true"></i> Writing and integrations</h3>
             <div class="row">
                 <div class="col-lg-6">
                     <div class="form-group">
@@ -220,6 +224,7 @@
     <form method="post" action="{{ path('app_admin_config_security') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('config_security') }}">
         <div class="card-body">
+            <h3 class="admin-section-title"><i class="fa fa-lock" aria-hidden="true"></i> Login protection</h3>
             <div class="alert alert-warning">
                 <i class="fa fa-exclamation-triangle"></i>
                 <strong>Warning:</strong> Misconfiguring security settings may lock you out. Proceed with care.

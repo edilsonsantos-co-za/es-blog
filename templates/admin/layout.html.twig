@@ -18,53 +18,41 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/css/solid.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/brands.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/admin/css/adminlte.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/admin/css/admin-overhaul.css') }}">
     {% block stylesheets %}{% endblock %}
     <style>
         .error-message ul { margin:0; padding:0; list-style-type:none; }
-        .brand-link {
-            display: flex;
-            align-items: center;
-            gap: .65rem;
-        }
-        .brand-link .brand-icon {
-            width: 1.5rem;
-            font-size: 1.25rem;
-            text-align: center;
-            opacity: .85;
-            flex-shrink: 0;
-        }
         .nav-sidebar .nav-item .nav-treeview { display: none; }
         .nav-sidebar .nav-item.menu-open > .nav-treeview { display: block !important; }
         .nav-sidebar .nav-item.menu-open > .nav-link .right { transform: rotate(-90deg); transition: transform .3s ease; }
         .nav-sidebar .nav-item .nav-link .right { transition: transform .3s ease; }
-        .nav-sidebar .nav-link.active { background-color: rgba(255,255,255,.1) !important; color:#fff !important; }
-        .sidebar-dark-primary .nav-sidebar .nav-link.active,
-        .light-mode .nav-sidebar .nav-link.active { background-color: #007bff !important; color:#fff !important; }
-        .nav-treeview .nav-link.active { background-color: rgba(255,255,255,.15) !important; padding-left:2rem !important; border-left:3px solid #007bff; }
         .badge-published { background:#28a745; }
         .badge-draft { background:#6c757d; }
         .badge-scheduled { background:#fd7e14; }
     </style>
 </head>
-<body class="hold-transition sidebar-mini {{ is_dark ? 'dark-mode' : 'light-mode' }}">
+<body class="hold-transition sidebar-mini admin-shell {{ is_dark ? 'dark-mode' : 'light-mode' }}">
+<a href="#admin-main-content" class="skip-link">Skip to main content</a>
 <div class="wrapper">
 
 {# ── Navbar ── #}
 <nav class="main-header navbar navbar-expand {{ is_dark ? 'navbar-gray-dark navbar-dark' : 'navbar-white navbar-light' }}" id="main-navbar">
     <ul class="navbar-nav">
         <li class="nav-item">
-            <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Toggle navigation"><i class="fas fa-bars"></i></a>
         </li>
     </ul>
     <ul class="navbar-nav ml-auto">
         <li class="nav-item">
             <a href="/" target="_blank" class="nav-link" title="View Site">
                 <i class="fas fa-external-link-alt" style="font-size:18px;"></i>
+                <span class="sr-only">View site</span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" id="theme-toggle" href="#" role="button" title="Toggle Dark Mode">
                 <i class="fas {{ is_dark ? 'fa-sun' : 'fa-moon' }}" id="theme-icon" style="font-size:18px;"></i>
+                <span class="sr-only">Toggle dark mode</span>
             </a>
         </li>
         <li class="nav-item dropdown">
@@ -79,7 +67,7 @@
                 title="Account"
             >
                 {% if app.user and app.user.avatar %}
-                    <img src="{{ app.user.avatar }}" class="img-circle elevation-2" style="width:30px;height:30px;object-fit:cover;" alt="Avatar">
+                    <img src="{{ app.user.avatar }}" class="admin-avatar elevation-1" alt="{{ app.user.username }} avatar">
                 {% else %}
                     <i class="fas fa-user-circle" style="font-size:22px;"></i>
                 {% endif %}
@@ -226,7 +214,7 @@
 </aside>
 
 {# ── Content Wrapper ── #}
-<div class="content-wrapper">
+<main class="content-wrapper" id="admin-main-content" tabindex="-1">
     <div class="content-header">
         <div class="container-fluid">
             {% block page_header %}{% endblock %}
@@ -250,7 +238,7 @@
             {% block content %}{% endblock %}
         </div>
     </section>
-</div>
+</main>
 
 {# ── Footer ── #}
 <footer class="main-footer">

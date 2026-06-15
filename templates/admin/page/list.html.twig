@@ -5,6 +5,7 @@
 {% block page_header %}
 <div class="row mb-2">
     <div class="col-sm-6">
+        <p class="admin-kicker">Site structure</p>
         <h1 class="m-0">Static Pages</h1>
     </div>
     <div class="col-sm-6">
@@ -17,9 +18,12 @@
 {% endblock %}
 
 {% block content %}
-<div class="card">
+<div class="card admin-table-card">
     <div class="card-header d-flex">
-        <h3 class="card-title">All Pages</h3>
+        <div>
+            <p class="admin-kicker">Navigation content</p>
+            <h3 class="card-title mb-0">All Pages</h3>
+        </div>
         <div class="card-tools ml-auto">
             <a href="{{ path('app_admin_page_new') }}" class="btn btn-sm btn-primary">
                 <i class="fa fa-plus"></i> New Page
@@ -27,7 +31,7 @@
         </div>
     </div>
     <div class="card-body p-0">
-        <table class="table table-striped table-hover">
+        <table class="table table-striped table-hover admin-table">
             <thead>
                 <tr>
                     <th>Title</th>
@@ -44,11 +48,11 @@
                     {% if page.type.value == 'page' %}
                         {% set current_page = page %}
                     <tr class="table-active">
-                        <td><strong><a href="{{ path('app_admin_page_edit', {id: page.id}) }}">{{ page.title }}</a></strong></td>
+                        <td><strong><a class="admin-title-link" href="{{ path('app_admin_page_edit', {id: page.id}) }}">{{ page.title }}</a></strong></td>
                     {% else %}
                     <tr>
                         <td style="padding-left:2rem;"><i class="fa fa-angle-right text-muted mr-1"></i>
-                            <a href="{{ path('app_admin_page_edit', {id: page.id}) }}">{{ page.title }}</a>
+                            <a class="admin-title-link" href="{{ path('app_admin_page_edit', {id: page.id}) }}">{{ page.title }}</a>
                         </td>
                     {% endif %}
                         <td><span class="badge badge-info">{{ page.type.label() }}</span></td>
@@ -61,23 +65,30 @@
                         </td>
                         <td><code>{{ page.slug }}</code></td>
                         <td>{{ page.createdAt|date('Y-m-d') }}</td>
-                        <td style="white-space:nowrap;">
+                        <td>
+                            <div class="admin-actions">
                             <a href="{{ path('app_admin_page_edit', {id: page.id}) }}" class="btn btn-xs btn-default">
                                 <i class="fa fa-edit"></i> Edit
                             </a>
                             {% if is_granted('POST_DELETE', page) %}
-                            <form method="post" action="{{ path('app_admin_page_delete', {id: page.id}) }}" style="display:inline;"
+                            <form method="post" action="{{ path('app_admin_page_delete', {id: page.id}) }}"
                                   onsubmit="return confirm('Delete this page?')">
                                 <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ page.id) }}">
-                                <button type="submit" class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
+                                <button type="submit" class="btn btn-xs btn-danger" aria-label="Delete {{ page.title }}"><i class="fa fa-trash" aria-hidden="true"></i></button>
                             </form>
                             {% endif %}
+                            </div>
                         </td>
                     </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-4">
-                        No pages yet. <a href="{{ path('app_admin_page_new') }}">Create your first page</a>.
+                    <td colspan="6">
+                        <div class="admin-empty-state">
+                            <i class="fa fa-file-alt" aria-hidden="true"></i>
+                            <p class="mb-1">No pages yet</p>
+                            <p class="mb-0">Create static pages for profile, landing, or reference content.</p>
+                            <a href="{{ path('app_admin_page_new') }}" class="btn btn-sm btn-primary mt-3">Create your first page</a>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}

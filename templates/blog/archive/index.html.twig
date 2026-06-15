@@ -1,12 +1,15 @@
 {% extends 'blog/layout.html.twig' %}
 
-{% set heading = month ? "Archive: #{year}/#{month|format('%02d', month)}" : "Archive: #{year}" %}
+{% set archive_month = month ? (month < 10 ? '0' ~ month : month) : null %}
+{% set heading = month ? "Archive: #{year}/#{archive_month}" : "Archive: #{year}" %}
 
 {% block title %}{{ heading }} — {{ site_title }}{% endblock %}
 
 {% block content %}
 <header class="archive-header">
+    <p class="archive-eyebrow">Archive</p>
     <h1>{{ heading }}</h1>
+    <p class="archive-description">A chronological view of published posts from this period.</p>
 </header>
 
 {% set route_params = month ? {year: year, month: month} : {year: year} %}

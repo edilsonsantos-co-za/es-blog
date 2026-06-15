@@ -3,8 +3,10 @@
 {% block title %}Tag: {{ tag.name }} — {{ site_title }}{% endblock %}
 
 {% block content %}
-<header class="archive-header">
-    <h1>Tag: {{ tag.name }}</h1>
+<header class="archive-header taxonomy-header">
+    <p class="archive-eyebrow">Tagged with</p>
+    <h1><span class="hash-mark">#</span>{{ tag.name }}</h1>
+    <p class="archive-description">A focused stream of posts connected by this topic.</p>
 </header>
 
 {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_tag', route_params: {slug: tag.slug}} %}

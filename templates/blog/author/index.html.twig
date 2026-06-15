@@ -6,8 +6,11 @@
 <header class="author-header">
     {% if author.avatar %}
     <img src="{{ author.avatar }}" alt="{{ author.username }}" class="author-avatar-large">
+    {% else %}
+    <div class="author-avatar-large author-avatar-fallback" aria-hidden="true">{{ author.username|first|upper }}</div>
     {% endif %}
     <div class="author-header-info">
+        <p class="archive-eyebrow">Author</p>
         <h1>{{ author.username }}</h1>
         {% if author.about %}
         <p class="author-bio">{{ author.about }}</p>
@@ -23,7 +26,10 @@
     </div>
 </header>
 
-<hr>
+<section class="section-heading compact" aria-labelledby="author-posts-heading">
+    <p>Published by {{ author.username }}</p>
+    <h2 id="author-posts-heading">Posts</h2>
+</section>
 
 {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_author', route_params: {username: author.username}} %}
 {% endblock %}

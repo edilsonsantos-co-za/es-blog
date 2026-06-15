@@ -24,8 +24,16 @@
 {% block content %}
 <article class="static-page">
     <header class="page-header">
+        <p class="archive-eyebrow">Page</p>
         <h1 class="page-title">{{ post.title }}</h1>
+        {% if post.description %}<p class="page-description">{{ post.description }}</p>{% endif %}
     </header>
+
+    {% if post.image %}
+    <div class="post-cover page-cover">
+        <img src="{{ post.image }}" alt="{{ post.title }}">
+    </div>
+    {% endif %}
 
     <div class="post-body">
         {{ post.body|markdown }}

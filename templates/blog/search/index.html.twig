@@ -3,18 +3,21 @@
 {% block title %}Search{% if q %}: {{ q }}{% endif %} — {{ site_title }}{% endblock %}
 
 {% block content %}
-<header class="archive-header">
-    <h1>Search</h1>
+<header class="archive-header search-header">
+    <p class="archive-eyebrow">Search</p>
+    <h1>Find useful writing faster</h1>
+    <p class="archive-description">Search posts by topic, project, release note, or implementation detail.</p>
 </header>
 
 <form action="{{ path('app_blog_search') }}" method="get" class="search-form search-form-large">
-    <input type="text" name="q" value="{{ q }}" placeholder="Search posts…" class="search-input" autofocus>
+    <label class="sr-only" for="search-query">Search posts</label>
+    <input id="search-query" type="text" name="q" value="{{ q }}" placeholder="Try Symfony, release workflow, Docker…" class="search-input" autofocus>
     <button type="submit" class="search-btn">Search</button>
 </form>
 
 {% if q %}
     {% if posts and posts.totalItemCount > 0 %}
-    <p class="search-results-count">Found {{ posts.totalItemCount }} result{{ posts.totalItemCount != 1 ? 's' : '' }} for "<strong>{{ q }}</strong>".</p>
+    <p class="search-results-count">Found {{ posts.totalItemCount }} result{{ posts.totalItemCount != 1 ? 's' : '' }} for “<strong>{{ q }}</strong>”.</p>
     {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_search', route_params: {q: q}} %}
     {% else %}
     <div class="empty-state">
@@ -22,9 +25,15 @@
         <h2>No results for “{{ q }}”</h2>
         <p>Try a shorter phrase, use different keywords, or browse the latest posts instead.</p>
         <div class="empty-state-actions">
-            <a class="empty-state-link" href="{{ path('app_blog_index') }}">Browse latest posts</a>
+            <a class="btn btn-primary" href="{{ path('app_blog_index') }}">Browse latest posts</a>
         </div>
     </div>
     {% endif %}
+{% else %}
+    <div class="empty-state quiet">
+        <p class="empty-state-eyebrow">Ready when you are</p>
+        <h2>Enter a search term to begin</h2>
+        <p>Use the field above to search published posts while keeping the experience fast and server-rendered.</p>
+    </div>
 {% endif %}
 {% endblock %}

@@ -5,6 +5,7 @@
 {% block page_header %}
 <div class="row mb-2">
     <div class="col-sm-6">
+        <p class="admin-kicker">Personal settings</p>
         <h1 class="m-0">My Profile</h1>
     </div>
     <div class="col-sm-6">
@@ -20,13 +21,14 @@
 <div class="row">
     {# ── Profile form ── #}
     <div class="col-lg-8">
-        <div class="card">
+        <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-user"></i> Profile Details</h3>
             </div>
             <form method="post" action="{{ path('app_admin_profile') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('profile_form') }}">
                 <div class="card-body">
+                    <p class="admin-form-help mb-4">Keep your byline, biography, avatar, and public social links up to date.</p>
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="form-group">
@@ -141,7 +143,7 @@
 
     {# ── MFA card ── #}
     <div class="col-lg-4">
-        <div class="card {{ user.mfaEnabled ? 'card-success' : 'card-secondary' }}">
+        <div class="card admin-card {{ user.mfaEnabled ? 'card-success' : 'card-secondary' }}">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-shield-alt"></i> Two-Factor Authentication</h3>
             </div>
@@ -179,7 +181,7 @@
         </div>
 
         {# Account info card #}
-        <div class="card">
+        <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-info-circle"></i> Account Info</h3>
             </div>

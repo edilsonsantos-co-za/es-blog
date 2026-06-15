@@ -25,21 +25,28 @@
     <link rel="alternate" type="application/rss+xml" title="{{ site_title }} RSS Feed" href="{{ path('app_blog_feed') }}">
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 
 <header class="site-header">
-    <div class="container">
+    <div class="container header-grid">
         <div class="site-branding">
             {% if site_logo %}
-                <a href="{{ path('app_blog_index') }}" class="site-logo-link">
+                <a href="{{ path('app_blog_index') }}" class="site-logo-link" aria-label="{{ site_title }} home">
                     <img src="{{ site_logo }}" alt="{{ site_title }}" class="site-logo">
                 </a>
             {% else %}
-                <a href="{{ path('app_blog_index') }}" class="site-title-link">
-                    <h1 class="site-title">{{ site_title }}</h1>
+                <a href="{{ path('app_blog_index') }}" class="site-title-link" aria-label="{{ site_title }} home">
+                    <span class="site-mark" aria-hidden="true">E</span>
+                    <span class="site-title-wrap">
+                        <span class="site-title">{{ site_title }}</span>
+                        {% if site_description %}
+                            <span class="site-description">{{ site_description }}</span>
+                        {% endif %}
+                    </span>
                 </a>
             {% endif %}
-            {% if site_description %}
-                <p class="site-description">{{ site_description }}</p>
+            {% if site_logo and site_description %}
+                <p class="site-description site-description-logo">{{ site_description }}</p>
             {% endif %}
         </div>
 
@@ -48,7 +55,7 @@
                 <li><a href="{{ path('app_blog_index') }}">Home</a></li>
                 {% for item in menu_items %}
                     <li{% if item.children is defined and item.children|length > 0 %} class="has-sub-menu"{% endif %}>
-                        <a href="{{ item.url }}"{% if item.children is defined and item.children|length > 0 %} aria-haspopup="true"{% endif %}>{{ item.label }}</a>
+                        <a href="{{ item.url }}"{% if item.children is defined and item.children|length > 0 %} aria-haspopup="true" aria-expanded="false"{% endif %}>{{ item.label }}</a>
                         {% if item.children is defined and item.children|length > 0 %}
                         <ul class="sub-menu">
                             {% for child in item.children %}
@@ -63,69 +70,80 @@
     </div>
 </header>
 
-<div class="site-body container">
-    <main class="main-content" id="main">
-        {% block content %}{% endblock %}
-    </main>
+<div class="site-shell">
+    <div class="site-body container">
+        <main class="main-content" id="main" tabindex="-1">
+            {% block content %}{% endblock %}
+        </main>
 
-    <aside class="sidebar" id="sidebar">
-        {% block sidebar %}
-        <div class="widget widget-search">
-            <h3 class="widget-title">Search</h3>
-            <form action="{{ path('app_blog_search') }}" method="get" class="search-form">
-                <input type="text" name="q" placeholder="Search…" class="search-input" aria-label="Search">
-                <button type="submit" class="search-btn">Go</button>
-            </form>
-        </div>
-
-        {% if recent_posts|length > 0 %}
-        <div class="widget widget-recent-posts">
-            <h3 class="widget-title">Recent Posts</h3>
-            <ul>
-                {% for p in recent_posts %}
-                <li>
-                    <a href="{{ path('app_blog_post', {
-                        year: (p.publishedAt ?? p.createdAt)|date('Y'),
-                        month: (p.publishedAt ?? p.createdAt)|date('m'),
-                        slug: p.slug
-                    }) }}">{{ p.title }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-
-        {% if tag_cloud|length > 0 %}
-        <div class="widget widget-tags">
-            <h3 class="widget-title">Tags</h3>
-            <div class="tag-cloud">
-                {% for item in tag_cloud %}
-                <a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}" class="tag-pill">
-                    {{ item.tag.name }} <span class="tag-count">({{ item.postCount }})</span>
-                </a>
-                {% endfor %}
+        <aside class="sidebar" id="sidebar" aria-label="Blog sidebar">
+            {% block sidebar %}
+            <div class="widget widget-search">
+                <h2 class="widget-title">Search the journal</h2>
+                <form action="{{ path('app_blog_search') }}" method="get" class="search-form">
+                    <label class="sr-only" for="sidebar-search">Search posts</label>
+                    <input id="sidebar-search" type="text" name="q" placeholder="Design, Symfony, releases…" class="search-input" aria-label="Search posts">
+                    <button type="submit" class="search-btn">Search</button>
+                </form>
             </div>
-        </div>
-        {% endif %}
 
-        {% if all_categories|length > 0 %}
-        <div class="widget widget-categories">
-            <h3 class="widget-title">Categories</h3>
-            <ul>
-                {% for cat in all_categories %}
-                <li><a href="{{ path('app_blog_category', {slug: cat.slug}) }}">{{ cat.title }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
-        {% endblock %}
-    </aside>
+            {% if recent_posts|length > 0 %}
+            <div class="widget widget-recent-posts">
+                <h2 class="widget-title">Recently published</h2>
+                <ul class="sidebar-link-list">
+                    {% for p in recent_posts %}
+                    <li>
+                        <a href="{{ path('app_blog_post', {
+                            year: (p.publishedAt ?? p.createdAt)|date('Y'),
+                            month: (p.publishedAt ?? p.createdAt)|date('m'),
+                            slug: p.slug
+                        }) }}">{{ p.title }}</a>
+                        <span>{{ (p.publishedAt ?? p.createdAt)|date('M j, Y') }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if tag_cloud|length > 0 %}
+            <div class="widget widget-tags">
+                <h2 class="widget-title">Explore tags</h2>
+                <div class="tag-cloud">
+                    {% for item in tag_cloud %}
+                    <a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}" class="tag-pill">
+                        {{ item.tag.name }} <span class="tag-count">{{ item.postCount }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if all_categories|length > 0 %}
+            <div class="widget widget-categories">
+                <h2 class="widget-title">Categories</h2>
+                <ul class="sidebar-link-list compact">
+                    {% for cat in all_categories %}
+                    <li><a href="{{ path('app_blog_category', {slug: cat.slug}) }}">{{ cat.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% endblock %}
+        </aside>
+    </div>
 </div>
 
 <footer class="site-footer">
-    <div class="container">
-        <p>&copy; {{ "now"|date("Y") }} {{ site_title }}. All rights reserved.</p>
-        <p>Release {{ app_release_tag }}</p>
+    <div class="container footer-grid">
+        <div>
+            <p class="footer-title">{{ site_title }}</p>
+            {% if site_description %}<p class="footer-description">{{ site_description }}</p>{% endif %}
+        </div>
+        <div class="footer-meta">
+            <a href="{{ path('app_blog_feed') }}">RSS feed</a>
+            <span>&copy; {{ "now"|date("Y") }}</span>
+            <span>Release {{ app_release_tag }}</span>
+        </div>
     </div>
 </footer>
 

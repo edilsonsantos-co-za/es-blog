@@ -3,5 +3,20 @@
 {% block title %}{{ site_title }}{% endblock %}
 
 {% block content %}
+<section class="home-hero">
+    <p class="hero-eyebrow">Independent notes, releases, and field reports</p>
+    <h1>{{ site_title }}</h1>
+    {% if site_description %}<p class="hero-copy">{{ site_description }}</p>{% endif %}
+    <div class="hero-actions">
+        <a class="btn btn-primary" href="{{ path('app_blog_search') }}">Search the archive</a>
+        <a class="btn btn-secondary" href="{{ path('app_blog_feed') }}">Subscribe via RSS</a>
+    </div>
+</section>
+
+<section class="section-heading" aria-labelledby="latest-posts-heading">
+    <p>Latest writing</p>
+    <h2 id="latest-posts-heading">Fresh from the blog</h2>
+</section>
+
 {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_index', route_params: {}} %}
 {% endblock %}

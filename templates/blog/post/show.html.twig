@@ -34,22 +34,26 @@
 {% block content %}
 <article class="single-post">
     <header class="post-header">
-        {% if post.category %}
-        <a class="post-category" href="{{ path('app_blog_category', {slug: post.category.slug}) }}">
-            {{ post.category.title }}
-        </a>
-        {% endif %}
+        <div class="post-kicker-row">
+            {% if post.category %}
+            <a class="post-category" href="{{ path('app_blog_category', {slug: post.category.slug}) }}">
+                {{ post.category.title }}
+            </a>
+            {% endif %}
+            <span>{{ reading_time(post.body) }} min read</span>
+        </div>
 
         <h1 class="post-title">{{ post.title }}</h1>
 
-        <div class="post-meta">
-            <span class="post-author">
-                by <a href="{{ path('app_blog_author', {username: post.author.username}) }}">{{ post.author.username }}</a>
-            </span>
-            <span class="post-date">{{ (post.publishedAt ?? post.createdAt)|date('F j, Y') }}</span>
-            <span class="post-reading-time">{{ reading_time(post.body) }} min read</span>
+        <div class="post-meta post-meta-large">
+            <span class="post-author">By <a href="{{ path('app_blog_author', {username: post.author.username}) }}">{{ post.author.username }}</a></span>
+            <time datetime="{{ (post.publishedAt ?? post.createdAt)|date('c') }}">{{ (post.publishedAt ?? post.createdAt)|date('F j, Y') }}</time>
             <span class="post-views">{{ post.views }} views</span>
         </div>
+
+        {% if post.description %}
+        <p class="post-dek">{{ post.description }}</p>
+        {% endif %}
 
         {% if post.image %}
         <div class="post-cover">
@@ -64,7 +68,7 @@
 
     {% if post.tags|length > 0 %}
     <div class="post-tags">
-        <strong>Tags:</strong>
+        <span>Filed under</span>
         {% for tag in post.tags %}
         <a href="{{ path('app_blog_tag', {slug: tag.slug}) }}" class="tag-pill">{{ tag.name }}</a>
         {% endfor %}
@@ -74,11 +78,14 @@
     <div class="author-box">
         {% if post.author.avatar %}
         <img src="{{ post.author.avatar }}" alt="{{ post.author.username }}" class="author-avatar">
+        {% else %}
+        <div class="author-avatar author-avatar-fallback" aria-hidden="true">{{ post.author.username|first|upper }}</div>
         {% endif %}
         <div class="author-info">
-            <h3 class="author-name">
+            <p class="author-label">Written by</p>
+            <h2 class="author-name">
                 <a href="{{ path('app_blog_author', {username: post.author.username}) }}">{{ post.author.username }}</a>
-            </h3>
+            </h2>
             {% if post.author.about %}
             <p class="author-bio">{{ post.author.about }}</p>
             {% endif %}
@@ -92,24 +99,26 @@
     </div>
 </article>
 
-<nav class="post-navigation">
+<nav class="post-navigation" aria-label="Post navigation">
     {% if prev %}
-    <div class="post-nav-prev">
-        ← <a href="{{ path('app_blog_post', {
-            year: (prev.publishedAt ?? prev.createdAt)|date('Y'),
-            month: (prev.publishedAt ?? prev.createdAt)|date('m'),
-            slug: prev.slug
-        }) }}">{{ prev.title }}</a>
-    </div>
+    <a class="post-nav-card post-nav-prev" href="{{ path('app_blog_post', {
+        year: (prev.publishedAt ?? prev.createdAt)|date('Y'),
+        month: (prev.publishedAt ?? prev.createdAt)|date('m'),
+        slug: prev.slug
+    }) }}">
+        <span>Previous</span>
+        <strong>{{ prev.title }}</strong>
+    </a>
     {% endif %}
     {% if next %}
-    <div class="post-nav-next">
-        <a href="{{ path('app_blog_post', {
-            year: (next.publishedAt ?? next.createdAt)|date('Y'),
-            month: (next.publishedAt ?? next.createdAt)|date('m'),
-            slug: next.slug
-        }) }}">{{ next.title }}</a> →
-    </div>
+    <a class="post-nav-card post-nav-next" href="{{ path('app_blog_post', {
+        year: (next.publishedAt ?? next.createdAt)|date('Y'),
+        month: (next.publishedAt ?? next.createdAt)|date('m'),
+        slug: next.slug
+    }) }}">
+        <span>Next</span>
+        <strong>{{ next.title }}</strong>
+    </a>
     {% endif %}
 </nav>
 {% endblock %}

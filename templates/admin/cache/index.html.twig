@@ -5,6 +5,7 @@
 {% block page_header %}
 <div class="row mb-2">
     <div class="col-sm-6">
+        <p class="admin-kicker">Maintenance</p>
         <h1 class="m-0">Cache Management</h1>
     </div>
     <div class="col-sm-6">
@@ -19,7 +20,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-6">
-        <div class="card card-warning">
+        <div class="card card-warning admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-broom"></i> Clear Application Cache</h3>
             </div>
@@ -29,8 +30,8 @@
                     <strong>What this does:</strong> Clears the Symfony application cache, Twig template cache, and cached site configuration.
                     The site may be temporarily slower while the cache rebuilds after clearing.
                 </div>
-                <p>Use this when:</p>
-                <ul>
+                <p class="admin-section-title"><i class="fa fa-check-circle" aria-hidden="true"></i> Use this when</p>
+                <ul class="mb-0">
                     <li>Templates are not reflecting recent changes</li>
                     <li>Configuration changes are not taking effect</li>
                     <li>After deploying code updates</li>
@@ -50,19 +51,25 @@
     </div>
 
     <div class="col-lg-6">
-        <div class="card">
+        <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-info-circle"></i> Cache Info</h3>
             </div>
             <div class="card-body">
-                <table class="table table-sm table-borderless">
+                <table class="table table-sm table-borderless mb-0">
                     <tr>
                         <th>Environment</th>
                         <td>{{ app.environment }}</td>
                     </tr>
                     <tr>
                         <th>Debug mode</th>
-                        <td>{{ app.debug ? '<span class="badge badge-warning">On</span>' : '<span class="badge badge-secondary">Off</span>' }}</td>
+                        <td>
+                            {% if app.debug %}
+                                <span class="badge badge-warning">On</span>
+                            {% else %}
+                                <span class="badge badge-secondary">Off</span>
+                            {% endif %}
+                        </td>
                     </tr>
                 </table>
                 <hr>
