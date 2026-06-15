@@ -20,6 +20,9 @@
             --auth-accent-strong: #0b5d57;
             --auth-warm: #f97316;
             --auth-blue: #2563eb;
+            --auth-gradient-primary: linear-gradient(135deg, var(--auth-accent) 0%, var(--auth-blue) 100%);
+            --auth-gradient-shell: linear-gradient(145deg, #08110c 0%, var(--auth-accent-strong) 46%, var(--auth-blue) 100%);
+            --auth-gradient-warm: radial-gradient(circle at 78% 18%, rgba(249, 115, 22, .35), transparent 20rem);
             --auth-radius: 28px;
             --auth-shadow: 0 28px 80px rgba(15, 23, 42, .16);
         }
@@ -80,8 +83,8 @@
             min-height: 640px;
             padding: clamp(2rem, 5vw, 4rem);
             background:
-                linear-gradient(135deg, rgba(8, 17, 12, .9), rgba(15, 118, 110, .76)),
-                radial-gradient(circle at 78% 18%, rgba(249, 115, 22, .35), transparent 20rem);
+                var(--auth-gradient-warm),
+                var(--auth-gradient-shell);
             color: #fff;
         }
 
@@ -325,7 +328,7 @@
             border: 0;
             border-radius: 999px;
             color: #fff;
-            background: linear-gradient(135deg, var(--auth-accent), var(--auth-blue));
+            background: var(--auth-gradient-primary);
             box-shadow: 0 16px 34px rgba(15, 118, 110, .24);
             font: inherit;
             font-weight: 900;
