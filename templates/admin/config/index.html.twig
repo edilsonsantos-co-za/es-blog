@@ -82,9 +82,17 @@
                                value="{{ c['site.cover']|default('') }}" placeholder="https://example.com/cover.jpg">
                     </div>
                     <div class="form-group">
-                        <label for="theme">Theme</label>
-                        <input type="text" class="form-control" id="theme" name="theme"
-                               value="{{ c['theme']|default('default') }}" placeholder="default">
+                        <label for="theme">Public Theme</label>
+                        <select class="form-control" id="theme" name="theme">
+                            {% for theme in public_themes|default([]) %}
+                            <option value="{{ theme.slug }}" {{ c['theme']|default('default') == theme.slug ? 'selected' : '' }}>
+                                {{ theme.name }} ({{ theme.slug }}){% if theme.status != 'active' %} — {{ theme.status|capitalize }}{% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            {{ (public_themes|default([])|filter(t => t.slug == c['theme']|default('default'))|first).description|default('Add manually ported themes to config/themes.yaml before go-live selection.') }}
+                        </small>
                     </div>
                 </div>
                 <div class="col-lg-6">
@@ -114,9 +122,15 @@
                     <div class="form-group">
                         <label for="admin_theme">Admin Theme</label>
                         <select class="form-control" id="admin_theme" name="admin_theme">
-                            <option value="light" {{ c['admin.theme']|default('light') == 'light' ? 'selected' : '' }}>Light</option>
-                            <option value="dark"  {{ c['admin.theme']|default('light') == 'dark'  ? 'selected' : '' }}>Dark</option>
+                            {% for theme in admin_themes|default([]) %}
+                            <option value="{{ theme.slug }}" {{ c['admin.theme']|default('light') == theme.slug ? 'selected' : '' }}>
+                                {{ theme.name }}{% if theme.status != 'active' %} — {{ theme.status|capitalize }}{% endif %}
+                            </option>
+                            {% endfor %}
                         </select>
+                        <small class="form-text text-muted">
+                            {{ (admin_themes|default([])|filter(t => t.slug == c['admin.theme']|default('light'))|first).description|default('Choose the admin interface color scheme.') }}
+                        </small>
                     </div>
                 </div>
             </div>

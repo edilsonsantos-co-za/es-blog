@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Security\Voter\ConfigVoter;
 use App\Service\SiteConfigService;
+use App\Service\ThemeCatalog;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,6 +16,7 @@ class ConfigController extends AbstractController
 {
     public function __construct(
         private readonly SiteConfigService $configService,
+        private readonly ThemeCatalog $themeCatalog,
     ) {}
 
     #[Route('/admin/config', name: 'app_admin_config', methods: ['GET', 'POST'])]
@@ -28,16 +30,18 @@ class ConfigController extends AbstractController
                 return $this->redirectToRoute('app_admin_config');
             }
 
+            $currentConfig = $this->configService->getAll();
+
             $this->configService->setBulk([
-                'site.title'       => $request->request->get('site_title', ''),
-                'site.description' => $request->request->get('site_description', ''),
-                'site.url'         => $request->request->get('site_url', ''),
-                'site.logo'        => $request->request->get('site_logo', ''),
-                'site.cover'       => $request->request->get('site_cover', ''),
-                'theme'            => $request->request->get('theme', ''),
-                'language'         => $request->request->get('language', 'en'),
-                'admin.theme'      => $request->request->get('admin_theme', 'light'),
-                'timezone'         => $request->request->get('timezone', 'UTC'),
+                'site.title'       => $this->requestValue($request, 'site_title', $currentConfig, 'site.title', ''),
+                'site.description' => $this->requestValue($request, 'site_description', $currentConfig, 'site.description', ''),
+                'site.url'         => $this->requestValue($request, 'site_url', $currentConfig, 'site.url', ''),
+                'site.logo'        => $this->requestValue($request, 'site_logo', $currentConfig, 'site.logo', ''),
+                'site.cover'       => $this->requestValue($request, 'site_cover', $currentConfig, 'site.cover', ''),
+                'theme'            => $this->requestValue($request, 'theme', $currentConfig, 'theme', 'default'),
+                'language'         => $this->requestValue($request, 'language', $currentConfig, 'language', 'en'),
+                'admin.theme'      => $this->requestValue($request, 'admin_theme', $currentConfig, 'admin.theme', 'light'),
+                'timezone'         => $this->requestValue($request, 'timezone', $currentConfig, 'timezone', 'UTC'),
             ]);
 
             $this->addFlash('success', 'General settings saved.');
@@ -123,9 +127,23 @@ class ConfigController extends AbstractController
 
     private function renderConfig(string $activeTab): Response
     {
+        $config = $this->configService->getAll();
+
         return $this->render('admin/config/index.html.twig', [
-            'active_tab' => $activeTab,
-            'config'     => $this->configService->getAll(),
+            'active_tab'    => $activeTab,
+            'config'        => $config,
+            'public_themes' => $this->themeCatalog->getPublicThemes($config['theme'] ?? 'default'),
+            'admin_themes'  => $this->themeCatalog->getAdminThemes($config['admin.theme'] ?? 'light'),
         ]);
+    }
+
+    /** @param array<string, string|null> $currentConfig */
+    private function requestValue(Request $request, string $field, array $currentConfig, string $key, string $default): ?string
+    {
+        if (!$request->request->has($field)) {
+            return $currentConfig[$key] ?? $default;
+        }
+
+        return $request->request->get($field, $default);
     }
 }

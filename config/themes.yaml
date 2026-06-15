@@ -1,0 +1,23 @@
+public:
+  - slug: default
+    name: Default blog theme
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/blog
+    description: Current Symfony/Twig public blog theme.
+  - slug: casper-2.1
+    name: Casper 2.1 placeholder
+    status: placeholder
+    template_path: templates/themes/casper-2.1
+    asset_path: public/assets/themes/casper-2.1
+    description: Placeholder for a manually ported legacy theme.
+
+admin:
+  - slug: light
+    name: Light
+    status: active
+    description: Bright admin interface.
+  - slug: dark
+    name: Dark
+    status: active
+    description: Dark admin interface.
