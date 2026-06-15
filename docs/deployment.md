@@ -9,3 +9,13 @@ This project is designed to sit behind the shared Nginx Proxy Manager stack from
 - Configure Nginx Proxy Manager to forward to `edfolio-v2-php` on port `80` over the `milkyway` network.
 
 Because Nginx Proxy Manager and this application share the same Docker network, it can reach Apache inside the container directly without a host-level port mapping.
+
+## First admin user
+
+This project does not expose public self-registration. Create the first admin user from the running application container:
+
+```bash
+docker exec -it edfolio-v2-php php bin/console app:user:create admin admin@blog.edilsonsantos.local --role=admin --env=prod
+```
+
+The command prompts for the password securely when `--password` is omitted. After the first admin can sign in, additional users can be managed from the admin area.

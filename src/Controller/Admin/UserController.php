@@ -61,7 +61,7 @@ class UserController extends AbstractController
 
             try {
                 $role = UserRole::from($roleStr);
-                $this->userService->create($username, $email, $password, $role);
+                $this->userService->create($username, $password, $role, $email);
                 $this->addFlash('success', 'User created successfully.');
                 return $this->redirectToRoute('app_admin_users');
             } catch (\Exception $e) {
