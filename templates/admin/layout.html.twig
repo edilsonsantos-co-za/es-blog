@@ -41,6 +41,9 @@
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Toggle navigation"><i class="fas fa-bars"></i></a>
         </li>
+        <li class="nav-item d-none d-md-flex align-items-center">
+            <span class="admin-topbar-title">Admin workspace</span>
+        </li>
     </ul>
     <ul class="navbar-nav ml-auto">
         <li class="nav-item">
@@ -86,11 +89,16 @@
 <aside class="main-sidebar sidebar-dark-primary elevation-4" id="main-sidebar">
     <a href="{{ path('app_admin_dashboard') }}" class="brand-link">
         <i class="fas fa-pen-nib brand-icon" aria-hidden="true"></i>
-        <span class="brand-text font-weight-light">EdFolio Blog</span>
+        <span class="brand-text">
+            <span class="brand-title">EdFolio Blog</span>
+            <span class="brand-subtitle">Publishing console</span>
+        </span>
     </a>
     <div class="sidebar">
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+
+                <li class="nav-header">Overview</li>
 
                 {# Dashboard #}
                 <li class="nav-item">
@@ -100,6 +108,8 @@
                     </a>
                 </li>
 
+                <li class="nav-header">Create</li>
+
                 {# Add Content #}
                 <li class="nav-item">
                     <a href="{{ path('app_admin_post_new') }}" class="nav-link {{ add_content_active ? 'active' : '' }}">
@@ -107,6 +117,8 @@
                         <p>Add Content</p>
                     </a>
                 </li>
+
+                <li class="nav-header">Manage</li>
 
                 {# Posts expandable #}
                 <li class="nav-item has-treeview {{ posts_active ? 'menu-open' : '' }}">
@@ -159,6 +171,7 @@
 
                 {# Settings expandable #}
                 {% if is_granted('ROLE_EDITOR') or is_granted('ROLE_ADMIN') %}
+                <li class="nav-header">System</li>
                 <li class="nav-item has-treeview {{ settings_active ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ settings_active ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cog"></i>
