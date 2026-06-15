@@ -9,22 +9,19 @@
     <link rel="stylesheet" href="{{ asset('assets/admin/css/adminlte.min.css') }}">
     <style>
         :root {
-            --auth-bg: #f6f1e9;
-            --auth-surface: rgba(255, 255, 255, .86);
+            --auth-bg: #f5f6f8;
+            --auth-surface: rgba(255, 255, 255, .92);
             --auth-surface-strong: #ffffff;
-            --auth-ink: #17211b;
-            --auth-ink-strong: #08110c;
-            --auth-muted: #667169;
-            --auth-border: rgba(23, 33, 27, .12);
-            --auth-accent: #0f766e;
-            --auth-accent-strong: #0b5d57;
-            --auth-warm: #f97316;
-            --auth-blue: #2563eb;
-            --auth-gradient-primary: linear-gradient(135deg, var(--auth-accent) 0%, var(--auth-blue) 100%);
-            --auth-gradient-shell: linear-gradient(145deg, #08110c 0%, var(--auth-accent-strong) 46%, var(--auth-blue) 100%);
-            --auth-gradient-warm: radial-gradient(circle at 78% 18%, rgba(249, 115, 22, .35), transparent 20rem);
+            --auth-ink: #1f2937;
+            --auth-ink-strong: #111827;
+            --auth-muted: #667085;
+            --auth-border: rgba(31, 41, 55, .12);
+            --auth-accent: #4f46e5;
+            --auth-accent-strong: #3730a3;
+            --auth-hero-bg: #111827;
+            --auth-hero-soft: #1f2937;
             --auth-radius: 28px;
-            --auth-shadow: 0 28px 80px rgba(15, 23, 42, .16);
+            --auth-shadow: 0 28px 80px rgba(17, 24, 39, .12);
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -33,25 +30,10 @@
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
-            background:
-                radial-gradient(circle at 12% 16%, rgba(15, 118, 110, .22), transparent 26rem),
-                radial-gradient(circle at 86% 8%, rgba(249, 115, 22, .16), transparent 24rem),
-                linear-gradient(180deg, #fffaf3 0, var(--auth-bg) 48%, #fffaf3 100%);
+            background: var(--auth-bg);
             color: var(--auth-ink);
             font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
             -webkit-font-smoothing: antialiased;
-        }
-
-        .auth-page::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background-image:
-                linear-gradient(rgba(23, 33, 27, .035) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(23, 33, 27, .035) 1px, transparent 1px);
-            background-size: 44px 44px;
-            mask-image: linear-gradient(to bottom, #000, transparent 76%);
         }
 
         .auth-shell {
@@ -82,9 +64,7 @@
             justify-content: space-between;
             min-height: 640px;
             padding: clamp(2rem, 5vw, 4rem);
-            background:
-                var(--auth-gradient-warm),
-                var(--auth-gradient-shell);
+            background: var(--auth-hero-bg);
             color: #fff;
         }
 
@@ -116,9 +96,8 @@
             width: 3rem;
             height: 3rem;
             border-radius: 18px;
-            background: rgba(255, 255, 255, .13);
+            background: var(--auth-accent);
             border: 1px solid rgba(255, 255, 255, .2);
-            box-shadow: 0 14px 32px rgba(0, 0, 0, .18);
         }
 
         .auth-brand-title {
@@ -201,9 +180,7 @@
             display: grid;
             align-content: center;
             padding: clamp(1.3rem, 4vw, 3rem);
-            background:
-                radial-gradient(circle at top right, rgba(37, 99, 235, .08), transparent 18rem),
-                rgba(255, 255, 255, .72);
+            background: rgba(255, 255, 255, .72);
         }
 
         .auth-card {
@@ -258,14 +235,14 @@
             min-height: 3.35rem;
             border: 1px solid var(--auth-border);
             border-radius: 18px;
-            background: #fffaf3;
+            background: #f9fafb;
             transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
         }
 
         .auth-input-shell:focus-within {
-            border-color: rgba(15, 118, 110, .42);
+            border-color: rgba(79, 70, 229, .42);
             background: #fff;
-            box-shadow: 0 0 0 4px rgba(15, 118, 110, .12);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, .12);
         }
 
         .auth-input {
@@ -328,8 +305,8 @@
             border: 0;
             border-radius: 999px;
             color: #fff;
-            background: var(--auth-gradient-primary);
-            box-shadow: 0 16px 34px rgba(15, 118, 110, .24);
+            background: var(--auth-accent);
+            box-shadow: 0 16px 34px rgba(79, 70, 229, .20);
             font: inherit;
             font-weight: 900;
             cursor: pointer;
@@ -341,7 +318,8 @@
         .auth-card .btn-success:hover {
             color: #fff;
             transform: translateY(-1px);
-            box-shadow: 0 20px 42px rgba(15, 118, 110, .30);
+            background: var(--auth-accent-strong);
+            box-shadow: 0 20px 42px rgba(79, 70, 229, .24);
         }
 
         .auth-alert,
