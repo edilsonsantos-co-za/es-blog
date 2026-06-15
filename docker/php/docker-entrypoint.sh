@@ -7,5 +7,5 @@ php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migratio
 echo "[entrypoint] Clearing cache..."
 php bin/console cache:warmup --env=prod
 
-echo "[entrypoint] Starting PHP-FPM..."
+echo "[entrypoint] Starting Apache..."
 exec "$@"
