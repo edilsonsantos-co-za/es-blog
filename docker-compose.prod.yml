@@ -2,6 +2,9 @@
 # Usage:
 #   cp .env.example .env && nano .env
 #   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Nginx Proxy Manager should reach this container on edfolio-v2-php:80 via
+# the external milkyway network. No host ports are published from this stack.
 
 services:
   php:
@@ -10,8 +13,6 @@ services:
       dockerfile: docker/php/Dockerfile
     container_name: edfolio-v2-php
     env_file: .env
-    expose:
-      - "80"
     networks:
       - milkyway
     restart: unless-stopped
