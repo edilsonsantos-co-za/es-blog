@@ -3,7 +3,19 @@
 {% set current_route = app.request.attributes.get('_route')|default('') %}
 {% set dashboard_active = current_route == 'app_admin_dashboard' %}
 {% set add_content_active = current_route == 'app_admin_post_new' %}
-{% set posts_active = current_route starts with 'app_admin_post' or current_route starts with 'app_admin_posts' or current_route starts with 'app_admin_categor' or current_route starts with 'app_admin_page' %}
+{% set posts_active = current_route in [
+    'app_admin_posts',
+    'app_admin_posts_mine',
+    'app_admin_posts_scheduled',
+    'app_admin_posts_drafts',
+    'app_admin_posts_popular',
+    'app_admin_post_edit',
+    'app_admin_categories',
+    'app_admin_category_new',
+    'app_admin_category_edit',
+    'app_admin_pages',
+    'app_admin_page_edit'
+] %}
 {% set settings_active = current_route starts with 'app_admin_config' or current_route starts with 'app_admin_user' or current_route starts with 'app_admin_menu' %}
 {% set maint_active = current_route starts with 'app_admin_cache' or current_route starts with 'app_admin_linkedin' %}
 <!DOCTYPE html>

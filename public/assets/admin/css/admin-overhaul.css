@@ -204,17 +204,16 @@ html {
     min-height: 2.75rem;
     padding: .72rem .9rem;
     border: 1px solid transparent;
-    border-radius: .95rem;
+    border-radius: .75rem;
     color: rgba(226, 232, 240, .82);
     transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
 }
 
 .admin-shell .nav-sidebar .nav-link:hover,
 .admin-shell .nav-sidebar .menu-open > .nav-link {
-    border-color: rgba(148, 163, 184, .16);
+    border-color: rgba(148, 163, 184, .18);
     background: var(--admin-sidebar-soft);
     color: #fff;
-    transform: translateX(2px);
 }
 
 .admin-shell .nav-sidebar .nav-icon {
@@ -228,26 +227,26 @@ html {
 }
 
 .admin-shell .nav-sidebar .nav-link.active {
-    border-color: rgba(191, 219, 254, .28);
-    background: var(--admin-accent) !important;
+    border-color: rgba(255, 255, 255, .14);
+    background: rgba(255, 255, 255, .08) !important;
     color: #fff !important;
-    box-shadow: 0 14px 26px rgba(79, 70, 229, .22);
+    box-shadow: none;
 }
 
 .admin-shell .nav-sidebar .nav-link.active::before {
     content: "";
     position: absolute;
     top: 50%;
-    left: -.45rem;
+    left: -.15rem;
     width: .22rem;
-    height: 1.55rem;
+    height: 1.35rem;
     border-radius: 999px;
-    background: #fff;
+    background: var(--admin-accent);
     transform: translateY(-50%);
 }
 
 .admin-shell .nav-sidebar .nav-link.active .nav-icon {
-    color: #fff;
+    color: #c7d2fe;
 }
 
 .admin-shell.sidebar-collapse .brand-subtitle,
@@ -265,7 +264,7 @@ html {
     min-height: 2.25rem;
     margin: .18rem 0 .18rem 1.15rem;
     padding: .52rem .8rem .52rem 1rem !important;
-    border-radius: .8rem;
+    border-radius: .65rem;
     color: rgba(203, 213, 225, .76);
 }
 
@@ -276,8 +275,8 @@ html {
 }
 
 .admin-shell .nav-treeview .nav-link.active {
-    border-left: 0;
-    background: rgba(79, 70, 229, .20) !important;
+    border-color: rgba(129, 140, 248, .20);
+    background: rgba(129, 140, 248, .12) !important;
     box-shadow: none;
 }
 
