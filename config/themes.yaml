@@ -6,11 +6,71 @@ public:
     asset_path: public/assets/blog
     description: Current Symfony/Twig public blog theme.
   - slug: casper-2.1
-    name: Casper 2.1 placeholder
-    status: placeholder
-    template_path: templates/themes/casper-2.1
+    name: Casper
+    status: active
+    template_path: templates/blog
     asset_path: public/assets/themes/casper-2.1
-    description: Placeholder for a manually ported legacy theme.
+    description: Ghost-inspired Danpros theme with bold publication covers and editorial contrast.
+  - slug: cleanblog-1.9
+    name: Clean Blog
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/cleanblog-1.9
+    description: Start Bootstrap Danpros theme with crisp typography and image-led articles.
+  - slug: fairy-2.2
+    name: Fairy
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/fairy-2.2
+    description: Magazine-style Danpros theme with soft panels and readable article cards.
+  - slug: gridzone-1.16
+    name: Gridzone
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/gridzone-1.16
+    description: Visual grid Danpros theme tuned for card-heavy archives and image posts.
+  - slug: ignite-2.1
+    name: Ignite
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/ignite-2.1
+    description: Minimal Danpros theme with high contrast type and a traditional blog feel.
+  - slug: independent-publisher-2.1
+    name: Independent Publisher
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/independent-publisher-2.1
+    description: Writer-focused Danpros theme with warm paper tones and serif reading flow.
+  - slug: journal-1.7
+    name: Journal
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/journal-1.7
+    description: Ghost Journal-inspired Danpros theme with modern editorial spacing.
+  - slug: moth-1.7
+    name: Moth
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/moth-1.7
+    description: Compact Danpros theme with retro accent colours and strong title treatments.
+  - slug: occasio-1.13
+    name: Occasio
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/occasio-1.13
+    description: ThemeZee Danpros theme with clean blue accents and news-style surfaces.
+  - slug: papermod-1.7
+    name: Papermod
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/papermod-1.7
+    description: Fast, minimal Danpros theme with subtle shadows and focused reading.
+  - slug: vapor-1.8
+    name: Vapor
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/vapor-1.8
+    description: Dark, atmospheric Danpros theme with condensed headings and neon accents.
 
 admin:
   - slug: light

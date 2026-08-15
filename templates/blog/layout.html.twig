@@ -20,11 +20,12 @@
 
     {% block css %}
     <link rel="stylesheet" href="/assets/blog/style.css">
+    <link rel="stylesheet" href="/assets/blog/themes.css">
     {% endblock %}
 
     <link rel="alternate" type="application/rss+xml" title="{{ site_title }} RSS Feed" href="{{ path('app_blog_feed') }}">
 </head>
-<body>
+<body class="theme-{{ site_theme|default('default')|replace({'.': '-', '_': '-', '/': '-'}) }}">
 <a class="skip-link" href="#main">Skip to content</a>
 
 <header class="site-header">
