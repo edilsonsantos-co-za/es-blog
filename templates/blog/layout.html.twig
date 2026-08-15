@@ -66,6 +66,12 @@
                         {% endif %}
                     </li>
                 {% endfor %}
+                <li>
+                    <button class="public-theme-toggle" type="button" data-public-theme-toggle aria-pressed="false">
+                        <span class="public-theme-toggle-icon" aria-hidden="true">☾</span>
+                        <span class="public-theme-toggle-label">Dark</span>
+                    </button>
+                </li>
             </ul>
         </nav>
     </div>
@@ -148,5 +154,35 @@
     </div>
 </footer>
 
+<script>
+(function() {
+    var storageKey = 'edfolio-public-theme-mode';
+    var body = document.body;
+    var toggle = document.querySelector('[data-public-theme-toggle]');
+    if (!toggle) {
+        return;
+    }
+
+    function applyMode(mode) {
+        body.classList.toggle('public-dark-override', mode === 'dark');
+        body.classList.toggle('public-light-override', mode === 'light');
+        toggle.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
+        toggle.querySelector('.public-theme-toggle-icon').textContent = mode === 'dark' ? '☀' : '☾';
+        toggle.querySelector('.public-theme-toggle-label').textContent = mode === 'dark' ? 'Light' : 'Dark';
+    }
+
+    var savedMode = localStorage.getItem(storageKey);
+    if (savedMode === 'dark' || savedMode === 'light') {
+        applyMode(savedMode);
+    }
+
+    toggle.addEventListener('click', function() {
+        var isNaturallyDark = body.classList.contains('theme-casper-2-1') || body.classList.contains('theme-vapor-1-8') || body.classList.contains('theme-htmly-logs');
+        var nextMode = body.classList.contains('public-dark-override') || (!body.classList.contains('public-light-override') && isNaturallyDark) ? 'light' : 'dark';
+        localStorage.setItem(storageKey, nextMode);
+        applyMode(nextMode);
+    });
+})();
+</script>
 </body>
 </html>

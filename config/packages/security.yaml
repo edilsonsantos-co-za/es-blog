@@ -1,15 +1,17 @@
 security:
     password_hashers:
+        legacy_sha512:
+            id: App\Security\LegacyPasswordHasher
         # Legacy SHA-512 hashes from v1 are re-hashed on next login via PasswordUpgrader
         App\Entity\User:
             algorithm: bcrypt
             cost: 13
+            migrate_from:
+                - legacy_sha512
 
     providers:
         app_users:
-            entity:
-                class: App\Entity\User
-                property: username
+            id: App\Security\UsernameOrEmailUserProvider
 
     firewalls:
         dev:

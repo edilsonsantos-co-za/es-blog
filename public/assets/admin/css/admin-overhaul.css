@@ -43,6 +43,22 @@ html {
     --admin-shadow: 0 18px 45px rgba(0, 0, 0, .24);
 }
 
+.light-mode {
+    --admin-bg: #f5f6f8;
+    --admin-surface: #ffffff;
+    --admin-surface-soft: #f9fafb;
+    --admin-text: #1f2937;
+    --admin-heading: #111827;
+    --admin-muted: #667085;
+    --admin-border: #e5e7eb;
+    --admin-accent: #4f46e5;
+    --admin-accent-dark: #3730a3;
+    --admin-primary: #4f46e5;
+    --admin-primary-dark: #3730a3;
+    --admin-sidebar: #111827;
+    --admin-sidebar-soft: #1f2937;
+}
+
 .skip-link {
     position: absolute;
     left: 1rem;
@@ -684,12 +700,46 @@ html {
 
 .dark-mode .admin-shell .dropdown-menu,
 .dark-mode .admin-shell .form-control,
+.dark-mode .admin-shell .custom-select,
 .dark-mode .admin-shell .input-group-text,
 .dark-mode .admin-shell .list-group-item,
 .dark-mode .admin-shell .table,
 .dark-mode .admin-shell .modal-content {
     background-color: var(--admin-surface);
     color: var(--admin-text);
+}
+
+.dark-mode .admin-shell .form-control:focus,
+.dark-mode .admin-shell .custom-select:focus {
+    background-color: var(--admin-surface);
+    color: var(--admin-heading);
+}
+
+.dark-mode .admin-shell .form-control::placeholder {
+    color: var(--admin-muted);
+}
+
+.dark-mode .admin-shell .table td,
+.dark-mode .admin-shell .table th,
+.dark-mode .admin-shell .dropdown-divider {
+    border-color: var(--admin-border);
+}
+
+.dark-mode .admin-shell .dropdown-item,
+.dark-mode .admin-shell .dropdown-item-text,
+.dark-mode .admin-shell .page-link,
+.dark-mode .admin-shell .breadcrumb,
+.dark-mode .admin-shell .breadcrumb-item,
+.dark-mode .admin-shell .text-muted,
+.dark-mode .admin-shell small,
+.dark-mode .admin-shell .help-block {
+    color: var(--admin-muted) !important;
+}
+
+.dark-mode .admin-shell .dropdown-item:hover,
+.dark-mode .admin-shell .page-link:hover {
+    background: var(--admin-surface-soft);
+    color: var(--admin-heading) !important;
 }
 
 .dark-mode .admin-shell .text-dark {

@@ -13,6 +13,7 @@ use Scheb\TwoFactorBundle\Model\Totp\TotpConfiguration;
 use Scheb\TwoFactorBundle\Model\Totp\TotpConfigurationInterface;
 use Scheb\TwoFactorBundle\Model\Totp\TwoFactorInterface;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\LegacyPasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -21,7 +22,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['username'], message: 'This username is already taken.')]
 #[UniqueEntity(fields: ['email'], message: 'This email is already registered.')]
-class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFactorInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface, LegacyPasswordAuthenticatedUserInterface, TwoFactorInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -121,6 +122,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, TwoFact
     public function getPassword(): string
     {
         return $this->password;
+    }
+
+    public function getSalt(): ?string
+    {
+        return $this->username;
     }
 
     public function setPassword(string $password): static
