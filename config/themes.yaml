@@ -71,6 +71,54 @@ public:
     template_path: templates/blog
     asset_path: public/assets/themes/vapor-1.8
     description: Dark, atmospheric Danpros theme with condensed headings and neon accents.
+  - slug: htmly-blog
+    name: HTMLy Blog
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/blog
+    description: Bundled HTMLy blog theme from the Danpros archive.
+  - slug: htmly-clean
+    name: HTMLy Clean
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/clean
+    description: Bundled HTMLy clean theme from the Danpros archive.
+  - slug: htmly-doks
+    name: HTMLy Doks
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/doks
+    description: Bundled HTMLy documentation-style theme from the Danpros archive.
+  - slug: htmly-logs
+    name: HTMLy Logs
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/logs
+    description: Bundled HTMLy logs theme from the Danpros archive.
+  - slug: htmly-readable
+    name: HTMLy Readable
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/readable
+    description: Bundled HTMLy readable theme from the Danpros archive.
+  - slug: htmly-tailwind
+    name: HTMLy Tailwind
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/tailwind
+    description: Bundled HTMLy Tailwind theme from the Danpros archive.
+  - slug: htmly-twentyfifteen
+    name: HTMLy Twenty Fifteen
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/twentyfifteen
+    description: Bundled HTMLy Twenty Fifteen theme from the Danpros archive.
+  - slug: htmly-twentysixteen
+    name: HTMLy Twenty Sixteen
+    status: active
+    template_path: templates/blog
+    asset_path: public/assets/themes/htmly-3.1.1/themes/twentysixteen
+    description: Bundled HTMLy Twenty Sixteen theme from the Danpros archive.
 
 admin:
   - slug: light
