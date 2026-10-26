@@ -61,6 +61,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             'site_description' => $this->config->get('site.description', ''),
             'site_url'         => $this->config->get('site.url', ''),
             'site_theme'       => $this->config->get('theme', 'casper-2.1'),
+            'site_portfolio_url' => $this->config->get('site.portfolio_url', ''),
             'site_logo'        => $this->config->get('site.logo', ''),
             'site_cover'       => $this->config->get('site.cover', ''),
             'posts_per_page'   => $this->config->getInt('blog.post.perpage', 10),

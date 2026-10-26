@@ -1,0 +1,87 @@
+{% extends 'blog/layout.html.twig' %}
+
+{% block title %}{{ site_title }}{% endblock %}
+
+{% block page_class %}no-sidebar{% endblock %}
+{% block sidebar_wrap %}{% endblock %}
+
+{% block content %}
+{% set first_page = posts is null or posts.currentPageNumber == 1 %}
+{% set latest = first_page and posts is not null and posts|length > 0 ? posts|first : null %}
+{% set portfolio_url = site_portfolio_url starts with 'http' ? site_portfolio_url : '' %}
+
+{% if first_page %}
+<section class="bento" aria-label="Introduction">
+    <div class="tile intro">
+        <div>
+            <span class="label">Journal</span>
+            <h1>{{ site_title }}</h1>
+            {% if site_description %}<p class="role">{{ site_description }}</p>{% endif %}
+        </div>
+        <div class="actions">
+            {% if latest %}
+            <a class="btn primary" href="{{ path('app_blog_post', {
+                year: (latest.publishedAt ?? latest.createdAt)|date('Y'),
+                month: (latest.publishedAt ?? latest.createdAt)|date('m'),
+                slug: latest.slug
+            }) }}">Read the latest</a>
+            {% endif %}
+            <a class="btn" href="{{ path('app_blog_search') }}">Search</a>
+            <a class="btn" href="{{ path('app_blog_feed') }}">RSS</a>
+            {% if portfolio_url %}<a class="btn" href="{{ portfolio_url }}">Portfolio ↗</a>{% endif %}
+        </div>
+    </div>
+
+    {% if latest %}
+    <a class="tile avail latest" href="{{ path('app_blog_post', {
+        year: (latest.publishedAt ?? latest.createdAt)|date('Y'),
+        month: (latest.publishedAt ?? latest.createdAt)|date('m'),
+        slug: latest.slug
+    }) }}">
+        <span class="mono"><i class="dot" aria-hidden="true"></i> Latest post</span>
+        <strong>{{ latest.title }}</strong>
+        <span class="mono">{{ (latest.publishedAt ?? latest.createdAt)|date('j M Y') }} · {{ reading_time(latest.body) }} min</span>
+    </a>
+    {% else %}
+    <div class="tile avail latest">
+        <span class="mono"><i class="dot" aria-hidden="true"></i> Status</span>
+        <strong>First posts are on the way.</strong>
+        <span class="mono">Subscribe via RSS</span>
+    </div>
+    {% endif %}
+
+    <div class="tile clock">
+        <span class="label">Local time</span>
+        <strong data-clock="{{ config('timezone', 'UTC') }}">--:--</strong>
+        <span class="mono">{{ config('timezone', 'UTC') }}</span>
+    </div>
+
+    <div class="tile count">
+        <span class="label">Posts</span>
+        <span class="big">{{ posts is not null ? posts.totalItemCount : 0 }}</span>
+        <span class="mono">{{ all_categories|length }} categor{{ all_categories|length == 1 ? 'y' : 'ies' }}</span>
+    </div>
+
+    {% if tag_cloud|length > 0 %}
+    <div class="tile topics">
+        <span class="label">Topics</span>
+        <div class="tag-cloud">
+            {% for item in tag_cloud|slice(0, 12) %}
+            <a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}" class="tag-pill">{{ item.tag.name }} <span class="tag-count">{{ item.postCount }}</span></a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+
+<section class="head" aria-labelledby="latest-posts-heading">
+    <div>
+        <span class="label">{{ first_page ? 'Latest writing' : 'Page ' ~ posts.currentPageNumber }}</span>
+        <h2 id="latest-posts-heading">Fresh from the blog</h2>
+    </div>
+    <a class="btn" href="{{ path('app_blog_search') }}">Search the archive →</a>
+</section>
+
+{% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_index', route_params: {}} %}
+{% endblock %}

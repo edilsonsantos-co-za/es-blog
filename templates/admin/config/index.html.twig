@@ -69,6 +69,12 @@
                         <input type="url" class="form-control" id="site_url" name="site_url"
                                value="{{ c['site.url']|default('') }}" placeholder="https://example.com">
                     </div>
+                    <div class="form-group">
+                        <label for="site_portfolio_url">Portfolio URL</label>
+                        <input type="url" class="form-control" id="site_portfolio_url" name="site_portfolio_url"
+                               value="{{ c['site.portfolio_url']|default('') }}" placeholder="https://example.com">
+                        <small class="form-text text-muted">Shown as a "Portfolio" link by themes that support it. Leave empty to hide.</small>
+                    </div>
                 </div>
                 <div class="col-lg-6">
                     <div class="form-group">

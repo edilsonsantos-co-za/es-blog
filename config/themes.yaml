@@ -5,6 +5,12 @@ public:
     template_path: templates/blog
     asset_path: public/assets/blog
     description: Current Symfony/Twig public blog theme.
+  - slug: atlas
+    name: Atlas
+    status: active
+    template_path: templates/themes/atlas
+    asset_path: public/assets/themes/atlas
+    description: Bento-grid theme with lime accents, matching the EdFolio Atlas portfolio theme.
   - slug: casper-2.1
     name: Casper
     status: active

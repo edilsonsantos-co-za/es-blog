@@ -36,6 +36,7 @@ class ConfigController extends AbstractController
                 'site.title'       => $this->requestValue($request, 'site_title', $currentConfig, 'site.title', ''),
                 'site.description' => $this->requestValue($request, 'site_description', $currentConfig, 'site.description', ''),
                 'site.url'         => $this->requestValue($request, 'site_url', $currentConfig, 'site.url', ''),
+                'site.portfolio_url' => $this->requestValue($request, 'site_portfolio_url', $currentConfig, 'site.portfolio_url', ''),
                 'site.logo'        => $this->requestValue($request, 'site_logo', $currentConfig, 'site.logo', ''),
                 'site.cover'       => $this->requestValue($request, 'site_cover', $currentConfig, 'site.cover', ''),
                 'theme'            => $this->requestValue($request, 'theme', $currentConfig, 'theme', 'default'),

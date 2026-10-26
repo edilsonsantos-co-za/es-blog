@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_title }}{% endblock %}</title>
+
+    {% block meta_description %}
+    {% if site_description is defined and site_description %}
+    <meta name="description" content="{{ site_description }}">
+    {% endif %}
+    {% endblock %}
+
+    {% block canonical %}{% endblock %}
+
+    {% block opengraph %}
+    <meta property="og:site_name" content="{{ site_title }}">
+    <meta property="og:type" content="website">
+    {% endblock %}
+
+    <script>
+    (function () {
+        try {
+            var mode = localStorage.getItem('edfolio-public-theme-mode');
+            if (mode === 'dark' || mode === 'light') {
+                document.documentElement.setAttribute('data-theme', mode);
+            }
+        } catch (e) {}
+    })();
+    </script>
+
+    {% block css %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Manrope:wght@500;600;700;800&display=swap">
+    <link rel="stylesheet" href="/assets/themes/atlas/atlas.css">
+    {% endblock %}
+
+    <link rel="alternate" type="application/rss+xml" title="{{ site_title }} RSS Feed" href="{{ path('app_blog_feed') }}">
+</head>
+{% set portfolio_url = site_portfolio_url starts with 'http' ? site_portfolio_url : '' %}
+{% set current_route = app.request.attributes.get('_route') %}
+<body class="theme-atlas {% block body_class %}{% endblock %}">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="top">
+    <div class="wrap">
+        {% if site_logo %}
+            <a href="{{ path('app_blog_index') }}" class="logo logo-img" aria-label="{{ site_title }} home">
+                <img src="{{ site_logo }}" alt="">
+            </a>
+        {% else %}
+            <a href="{{ path('app_blog_index') }}" class="logo" aria-label="{{ site_title }} home">{{ site_title|first|upper }}</a>
+        {% endif %}
+        <a href="{{ path('app_blog_index') }}" class="brand">{{ site_title }}</a>
+
+        <nav aria-label="Primary navigation">
+            <ul class="tabs" id="menu">
+                <li><a href="{{ path('app_blog_index') }}"{% if current_route == 'app_blog_index' %} aria-current="page"{% endif %}>Home</a></li>
+                {% for item in menu_items %}
+                    {% set has_children = item.children is defined and item.children|length > 0 %}
+                    <li{% if has_children %} class="has-sub"{% endif %}>
+                        <a href="{{ item.url }}">{{ item.label }}</a>
+                        {% if has_children %}
+                        <ul class="sub">
+                            {% for child in item.children %}
+                            <li><a href="{{ child.url }}">{{ child.label }}</a></li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+                <li><a href="{{ path('app_blog_search') }}"{% if current_route == 'app_blog_search' %} aria-current="page"{% endif %}>Search</a></li>
+                {% if portfolio_url %}
+                <li class="tabs-portfolio"><a href="{{ portfolio_url }}">Portfolio ↗</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+
+        <div class="top-actions">
+            {% if portfolio_url %}
+            <a class="btn primary portfolio-btn" href="{{ portfolio_url }}">Portfolio ↗</a>
+            {% endif %}
+            <button class="icon-btn" id="theme-btn" type="button" aria-label="Toggle dark mode">☾</button>
+            <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu">☰</button>
+        </div>
+    </div>
+</header>
+
+<div class="wrap page {% block page_class %}with-sidebar{% endblock %}">
+    <main class="main-content" id="main" tabindex="-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block sidebar_wrap %}
+    <aside class="sidebar" id="sidebar" aria-label="Blog sidebar">
+        {% block sidebar %}
+        <div class="tile widget widget-search">
+            <h2 class="label">Search</h2>
+            <form action="{{ path('app_blog_search') }}" method="get" class="search-form">
+                <label class="sr-only" for="sidebar-search">Search posts</label>
+                <input id="sidebar-search" type="text" name="q" placeholder="Symfony, Docker…" class="search-input">
+                <button type="submit" class="btn primary search-btn">Go</button>
+            </form>
+        </div>
+
+        {% if recent_posts|length > 0 %}
+        <div class="tile widget widget-recent-posts">
+            <h2 class="label">Recently published</h2>
+            <ul class="sidebar-link-list">
+                {% for p in recent_posts %}
+                <li>
+                    <a href="{{ path('app_blog_post', {
+                        year: (p.publishedAt ?? p.createdAt)|date('Y'),
+                        month: (p.publishedAt ?? p.createdAt)|date('m'),
+                        slug: p.slug
+                    }) }}">{{ p.title }}</a>
+                    <span class="mono">{{ (p.publishedAt ?? p.createdAt)|date('M j, Y') }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if tag_cloud|length > 0 %}
+        <div class="tile widget widget-tags">
+            <h2 class="label">Tags</h2>
+            <div class="tag-cloud">
+                {% for item in tag_cloud %}
+                <a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}" class="tag-pill">
+                    {{ item.tag.name }} <span class="tag-count">{{ item.postCount }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if all_categories|length > 0 %}
+        <div class="tile widget widget-categories">
+            <h2 class="label">Categories</h2>
+            <ul class="sidebar-link-list compact">
+                {% for cat in all_categories %}
+                <li><a href="{{ path('app_blog_category', {slug: cat.slug}) }}">{{ cat.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endblock %}
+    </aside>
+    {% endblock %}
+</div>
+
+<footer class="foot">
+    <div class="wrap foot-grid">
+        <div class="tile foot-tile">
+            <p class="label">{{ site_title }}</p>
+            {% if site_description %}<p class="foot-copy">{{ site_description }}</p>{% endif %}
+        </div>
+        <div class="foot-meta">
+            <a href="{{ path('app_blog_feed') }}">RSS</a>
+            {% if portfolio_url %}<a href="{{ portfolio_url }}">Portfolio</a>{% endif %}
+            <span>&copy; {{ "now"|date("Y") }}</span>
+            <span class="mono">{{ app_release_tag }}</span>
+        </div>
+    </div>
+</footer>
+
+<script>
+(function () {
+    var root = document.documentElement;
+    var key = 'edfolio-public-theme-mode';
+    var themeBtn = document.getElementById('theme-btn');
+
+    function isDark() {
+        var forced = root.getAttribute('data-theme');
+        if (forced) { return forced === 'dark'; }
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    function paint() { themeBtn.textContent = isDark() ? '☀' : '☾'; }
+
+    paint();
+    themeBtn.addEventListener('click', function () {
+        var next = isDark() ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem(key, next); } catch (e) {}
+        paint();
+    });
+
+    var menuBtn = document.getElementById('menu-btn');
+    var menu = document.getElementById('menu');
+    menuBtn.addEventListener('click', function () {
+        var open = menu.classList.toggle('open');
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+            });
+        }, { threshold: 0.08 });
+        document.querySelectorAll('.post-card, .bento > .tile').forEach(function (el) {
+            el.classList.add('reveal');
+            io.observe(el);
+        });
+    }
+
+    var clock = document.querySelector('[data-clock]');
+    if (clock) {
+        var tz = clock.getAttribute('data-clock');
+        var tick = function () {
+            try {
+                clock.textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: tz });
+            } catch (e) {
+                clock.textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            }
+        };
+        tick();
+        setInterval(tick, 15000);
+    }
+})();
+</script>
+</body>
+</html>
