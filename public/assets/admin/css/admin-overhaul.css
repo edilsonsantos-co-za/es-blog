@@ -1,16 +1,16 @@
 :root {
-    --admin-bg: #f5f6f8;
+    --admin-bg: #f3f5f9;
     --admin-surface: #ffffff;
-    --admin-surface-soft: #f9fafb;
-    --admin-text: #1f2937;
-    --admin-heading: #111827;
-    --admin-muted: #667085;
-    --admin-border: #e5e7eb;
-    --admin-accent: #4f46e5;
-    --admin-accent-dark: #3730a3;
-    --admin-primary: #4f46e5;
-    --admin-primary-dark: #3730a3;
-    --admin-sidebar: #111827;
+    --admin-surface-soft: #f5f7fb;
+    --admin-text: #0f172a;
+    --admin-heading: #0f172a;
+    --admin-muted: #5b6478;
+    --admin-border: #dde3ee;
+    --admin-accent: #2563eb;
+    --admin-accent-dark: #1d4ed8;
+    --admin-primary: #2563eb;
+    --admin-primary-dark: #1d4ed8;
+    --admin-sidebar: #0f172a;
     --admin-sidebar-soft: #1f2937;
     --admin-danger: #dc2626;
     --admin-success: #059669;
@@ -25,18 +25,18 @@ html {
 }
 
 .dark-mode {
-    --admin-bg: #0f172a;
-    --admin-surface: #172033;
-    --admin-surface-soft: #111827;
-    --admin-text: #e5edf8;
+    --admin-bg: #090b10;
+    --admin-surface: #121620;
+    --admin-surface-soft: #181d29;
+    --admin-text: #e8edf6;
     --admin-heading: #f8fafc;
-    --admin-muted: #a7b3c5;
+    --admin-muted: #8f9ab0;
     --admin-border: rgba(148, 163, 184, .22);
-    --admin-accent: #818cf8;
-    --admin-accent-dark: #6366f1;
-    --admin-primary: #818cf8;
-    --admin-primary-dark: #6366f1;
-    --admin-sidebar: #080f1f;
+    --admin-accent: #3b82f6;
+    --admin-accent-dark: #2563eb;
+    --admin-primary: #3b82f6;
+    --admin-primary-dark: #2563eb;
+    --admin-sidebar: #0b0e15;
     --admin-sidebar-soft: #111827;
     --admin-success: #34d399;
     --admin-warning: #fbbf24;
@@ -44,18 +44,18 @@ html {
 }
 
 .light-mode {
-    --admin-bg: #f5f6f8;
+    --admin-bg: #f3f5f9;
     --admin-surface: #ffffff;
-    --admin-surface-soft: #f9fafb;
-    --admin-text: #1f2937;
-    --admin-heading: #111827;
-    --admin-muted: #667085;
-    --admin-border: #e5e7eb;
-    --admin-accent: #4f46e5;
-    --admin-accent-dark: #3730a3;
-    --admin-primary: #4f46e5;
-    --admin-primary-dark: #3730a3;
-    --admin-sidebar: #111827;
+    --admin-surface-soft: #f5f7fb;
+    --admin-text: #0f172a;
+    --admin-heading: #0f172a;
+    --admin-muted: #5b6478;
+    --admin-border: #dde3ee;
+    --admin-accent: #2563eb;
+    --admin-accent-dark: #1d4ed8;
+    --admin-primary: #2563eb;
+    --admin-primary-dark: #1d4ed8;
+    --admin-sidebar: #0f172a;
     --admin-sidebar-soft: #1f2937;
 }
 
@@ -410,7 +410,7 @@ html {
 }
 
 .admin-table tbody tr:hover {
-    background: rgba(79, 70, 229, .045);
+    background: rgba(37, 99, 235, .045);
 }
 
 .admin-title-link {
@@ -448,7 +448,7 @@ html {
     justify-content: center;
     margin-bottom: 1rem;
     border-radius: 1.1rem;
-    background: rgba(79, 70, 229, .10);
+    background: rgba(37, 99, 235, .10);
     color: var(--admin-primary-dark);
     font-size: 1.6rem;
 }
@@ -595,7 +595,7 @@ html {
     border-color: transparent;
     background: var(--admin-accent);
     color: #fff;
-    box-shadow: 0 10px 20px rgba(79, 70, 229, .18);
+    box-shadow: 0 10px 20px rgba(37, 99, 235, .18);
 }
 
 .admin-shell .btn-primary:hover,
@@ -637,8 +637,8 @@ html {
 
 .admin-shell .btn-default:hover,
 .admin-shell .btn-outline-secondary:hover {
-    border-color: rgba(79, 70, 229, .30);
-    background: rgba(79, 70, 229, .08);
+    border-color: rgba(37, 99, 235, .30);
+    background: rgba(37, 99, 235, .08);
     color: var(--admin-accent-dark);
 }
 
@@ -646,7 +646,7 @@ html {
 .admin-shell .form-control:focus,
 .admin-shell .custom-control-input:focus ~ .custom-control-label::before,
 .admin-shell a:focus {
-    outline: 3px solid rgba(79, 70, 229, .28);
+    outline: 3px solid rgba(37, 99, 235, .28);
     outline-offset: 2px;
     box-shadow: none;
 }

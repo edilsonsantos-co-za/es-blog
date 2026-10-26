@@ -64,8 +64,19 @@
             gap: clamp(3rem, 8vw, 6rem);
             min-height: 560px;
             padding: clamp(2rem, 5vw, 3.5rem);
-            background: var(--auth-hero-bg);
+            background: radial-gradient(120% 90% at 100% 0%, #60a5fa 0%, transparent 55%), linear-gradient(160deg, var(--auth-accent) 0%, #1e3a8a 100%);
             color: #fff;
+            isolation: isolate;
+        }
+
+        .auth-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            background-image: linear-gradient(rgba(255, 255, 255, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .09) 1px, transparent 1px);
+            background-size: 28px 28px;
+            mask-image: linear-gradient(to bottom, #000 0%, transparent 85%);
         }
 
         .auth-hero::after {
@@ -82,6 +93,9 @@
             color: #fff;
             text-decoration: none;
         }
+
+        .auth-mark-img { overflow: hidden; background: transparent !important; }
+        .auth-mark-img img { width: 100%; height: 100%; display: block; }
 
         .auth-mark {
             display: inline-grid;
@@ -356,6 +370,7 @@
         }
 
         .auth-card a { color: var(--auth-accent); font-weight: 800; }
+        .auth-card a.auth-sso { color: #fff; }
         .auth-card hr { border-top-color: var(--auth-border); }
         .auth-card code { color: var(--auth-accent-strong); }
 
@@ -409,7 +424,11 @@
     <div class="auth-panel">
         <section class="auth-hero" aria-label="EdFolio Blog publishing workspace">
             <a href="{{ path('app_blog_index') }}" class="auth-brand">
+                {% if site_logo %}
+                <span class="auth-mark auth-mark-img" aria-hidden="true"><img src="{{ site_logo }}" alt=""></span>
+                {% else %}
                 <span class="auth-mark" aria-hidden="true"><i class="fas fa-pen-nib"></i></span>
+                {% endif %}
                 <span>
                     <span class="auth-brand-title">{{ site_title|default('EdFolio Blog') }}</span>
                     <span class="auth-brand-subtitle">Admin workspace</span>
