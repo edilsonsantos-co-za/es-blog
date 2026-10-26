@@ -48,7 +48,7 @@ class TagRepository extends ServiceEntityRepository
     /** @return array<array{tag: Tag, postCount: int}> */
     public function findAllWithPostCount(): array
     {
-        return $this->createQueryBuilder('t')
+        $rows = $this->createQueryBuilder('t')
             ->select('t, COUNT(p.id) as postCount')
             ->leftJoin('t.posts', 'p', 'WITH', 'p.status = :status')
             ->setParameter('status', 'published')
@@ -56,5 +56,10 @@ class TagRepository extends ServiceEntityRepository
             ->orderBy('postCount', 'DESC')
             ->getQuery()
             ->getResult();
+
+        return array_map(
+            static fn (array $row): array => ['tag' => $row[0], 'postCount' => (int) $row['postCount']],
+            $rows,
+        );
     }
 }

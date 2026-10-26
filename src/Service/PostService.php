@@ -134,8 +134,11 @@ final class PostService
                ->setParameter('start', $start)
                ->setParameter('end', $end);
         } else {
-            $qb->andWhere('YEAR(p.publishedAt) = :year')
-               ->setParameter('year', $year);
+            $start = new \DateTime(sprintf('%04d-01-01', $year));
+            $end   = new \DateTime(sprintf('%04d-12-31 23:59:59', $year));
+            $qb->andWhere('p.publishedAt BETWEEN :start AND :end')
+               ->setParameter('start', $start)
+               ->setParameter('end', $end);
         }
 
         return $this->paginator->paginate($qb, $page, $perPage);

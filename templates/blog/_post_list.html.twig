@@ -42,7 +42,7 @@
                 </div>
             </header>
 
-            <p class="post-card-excerpt">{{ excerpt(post.body, 220) }}</p>
+            <p class="post-card-excerpt">{{ excerpt(post.body|markdown, 220) }}</p>
 
             <footer class="post-card-footer">
                 {% if post.tags|length > 0 %}

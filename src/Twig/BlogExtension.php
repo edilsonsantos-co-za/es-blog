@@ -13,7 +13,7 @@ use App\Service\CategoryService;
 use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Environment\Environment;
 use League\CommonMark\Extension\CommonMark\CommonMarkCoreExtension;
-use League\CommonMark\Extension\GithubFlavoredMarkdown\GithubFlavoredMarkdownExtension;
+use League\CommonMark\Extension\GithubFlavoredMarkdownExtension;
 use League\CommonMark\Extension\ExternalLink\ExternalLinkExtension;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
@@ -131,7 +131,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
      */
     public function excerpt(string $body, int $length = 300): string
     {
-        $text = strip_tags($body);
+        $text = trim((string) preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($body), ENT_QUOTES | ENT_HTML5)));
         if (mb_strlen($text) <= $length) {
             return $text;
         }
