@@ -25,7 +25,7 @@ use Twig\TwigFunction;
  * into every template — replacing the procedural global helpers in v1's htmly.php.
  *
  * Global variables available in all templates:
- *   {{ site_title }}, {{ site_description }}, {{ site_url }}, {{ site_theme }}
+ *   {{ site_title }}, {{ site_description }}, {{ site_url }}
  *   {{ menu_items }}  (top-level MenuItem[] with children)
  *   {{ recent_posts }} (last 5 published posts)
  *   {{ tag_cloud }}   (all tags with counts)
@@ -43,6 +43,8 @@ use Twig\TwigFunction;
  */
 final class BlogExtension extends AbstractExtension implements GlobalsInterface
 {
+    public const DEFAULT_STORE_URL = 'https://store.edilsonsantos.co.za';
+
     public function __construct(
         private readonly SiteConfigService $config,
         private readonly MenuService $menu,
@@ -60,8 +62,8 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             'site_title'       => $this->config->get('site.title', 'EdFolio Blog'),
             'site_description' => $this->config->get('site.description', ''),
             'site_url'         => $this->config->get('site.url', ''),
-            'site_theme'       => $this->config->get('theme', 'casper-2.1'),
             'site_portfolio_url' => $this->config->get('site.portfolio_url', ''),
+            'site_store_url'   => $this->config->get('site.store_url', self::DEFAULT_STORE_URL),
             'site_logo'        => $this->config->get('site.logo', ''),
             'site_cover'       => $this->config->get('site.cover', ''),
             'posts_per_page'   => $this->config->getInt('blog.post.perpage', 10),

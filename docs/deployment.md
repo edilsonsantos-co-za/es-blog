@@ -20,9 +20,3 @@ docker exec -it edfolio-v2-php php bin/console app:user:create admin admin@blog.
 
 The command prompts for the password securely when `--password` is omitted. After the first admin can sign in, additional users can be managed from the admin area.
 
-## Theme readiness
-
-- Theme choices shown in Admin → Configuration are driven by `config/themes.yaml`.
-- Keep `default` selected unless a manually ported theme has Twig templates, public assets, and a catalog entry.
-- Add manually ported public themes under the `public:` section with `slug`, `name`, `status`, `template_path`, `asset_path`, and `description`.
-- Use `status: placeholder` for themes that are documented but not ready for go-live selection, and `status: active` only after local Twig/container validation passes.

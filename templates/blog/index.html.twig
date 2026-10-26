@@ -2,20 +2,64 @@
 
 {% block title %}{{ site_title }}{% endblock %}
 
+{% block page_class %}no-sidebar{% endblock %}
+{% block sidebar_wrap %}{% endblock %}
+
 {% block content %}
-<section class="home-hero">
-    <p class="hero-eyebrow">Independent notes, releases, and field reports</p>
-    <h1>{{ site_title }}</h1>
-    {% if site_description %}<p class="hero-copy">{{ site_description }}</p>{% endif %}
-    <div class="hero-actions">
-        <a class="btn btn-primary" href="{{ path('app_blog_search') }}">Search the archive</a>
-        <a class="btn btn-secondary" href="{{ path('app_blog_feed') }}">Subscribe via RSS</a>
+{% set first_page = posts is null or posts.currentPageNumber == 1 %}
+{% set latest = first_page and posts is not null and posts|length > 0 ? posts|first : null %}
+{% set portfolio_url = site_portfolio_url starts with 'http' ? site_portfolio_url : '' %}
+{% set post_total = posts is not null ? posts.totalItemCount : 0 %}
+
+{% if first_page %}
+<section class="hero" aria-label="Introduction">
+    <div class="hero-copy">
+        <span class="label">The journal · {{ post_total }} post{{ post_total == 1 ? '' : 's' }}</span>
+        <h1>{{ site_description ?: site_title }}</h1>
+        <p class="hero-by">Written by <b>{{ site_title }}</b>{% if tag_cloud|length > 0 %} on {% for item in tag_cloud|slice(0, 3) %}{{ item.tag.name }}{{ loop.last ? '' : (loop.revindex0 == 1 ? ' and ' : ', ') }}{% endfor %}{% endif %}.</p>
+        <div class="actions">
+            <a class="btn btn-primary" href="{{ path('app_blog_feed') }}">Subscribe via RSS</a>
+            {% if portfolio_url %}<a class="btn" href="{{ portfolio_url }}">About me ↗</a>{% endif %}
+        </div>
     </div>
+
+    {% if latest %}
+    {% set latest_url = path('app_blog_post', {
+        year: (latest.publishedAt ?? latest.createdAt)|date('Y'),
+        month: (latest.publishedAt ?? latest.createdAt)|date('m'),
+        slug: latest.slug
+    }) %}
+    <a class="feature" href="{{ latest_url }}">
+        {% if latest.image %}<img class="feature-img" src="{{ latest.image }}" alt="">{% endif %}
+        <span class="feature-meta mono"><i class="dot" aria-hidden="true"></i> Latest · {{ (latest.publishedAt ?? latest.createdAt)|date('j M Y') }} · {{ reading_time(latest.body) }} min</span>
+        <strong class="feature-title">{{ latest.title }}</strong>
+        <span class="feature-excerpt">{{ latest.description ?: excerpt(latest.body|markdown, 160) }}</span>
+        <span class="feature-cta">Read article →</span>
+    </a>
+    {% else %}
+    <div class="feature">
+        <span class="feature-meta mono"><i class="dot" aria-hidden="true"></i> Coming soon</span>
+        <strong class="feature-title">The first posts are on the way.</strong>
+        <span class="feature-excerpt">Subscribe via RSS to get them as they land.</span>
+    </div>
+    {% endif %}
 </section>
 
-<section class="section-heading" aria-labelledby="latest-posts-heading">
-    <p>Latest writing</p>
-    <h2 id="latest-posts-heading">Fresh from the blog</h2>
+{% if tag_cloud|length > 0 %}
+<nav class="topics-strip" aria-label="Topics">
+    <span class="label">Topics</span>
+    <div class="topics-scroll">
+        {% for item in tag_cloud %}
+        <a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}" class="tag-pill">#{{ item.tag.name }} <span class="tag-count">{{ item.postCount }}</span></a>
+        {% endfor %}
+    </div>
+</nav>
+{% endif %}
+{% endif %}
+
+<section class="list-head" aria-labelledby="latest-posts-heading">
+    <h2 id="latest-posts-heading">{{ first_page ? 'All writing' : 'All writing · page ' ~ posts.currentPageNumber }}</h2>
+    <a class="list-head-link" href="{{ path('app_blog_feed') }}">RSS</a>
 </section>
 
 {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_index', route_params: {}} %}

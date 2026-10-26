@@ -6,7 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Security\Voter\ConfigVoter;
 use App\Service\SiteConfigService;
-use App\Service\ThemeCatalog;
+use App\Twig\BlogExtension;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +16,6 @@ class ConfigController extends AbstractController
 {
     public function __construct(
         private readonly SiteConfigService $configService,
-        private readonly ThemeCatalog $themeCatalog,
     ) {}
 
     #[Route('/admin/config', name: 'app_admin_config', methods: ['GET', 'POST'])]
@@ -37,11 +36,10 @@ class ConfigController extends AbstractController
                 'site.description' => $this->requestValue($request, 'site_description', $currentConfig, 'site.description', ''),
                 'site.url'         => $this->requestValue($request, 'site_url', $currentConfig, 'site.url', ''),
                 'site.portfolio_url' => $this->requestValue($request, 'site_portfolio_url', $currentConfig, 'site.portfolio_url', ''),
+                'site.store_url'   => $this->requestValue($request, 'site_store_url', $currentConfig, 'site.store_url', BlogExtension::DEFAULT_STORE_URL),
                 'site.logo'        => $this->requestValue($request, 'site_logo', $currentConfig, 'site.logo', ''),
                 'site.cover'       => $this->requestValue($request, 'site_cover', $currentConfig, 'site.cover', ''),
-                'theme'            => $this->requestValue($request, 'theme', $currentConfig, 'theme', 'default'),
                 'language'         => $this->requestValue($request, 'language', $currentConfig, 'language', 'en'),
-                'admin.theme'      => $this->requestValue($request, 'admin_theme', $currentConfig, 'admin.theme', 'light'),
                 'timezone'         => $this->requestValue($request, 'timezone', $currentConfig, 'timezone', 'UTC'),
             ]);
 
@@ -131,10 +129,8 @@ class ConfigController extends AbstractController
         $config = $this->configService->getAll();
 
         return $this->render('admin/config/index.html.twig', [
-            'active_tab'    => $activeTab,
-            'config'        => $config,
-            'public_themes' => $this->themeCatalog->getPublicThemes($config['theme'] ?? 'default'),
-            'admin_themes'  => $this->themeCatalog->getAdminThemes($config['admin.theme'] ?? 'light'),
+            'active_tab' => $activeTab,
+            'config'     => $config,
         ]);
     }
 

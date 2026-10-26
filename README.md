@@ -5,7 +5,7 @@ A self-hosted blog and publishing workspace built on Symfony 7.4 LTS.
 > EdFolio Blog started as a fork of [HTMLy](https://github.com/danpros/htmly) by [Danang Probo Sayekti (danpros)](https://github.com/danpros).
 > Version 1 kept HTMLy's codebase and moved its storage to MySQL. Version 2, this repository, rewrites the
 > application on Symfony and Doctrine while keeping HTMLy's content model (posts, pages, categories, tags,
-> menus and authors) and its theme catalogue. Credit for the original design and themes goes to the HTMLy project.
+> menus and authors). Credit for the original design goes to the HTMLy project.
 
 ## What this version adds
 
@@ -23,16 +23,15 @@ A self-hosted blog and publishing workspace built on Symfony 7.4 LTS.
 - Nested navigation menus managed from the admin
 - A LinkedIn integration for sharing posts
 
-**Themes**
-- A theme catalogue (`config/themes.yaml`) that includes the HTMLy theme palettes: Casper, Clean Blog, Doks, Fairy,
-  Gridzone, Ignite, Independent Publisher, Journal, Moth, Occasio, Papermod and Vapor
-- A theme can override any `templates/blog/*` template by placing it under `templates/themes/<name>/blog/`
-- **Atlas**: a theme with its own masthead, a featured-post hero, dated post rows and light and dark modes
+**Design**
+- One built-in design, Atlas, shared with the EdFolio portfolio: a masthead, a featured-post hero, dated post rows,
+  and light and dark modes. The admin and sign-in pages use the same palette and type.
+- Older third-party themes were moved out to a separate archive repository (`edfolio-blog-themes`).
 
 **Operations**
 - Docker image (PHP 8.4 with Apache) and a production compose file. The container runs migrations and warms the cache on start.
 - No public sign-up: the first admin is created from the console (see below)
-- Theme assets and uploads are static only. Apache refuses to run scripts from them.
+- Static assets and uploads are static only. Apache refuses to run scripts from them.
 
 ## Quick start
 
@@ -44,7 +43,7 @@ docker compose up -d --build     # the entrypoint runs migrations and warms the 
 docker exec -it edfolio-v2-php php bin/console app:user:create admin you@example.com --role=admin
 ```
 
-`app:user:create` asks for the password when `--password` is left out. Sign in at `/login`, then choose a theme
+`app:user:create` asks for the password when `--password` is left out. Sign in at `/login`; site settings live
 under **Admin → Configuration**.
 
 The compose files publish no ports. The container joins an external Docker network and is meant to sit behind a
@@ -78,6 +77,4 @@ Versioning is described in [docs/versioning.md](docs/versioning.md).
 ## Credits and licences
 
 - Based on [HTMLy](https://github.com/danpros/htmly) by danpros. HTMLy is GPL-2.0, and its licence and copyright
-  files are kept in `public/assets/themes/htmly-3.1.1/`.
-- The bundled theme assets keep their own licence files in each folder under `public/assets/themes/`. For example,
-  Casper is MIT licensed © Ghost Foundation.
+  files are kept in `licenses/`.
