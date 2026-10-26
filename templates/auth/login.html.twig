@@ -22,6 +22,11 @@
         </div>
     {% endif %}
 
+    {% if sso_enabled|default(false) %}
+    <a class="auth-submit auth-sso" href="{{ path('app_login_sso') }}">Continue with single sign-on</a>
+    <p class="auth-divider"><span>or use your password</span></p>
+    {% endif %}
+
     <form action="{{ path('app_login') }}" method="post" class="auth-form">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 

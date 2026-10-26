@@ -6,6 +6,7 @@ namespace App\Controller\Auth;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\LogtoClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +19,7 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class AuthController extends AbstractController
 {
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, LogtoClient $logto): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_admin_dashboard');
@@ -27,6 +28,7 @@ class AuthController extends AbstractController
         return $this->render('auth/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
             'error'         => $authenticationUtils->getLastAuthenticationError(),
+            'sso_enabled'   => $logto->isEnabled(),
         ]);
     }
 

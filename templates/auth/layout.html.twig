@@ -16,8 +16,8 @@
             --auth-ink-strong: #111827;
             --auth-muted: #667085;
             --auth-border: rgba(31, 41, 55, .12);
-            --auth-accent: #4f46e5;
-            --auth-accent-strong: #3730a3;
+            --auth-accent: #2563eb;
+            --auth-accent-strong: #1d4ed8;
             --auth-hero-bg: #111827;
             --auth-hero-soft: #1f2937;
             --auth-radius: 1rem;
@@ -233,9 +233,9 @@
         }
 
         .auth-input-shell:focus-within {
-            border-color: rgba(79, 70, 229, .42);
+            border-color: rgba(37, 99, 235, .42);
             background: #fff;
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, .12);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, .12);
         }
 
         .auth-input {
@@ -299,7 +299,7 @@
             border-radius: .75rem;
             color: #fff;
             background: var(--auth-accent);
-            box-shadow: 0 16px 34px rgba(79, 70, 229, .20);
+            box-shadow: 0 16px 34px rgba(37, 99, 235, .20);
             font: inherit;
             font-weight: 900;
             cursor: pointer;
@@ -312,7 +312,29 @@
             color: #fff;
             transform: translateY(-1px);
             background: var(--auth-accent-strong);
-            box-shadow: 0 20px 42px rgba(79, 70, 229, .24);
+            box-shadow: 0 20px 42px rgba(37, 99, 235, .24);
+        }
+
+        .auth-sso {
+            text-decoration: none;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin: 1.1rem 0;
+            color: var(--auth-muted);
+            font-size: .85rem;
+            font-weight: 700;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--auth-border);
         }
 
         .auth-alert,
