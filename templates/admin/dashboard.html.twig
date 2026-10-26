@@ -18,54 +18,23 @@
 
 {% block content %}
 {% set dashboard_stats = [
-    {
-        label: 'Published',
-        value: stats.published,
-        icon: 'fa-newspaper',
-        icon_background: 'bg-success',
-        badge: 'Live',
-        badge_class: 'badge-success',
-        helper_icon: 'fa-check-circle',
-        helper_text: 'Visible on the site'
-    },
-    {
-        label: 'Drafts',
-        value: stats.draft,
-        icon: 'fa-edit',
-        icon_background: 'bg-secondary',
-        badge: 'In progress',
-        badge_class: 'badge-secondary',
-        helper_icon: 'fa-pen',
-        helper_text: 'Ready for more editing'
-    },
-    {
-        label: 'Scheduled',
-        value: stats.scheduled,
-        icon: 'fa-calendar-alt',
-        icon_background: 'bg-warning',
-        badge: 'Queued',
-        badge_class: 'badge-warning',
-        helper_icon: 'fa-clock',
-        helper_text: 'Waiting for publish time'
-    }
+    {label: 'Published', value: stats.published, icon: 'fa-newspaper', tone: 'tone-success', badge: 'Live', badge_class: 'badge-success', help: 'Visible on the site'},
+    {label: 'Drafts', value: stats.draft, icon: 'fa-pen', tone: '', badge: 'In progress', badge_class: 'badge-secondary', help: 'Ready for more editing'},
+    {label: 'Scheduled', value: stats.scheduled, icon: 'fa-calendar-alt', tone: 'tone-warning', badge: 'Queued', badge_class: 'badge-warning', help: 'Waiting for publish time'}
 ] %}
 
 <div class="admin-stat-grid" aria-label="Content status summary">
     {% for item in dashboard_stats %}
     <article class="admin-stat-card">
-        <span class="admin-stat-icon {{ item.icon_background }}" aria-hidden="true">
-            <i class="fas {{ item.icon }}"></i>
-        </span>
-        <div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="admin-stat-label">{{ item.label }}</span>
-                <span class="badge {{ item.badge_class }}">{{ item.badge }}</span>
-            </div>
-            <span class="admin-stat-number">{{ item.value }}</span>
-            <span class="text-muted text-sm">
-                <i class="fas {{ item.helper_icon }} mr-1" aria-hidden="true"></i>{{ item.helper_text }}
-            </span>
+        <div class="admin-stat-top">
+            <span class="admin-stat-icon {{ item.tone }}" aria-hidden="true"><i class="fas {{ item.icon }}"></i></span>
+            <span class="badge {{ item.badge_class }}">{{ item.badge }}</span>
         </div>
+        <div>
+            <span class="admin-stat-label">{{ item.label }}</span>
+            <span class="admin-stat-number">{{ item.value }}</span>
+        </div>
+        <span class="admin-stat-help">{{ item.help }}</span>
     </article>
     {% endfor %}
 </div>

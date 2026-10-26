@@ -1,0 +1,13 @@
+{% extends 'auth/layout.html.twig' %}
+
+{% block title %}Sign-in problem — {{ site_title }}{% endblock %}
+
+{% block auth_content %}
+    <span class="atlas-auth-chip">DataSparkLab SSO</span>
+    <h1 class="atlas-auth-title">We couldn't sign you in</h1>
+    {% for message in errors %}
+        <div class="atlas-auth-alert" role="alert">{{ message }}</div>
+    {% endfor %}
+    <p class="atlas-auth-sub">Sign in with the account linked to this blog's admin, or ask an administrator for access.</p>
+    <a class="atlas-auth-btn" href="{{ path('app_login_sso') }}">Try again</a>
+{% endblock %}

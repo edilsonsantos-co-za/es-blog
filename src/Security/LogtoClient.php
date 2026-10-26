@@ -96,6 +96,15 @@ final class LogtoClient
         return $claims;
     }
 
+    /** End the Logto session too, so signing out of the blog does not sign straight back in. */
+    public function endSessionUrl(string $postLogoutRedirectUri): string
+    {
+        return $this->publicBase() . '/oidc/session/end?' . http_build_query([
+            'client_id' => $this->appId,
+            'post_logout_redirect_uri' => $postLogoutRedirectUri,
+        ]);
+    }
+
     private function publicBase(): string
     {
         return rtrim((string) $this->endpoint, '/');

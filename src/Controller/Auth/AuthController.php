@@ -19,16 +19,26 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class AuthController extends AbstractController
 {
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(AuthenticationUtils $authenticationUtils, LogtoClient $logto): Response
+    public function login(Request $request, AuthenticationUtils $authenticationUtils, LogtoClient $logto): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
+        // With SSO configured, sign-in happens on the DataSparkLab SSO page. Only a failed attempt stops here,
+        // so the error can be shown instead of bouncing straight back to the SSO.
+        if ($logto->isEnabled()) {
+            $errors = $request->getSession()->getFlashBag()->get('error');
+            if ($errors === []) {
+                return $this->redirectToRoute('app_login_sso');
+            }
+
+            return $this->render('auth/sso_error.html.twig', ['errors' => $errors]);
+        }
+
         return $this->render('auth/login.html.twig', [
             'last_username' => $authenticationUtils->getLastUsername(),
             'error'         => $authenticationUtils->getLastAuthenticationError(),
-            'sso_enabled'   => $logto->isEnabled(),
         ]);
     }
 

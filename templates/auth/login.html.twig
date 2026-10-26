@@ -1,79 +1,43 @@
 {% extends 'auth/layout.html.twig' %}
 
-{% block title %}Sign In — {{ site_title }}{% endblock %}
+{% block title %}Sign in — {{ site_title }}{% endblock %}
 
 {% block auth_content %}
-    <div class="auth-card-header">
-        <p class="auth-login-eyebrow">Admin workspace</p>
-        <h2 class="auth-card-title">Sign in</h2>
-        <p class="auth-card-subtitle">Use your EdFolio Blog credentials to manage content, pages, and settings.</p>
-    </div>
+    {# Only reached when SSO is not configured (LOGTO_* unset), e.g. a fresh local install. #}
+    <span class="atlas-auth-chip">Admin workspace</span>
+    <h1 class="atlas-auth-title">Sign in</h1>
+    <p class="atlas-auth-sub">Manage posts, pages and settings for {{ site_title|default('the blog') }}.</p>
 
     {% for message in app.flashes('error') %}
-        <div class="auth-alert alert alert-danger alert-dismissible" role="alert">
-            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-            {{ message }}
-        </div>
+        <div class="atlas-auth-alert" role="alert">{{ message }}</div>
     {% endfor %}
 
     {% if error %}
-        <div class="auth-alert alert alert-danger" role="alert">
-            {{ error.messageKey|trans(error.messageData, 'security') }}
-        </div>
+        <div class="atlas-auth-alert" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
     {% endif %}
 
-    {% if sso_enabled|default(false) %}
-    <a class="auth-submit auth-sso" href="{{ path('app_login_sso') }}">Continue with single sign-on</a>
-    <p class="auth-divider"><span>or use your password</span></p>
-    {% endif %}
-
-    <form action="{{ path('app_login') }}" method="post" class="auth-form">
+    <form action="{{ path('app_login') }}" method="post" class="atlas-auth-form">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-        <div class="auth-field">
-            <label class="auth-label" for="login_username">Username or email</label>
-            <div class="auth-input-shell">
-                <input
-                    id="login_username"
-                    type="text"
-                    name="_username"
-                    value="{{ last_username }}"
-                    class="auth-input"
-                    placeholder="your.username"
-                    autocomplete="username"
-                    autofocus
-                    required
-                >
-                <span class="auth-input-icon" aria-hidden="true"><i class="fas fa-user"></i></span>
-            </div>
+        <div class="atlas-auth-field">
+            <label for="login_username">Username or email</label>
+            <input id="login_username" type="text" name="_username" value="{{ last_username }}" class="atlas-auth-input"
+                   placeholder="your.username" autocomplete="username" autofocus required>
         </div>
 
-        <div class="auth-field">
-            <label class="auth-label" for="login_password">Password</label>
-            <div class="auth-input-shell">
-                <input
-                    id="login_password"
-                    type="password"
-                    name="_password"
-                    class="auth-input"
-                    placeholder="Enter your password"
-                    autocomplete="current-password"
-                    required
-                >
-                <span class="auth-input-icon" aria-hidden="true"><i class="fas fa-lock"></i></span>
-            </div>
+        <div class="atlas-auth-field">
+            <label for="login_password">Password</label>
+            <input id="login_password" type="password" name="_password" class="atlas-auth-input"
+                   placeholder="Enter your password" autocomplete="current-password" required>
         </div>
 
-        <div class="auth-options">
-            <label class="auth-check" for="remember_me">
+        <div class="atlas-auth-row">
+            <label class="atlas-auth-check" for="remember_me">
                 <input type="checkbox" name="_remember_me" id="remember_me">
                 <span>Remember this device</span>
             </label>
         </div>
 
-        <button type="submit" class="auth-submit">
-            <span>Sign in</span>
-            <i class="fas fa-arrow-right" aria-hidden="true"></i>
-        </button>
+        <button type="submit" class="atlas-auth-btn">Sign in</button>
     </form>
 {% endblock %}
