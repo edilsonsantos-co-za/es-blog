@@ -65,6 +65,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             'site_portfolio_url' => $this->config->get('site.portfolio_url', ''),
             'site_store_url'   => $this->config->get('site.store_url', self::DEFAULT_STORE_URL),
             'site_logo'        => $this->config->get('site.logo', ''),
+            'site_theme'       => $this->config->get('site.theme', 'atlas'),
             'site_cover'       => $this->config->get('site.cover', ''),
             'posts_per_page'   => $this->config->getInt('blog.post.perpage', 10),
             'menu_items'       => $this->menu->getMenu(),

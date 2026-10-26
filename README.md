@@ -28,7 +28,11 @@ A self-hosted blog and publishing workspace built on Symfony 7.4 LTS.
 **Design**
 - One built-in design, Atlas, shared with the EdFolio portfolio: a masthead, a featured-post hero, dated post rows,
   and light and dark modes. The admin and sign-in pages use the same palette and type.
-- Older third-party themes were moved out to a separate archive repository (`edfolio-blog-themes`).
+- Older third-party themes moved to the ES Marketplace store. You install a downloaded theme by unzipping it
+  in the app root: it adds `templates/themes/<id>/blog/` and `public/assets/themes/<id>/`. Then run
+  `php bin/console cache:clear` and pick the theme under Admin → Configuration → Public theme. Admin pages always
+  use the core templates, and an unknown theme falls back to Atlas. In production the theme files are part of
+  the image, so commit them (or add them before the build) rather than unzipping into a running container.
 
 **Operations**
 - Docker image (PHP 8.4 with Apache) and a production compose file. The container runs migrations and warms the cache on start.

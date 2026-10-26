@@ -6,6 +6,7 @@ namespace App\Controller\Admin;
 
 use App\Security\Voter\ConfigVoter;
 use App\Service\SiteConfigService;
+use App\Service\Theme\InstalledThemes;
 use App\Twig\BlogExtension;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,6 +17,7 @@ class ConfigController extends AbstractController
 {
     public function __construct(
         private readonly SiteConfigService $configService,
+        private readonly InstalledThemes $themes,
     ) {}
 
     #[Route('/admin/config', name: 'app_admin_config', methods: ['GET', 'POST'])]
@@ -30,8 +32,10 @@ class ConfigController extends AbstractController
             }
 
             $currentConfig = $this->configService->getAll();
+            $theme = $this->requestValue($request, 'site_theme', $currentConfig, 'site.theme', InstalledThemes::DEFAULT);
 
             $this->configService->setBulk([
+                'site.theme'       => $this->themes->has($theme) ? $theme : InstalledThemes::DEFAULT,
                 'site.title'       => $this->requestValue($request, 'site_title', $currentConfig, 'site.title', ''),
                 'site.description' => $this->requestValue($request, 'site_description', $currentConfig, 'site.description', ''),
                 'site.url'         => $this->requestValue($request, 'site_url', $currentConfig, 'site.url', ''),
@@ -131,6 +135,7 @@ class ConfigController extends AbstractController
         return $this->render('admin/config/index.html.twig', [
             'active_tab' => $activeTab,
             'config'     => $config,
+            'installed_themes' => $this->themes->all(),
         ]);
     }
 

@@ -84,6 +84,15 @@
                 </div>
                 <div class="col-lg-6">
                     <div class="form-group">
+                        <label for="site_theme">Public theme</label>
+                        <select class="form-control" id="site_theme" name="site_theme">
+                            {% for theme in installed_themes %}
+                            <option value="{{ theme.id }}"{% if (c['site.theme'] ?? 'atlas') == theme.id %} selected{% endif %}>{{ theme.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">Get more themes from the <a href="{{ c['site.store_url'] ?? 'https://store.edilsonsantos.co.za' }}" target="_blank" rel="noopener">ES Marketplace store</a>, then unzip them into the blog root.</small>
+                    </div>
+                    <div class="form-group">
                         <label for="site_logo">Logo URL</label>
                         <input type="url" class="form-control" id="site_logo" name="site_logo"
                                value="{{ c['site.logo']|default('') }}" placeholder="https://example.com/logo.png">
