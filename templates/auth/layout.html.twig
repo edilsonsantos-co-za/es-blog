@@ -3,16 +3,7 @@
 {% block body_class %}atlas-auth-body{% endblock %}
 
 {% block stylesheets %}
-    <script>
-    (function () {
-        try {
-            var mode = localStorage.getItem('edfolio-public-theme-mode');
-            if (mode === 'dark' || mode === 'light') {
-                document.documentElement.setAttribute('data-theme', mode);
-            }
-        } catch (e) {}
-    })();
-    </script>
+    <script src="{{ asset('assets/theme-mode.js') }}"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@500;600;700;800&display=swap">
@@ -63,14 +54,7 @@
     <script src="{{ asset('assets/admin/js/adminlte.min.js') }}" defer></script>
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        var root = document.documentElement;
-        document.getElementById('atlas-theme-btn').addEventListener('click', function () {
-            var forced = root.getAttribute('data-theme');
-            var dark = forced ? forced === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-            var next = dark ? 'light' : 'dark';
-            root.setAttribute('data-theme', next);
-            try { localStorage.setItem('edfolio-public-theme-mode', next); } catch (e) {}
-        });
+        document.getElementById('atlas-theme-btn').addEventListener('click', window.esTheme.toggle);
     });
     </script>
 {% endblock %}

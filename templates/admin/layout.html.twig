@@ -23,16 +23,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Admin{% endblock %} — {{ site_title|default('EdFolio Blog') }}</title>
     <link rel="icon" href="{{ asset('favicon.png') }}">
-    <script>
-    (function () {
-        try {
-            var mode = localStorage.getItem('edfolio-public-theme-mode');
-            if (mode === 'dark' || mode === 'light') {
-                document.documentElement.setAttribute('data-theme', mode);
-            }
-        } catch (e) {}
-    })();
-    </script>
+    <script src="{{ asset('assets/theme-mode.js') }}"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600&family=Manrope:wght@500;600;700;800&display=swap">
@@ -298,14 +289,7 @@
 <script src="{{ asset('assets/admin/js/adminlte.min.js') }}"></script>
 <script src="{{ asset('assets/admin/js/admin-sidebar.js') }}"></script>
 <script>
-document.getElementById('theme-toggle').addEventListener('click', function () {
-    var root = document.documentElement;
-    var forced = root.getAttribute('data-theme');
-    var dark = forced ? forced === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var next = dark ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    try { localStorage.setItem('edfolio-public-theme-mode', next); } catch (e) {}
-});
+document.getElementById('theme-toggle').addEventListener('click', window.esTheme.toggle);
 </script>
 {% block javascripts %}{% endblock %}
 </body>
