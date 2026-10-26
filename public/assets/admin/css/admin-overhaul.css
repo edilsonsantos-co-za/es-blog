@@ -71,7 +71,7 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 .admin-shell .nav-sidebar .nav-header { padding: 18px 10px 6px; font: 500 10px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: transparent; }
 .admin-shell .nav-sidebar > .nav-item { margin: 2px 0; }
 .admin-shell .nav-sidebar .nav-link { position: relative; display: flex; align-items: center; min-height: 40px; padding: 8px 12px; border-radius: 12px; color: var(--muted) !important; font-weight: 600; transition: background .15s, color .15s; }
-.admin-shell .nav-sidebar .nav-link p { font-weight: 600; margin: 0; flex: 1; }
+.admin-shell .nav-sidebar .nav-link p { font-weight: 600; font-size: 14px; margin: 0; flex: 1; }
 .admin-shell .nav-sidebar .nav-link .right { top: auto; }
 .admin-shell .nav-sidebar .nav-icon { width: 1.4rem; margin-right: 8px; font-size: 14px; text-align: center; color: inherit; }
 .admin-shell .nav-sidebar .nav-link:hover, .admin-shell .nav-sidebar .menu-open > .nav-link { background: var(--card-2) !important; color: var(--text) !important; }
