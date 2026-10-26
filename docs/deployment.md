@@ -7,6 +7,8 @@ This project is designed to sit behind the shared Nginx Proxy Manager stack from
 - The application container joins the external `milkyway` Docker network.
 - The compose files do not publish or expose ports.
 - Configure Nginx Proxy Manager to forward to `edfolio-v2-php` on port `80` over the `milkyway` network.
+- `edfolio-v2-worker` runs from the same image with no web server: queued jobs and the scheduler. It needs no proxy entry.
+- Uploads (post images and generated banners) live on the `uploads` volume shared by both containers.
 
 Because Nginx Proxy Manager and this application share the same Docker network, it can reach Apache inside the container directly without a host-level port mapping.
 

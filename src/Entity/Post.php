@@ -30,7 +30,7 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    private string $slug;
+    private string $slug = '';
 
     #[ORM\Column(length: 255)]
     private string $title;
@@ -72,6 +72,17 @@ class Post
 
     #[ORM\Column(type: 'integer', options: ['unsigned' => true, 'default' => 0])]
     private int $views = 0;
+
+    /** Original article a feed-drafted post is based on (credited in the body). */
+    #[ORM\Column(name: 'source_url', length: 1024, nullable: true)]
+    private ?string $sourceUrl = null;
+
+    /** URN of the LinkedIn share, set once so re-saving a published post never shares it twice. */
+    #[ORM\Column(name: 'linkedin_post_urn', length: 255, nullable: true)]
+    private ?string $linkedInPostUrn = null;
+
+    #[ORM\Column(name: 'linkedin_shared_at', type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $linkedInSharedAt = null;
 
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $publishedAt = null;
@@ -368,5 +379,35 @@ class Post
         }
 
         return null;
+    }
+
+    public function getSourceUrl(): ?string
+    {
+        return $this->sourceUrl;
+    }
+
+    public function setSourceUrl(?string $sourceUrl): static
+    {
+        $this->sourceUrl = $sourceUrl;
+
+        return $this;
+    }
+
+    public function getLinkedInPostUrn(): ?string
+    {
+        return $this->linkedInPostUrn;
+    }
+
+    public function getLinkedInSharedAt(): ?\DateTimeImmutable
+    {
+        return $this->linkedInSharedAt;
+    }
+
+    public function markSharedOnLinkedIn(string $urn): static
+    {
+        $this->linkedInPostUrn = $urn;
+        $this->linkedInSharedAt = new \DateTimeImmutable();
+
+        return $this;
     }
 }

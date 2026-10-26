@@ -225,7 +225,8 @@ final class PostService
         $this->hydrate($post, $data);
 
         if (empty($post->getSlug())) {
-            $slug = $this->slugService->generatePostSlug($post->getTitle(), $post->getPublishedAt() ?? new \DateTime());
+            // The public route is /{year}/{month}/{slug}, so the slug itself carries no date.
+            $slug = $this->slugService->generate($post->getTitle());
             $slug = $this->slugService->makeUnique($slug, fn (string $s) => $this->postRepo->findBySlug($s) !== null);
             $post->setSlug($slug);
         }

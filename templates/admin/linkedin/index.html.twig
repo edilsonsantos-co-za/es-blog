@@ -20,66 +20,129 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-8">
-        {# Status card #}
         <div class="card admin-card">
             <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fab fa-linkedin text-primary"></i> Connection Status
-                </h3>
+                <h3 class="card-title"><i class="fab fa-linkedin text-primary"></i> Connection</h3>
             </div>
             <div class="card-body">
-                <div class="alert alert-warning">
-                    <i class="fa fa-info-circle"></i>
-                    <strong>Coming soon</strong> — LinkedIn OAuth integration is planned for a future release.
-                </div>
+                {% if not configured %}
+                    <div class="alert alert-warning mb-3">
+                        <i class="fa fa-info-circle"></i>
+                        <strong>Not set up yet.</strong> Add <code>LINKEDIN_CLIENT_ID</code>, <code>LINKEDIN_CLIENT_SECRET</code>
+                        and <code>LINKEDIN_REDIRECT_URI</code> to the blog's environment, then restart it. The guide on the right lists the steps.
+                    </div>
+                {% endif %}
 
                 <div class="d-flex align-items-center admin-panel-note">
-                    <div class="mr-3">
-                        <i class="fab fa-linkedin fa-3x text-secondary"></i>
-                    </div>
-                    <div>
-                        <h5 class="mb-1">Not connected</h5>
-                        <p class="mb-0 text-muted">Connect your LinkedIn account to automatically share new posts to your LinkedIn profile or company page.</p>
+                    <div class="mr-3"><i class="fab fa-linkedin fa-3x {{ integration ? 'text-primary' : 'text-secondary' }}"></i></div>
+                    <div class="flex-grow-1">
+                        {% if integration and token_valid %}
+                            <h5 class="mb-1">Connected <span class="badge badge-success ml-1">Active</span></h5>
+                            <p class="mb-0 text-muted">
+                                Member <code>{{ integration.userUrn }}</code>, connected by {{ integration.user.username }}.
+                                {% if integration.tokenExpiresAt %}The token expires on <strong>{{ integration.tokenExpiresAt|date('j M Y') }}</strong>; reconnect before then.{% endif %}
+                            </p>
+                        {% elseif integration %}
+                            <h5 class="mb-1">Token expired <span class="badge badge-danger ml-1">Reconnect</span></h5>
+                            <p class="mb-0 text-muted">LinkedIn tokens last 60 days. Reconnect to keep sharing posts.</p>
+                        {% else %}
+                            <h5 class="mb-1">Not connected</h5>
+                            <p class="mb-0 text-muted">Connect your LinkedIn profile and every post you publish is shared there with its banner and a link back to the blog.</p>
+                        {% endif %}
                     </div>
                 </div>
+            </div>
+            <div class="card-footer d-flex flex-wrap" style="gap:.5rem">
+                <form method="post" action="{{ path('app_admin_linkedin_connect') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('linkedin_connect') }}">
+                    <button type="submit" class="btn btn-primary" {{ configured ? '' : 'disabled' }}>
+                        <i class="fab fa-linkedin"></i> {{ integration ? 'Reconnect LinkedIn' : 'Connect LinkedIn' }}
+                    </button>
+                </form>
+                {% if integration %}
+                    <form method="post" action="{{ path('app_admin_linkedin_disconnect') }}" onsubmit="return confirm('Disconnect LinkedIn? Posts will stop being shared.')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('linkedin_disconnect') }}">
+                        <button type="submit" class="btn btn-outline-danger">Disconnect</button>
+                    </form>
+                {% endif %}
             </div>
         </div>
 
-        {# Planned features card #}
-        <div class="card card-outline card-secondary admin-card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fa fa-list"></i> Planned Features</h3>
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-share-alt"></i> Sharing</h3></div>
+            <form method="post" action="{{ path('app_admin_linkedin_settings') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('linkedin_settings') }}">
+                <div class="card-body">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="auto_share" name="auto_share" value="1" {{ auto_share ? 'checked' }}>
+                        <label class="custom-control-label" for="auto_share">Share posts on LinkedIn when they are published</label>
+                    </div>
+                    <p class="admin-form-help mt-2 mb-0">
+                        Covers posts you publish by hand, scheduled posts going live and automated posts. Each post is shared once.
+                        The text comes from the post's <code>linkedin_text</code> custom field (automation fills it in), otherwise the title and description.
+                    </p>
+                </div>
+                <div class="card-footer"><button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save</button></div>
+            </form>
+        </div>
+
+        <div class="card admin-table-card">
+            <div class="card-header"><h3 class="card-title mb-0">Published posts not on LinkedIn yet</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover admin-table mb-0">
+                    <tbody>
+                    {% for post in unshared %}
+                        <tr>
+                            <td><a class="admin-title-link" href="{{ path('app_admin_post_edit', {id: post.id}) }}">{{ post.title }}</a></td>
+                            <td class="small text-nowrap">{{ post.publishedAt ? post.publishedAt|date('j M Y') : '' }}</td>
+                            <td class="text-right">
+                                <form method="post" action="{{ path('app_admin_linkedin_share', {id: post.id}) }}" onsubmit="return confirm('Share this post on LinkedIn now?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('linkedin_share_' ~ post.id) }}">
+                                    <button type="submit" class="btn btn-xs btn-outline-primary" {{ token_valid ? '' : 'disabled' }}>Share now</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td class="text-center text-muted p-3">Every published post has been shared.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            <div class="card-body">
-                <ul class="list-unstyled">
-                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> OAuth 2.0 connection to LinkedIn API v2</li>
-                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> Auto-share published posts as LinkedIn articles</li>
-                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> Share to personal profile or company page</li>
-                    <li class="mb-2"><i class="fa fa-circle-notch text-muted mr-2"></i> Custom share message per post</li>
-                    <li class="mb-0"><i class="fa fa-circle-notch text-muted mr-2"></i> View share history and engagement stats</li>
-                </ul>
+        </div>
+
+        <div class="card admin-table-card">
+            <div class="card-header"><h3 class="card-title mb-0">Recently shared</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm admin-table mb-0">
+                    <tbody>
+                    {% for post in shared %}
+                        <tr>
+                            <td>{{ post.title }}</td>
+                            <td class="small text-nowrap">{{ post.linkedInSharedAt|date('j M Y H:i') }}</td>
+                            <td class="small"><a href="https://www.linkedin.com/feed/update/{{ post.linkedInPostUrn|url_encode }}/" target="_blank" rel="noopener noreferrer">View</a></td>
+                        </tr>
+                    {% else %}
+                        <tr><td class="text-center text-muted p-3">Nothing shared yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <div class="col-lg-4">
         <div class="card card-info admin-card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fa fa-info-circle"></i> Setup Guide</h3>
-            </div>
+            <div class="card-header"><h3 class="card-title"><i class="fa fa-info-circle"></i> Setup guide</h3></div>
             <div class="card-body">
-                <p class="text-muted text-sm">When available, setup will require:</p>
                 <ol class="text-sm pl-3">
-                    <li>Create a LinkedIn Developer App</li>
-                    <li>Add OAuth redirect URI</li>
-                    <li>Enter App ID and Secret in <code>.env</code></li>
-                    <li>Click "Connect" to authorise</li>
+                    <li class="mb-2">Create an app at the <a href="https://www.linkedin.com/developers/apps" target="_blank" rel="noopener">LinkedIn Developer Portal</a>. It needs a LinkedIn company page to belong to.</li>
+                    <li class="mb-2">Under <strong>Products</strong>, add <em>Share on LinkedIn</em> and <em>Sign In with LinkedIn using OpenID Connect</em>. Both are self-serve.</li>
+                    <li class="mb-2">Under <strong>Auth</strong>, add this redirect URL:<br><code class="text-break">{{ redirect_uri ?: url('app_admin_linkedin_callback') }}</code></li>
+                    <li class="mb-2">Copy the Client ID and Client Secret into the blog environment as <code>LINKEDIN_CLIENT_ID</code> and <code>LINKEDIN_CLIENT_SECRET</code>, and set <code>LINKEDIN_REDIRECT_URI</code> to the URL above.</li>
+                    <li>Restart the blog, then click <strong>Connect LinkedIn</strong>.</li>
                 </ol>
                 <hr>
-                <p class="text-muted text-sm mb-0">
-                    <i class="fa fa-external-link-alt mr-1"></i>
-                    <a href="https://developer.linkedin.com/" target="_blank" rel="noopener">LinkedIn Developer Portal</a>
-                </p>
+                <p class="text-muted text-sm mb-0">Scopes requested: <code>{{ scopes }}</code>. Tokens are stored encrypted.</p>
             </div>
         </div>
     </div>

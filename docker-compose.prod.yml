@@ -11,8 +11,11 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+    image: edfolio-blog-v2:prod
     container_name: edfolio-v2-php
     env_file: .env
+    volumes:
+      - uploads:/var/www/html/public/uploads
     networks:
       - milkyway
     restart: unless-stopped
@@ -22,6 +25,35 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+
+  worker:
+    image: edfolio-blog-v2:prod
+    container_name: edfolio-v2-worker
+    user: www-data
+    env_file: .env
+    volumes:
+      - uploads:/var/www/html/public/uploads
+    depends_on:
+      - php
+    # Runs queued jobs (LinkedIn shares, scheduled publishing) and, every five minutes,
+    # the scheduler tick that starts the feed automation when it is due.
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        until php bin/console doctrine:migrations:up-to-date --no-interaction >/dev/null 2>&1; do sleep 5; done
+        while true; do
+          php bin/console app:scheduler:tick --no-interaction || true
+          php bin/console messenger:consume async --time-limit=300 --memory-limit=256M --no-interaction || sleep 10
+        done
+    healthcheck:
+      disable: true
+    networks:
+      - milkyway
+    restart: unless-stopped
+
+volumes:
+  # Post images and generated banners; survives rebuilds and redeploys.
+  uploads:
 
 networks:
   milkyway:

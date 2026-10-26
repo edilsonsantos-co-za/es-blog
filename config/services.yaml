@@ -4,11 +4,26 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    env(ANTHROPIC_API_KEY): ''
+    env(AUTOMATION_AI_MODEL): 'claude-opus-5-5'
+    env(LINKEDIN_CLIENT_ID): ''
+    env(LINKEDIN_CLIENT_SECRET): ''
+    env(LINKEDIN_REDIRECT_URI): ''
+    env(LINKEDIN_API_VERSION): '202608'
 
 services:
     _defaults:
         autowire: true
         autoconfigure: true
+        bind:
+            string $projectDir: '%kernel.project_dir%'
+            string $anthropicApiKey: '%env(ANTHROPIC_API_KEY)%'
+            string $automationModel: '%env(AUTOMATION_AI_MODEL)%'
+            string $linkedInClientId: '%env(LINKEDIN_CLIENT_ID)%'
+            string $linkedInClientSecret: '%env(LINKEDIN_CLIENT_SECRET)%'
+            string $linkedInRedirectUri: '%env(LINKEDIN_REDIRECT_URI)%'
+            string $linkedInApiVersion: '%env(LINKEDIN_API_VERSION)%'
+            string $appSecret: '%kernel.secret%'
 
     App\:
         resource: '../src/'

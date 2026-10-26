@@ -110,6 +110,7 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 .admin-shell .nav-tabs .nav-link.active { background: var(--card); color: var(--accent); border-color: var(--line) var(--line) var(--card); }
 
 .admin-stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
+.admin-stat-grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .admin-stat-card { display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; border: 1px solid var(--line); border-radius: 24px; background: var(--card); box-shadow: var(--shadow); }
 .admin-stat-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .admin-stat-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-size: 16px; }
@@ -197,8 +198,11 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 
 .admin-avatar { width: 30px; height: 30px; object-fit: cover; border-radius: 50%; border: 1px solid var(--line); }
 
+@media (max-width: 1279.98px) {
+    .admin-stat-grid.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @media (max-width: 991.98px) {
-    .admin-stat-grid, .admin-form-grid { grid-template-columns: 1fr; }
+    .admin-stat-grid, .admin-stat-grid.cols-4, .admin-form-grid { grid-template-columns: 1fr; }
     .content-header .breadcrumb { float: none !important; margin-top: 12px; display: inline-flex; }
 }
 @media (max-width: 575.98px) {

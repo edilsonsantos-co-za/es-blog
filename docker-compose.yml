@@ -21,6 +21,37 @@ services:
       - milkyway
     restart: unless-stopped
 
+  worker:
+    image: edfolio-blog-v2-php
+    container_name: edfolio-v2-worker
+    user: www-data
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      APP_SECRET: ${APP_SECRET:-8f07e8904c675e1a885a7f20225ab8cc}
+      DATABASE_URL: "mysql://edfolio_blog_user:Edf0l!0Bl0g_2025@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
+      MAILER_DSN: "null://null"
+    depends_on:
+      - php
+    # Runs queued jobs (LinkedIn shares, scheduled publishing) and, every five minutes,
+    # the scheduler tick that starts the feed automation when it is due.
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        until php bin/console doctrine:migrations:up-to-date --no-interaction >/dev/null 2>&1; do sleep 5; done
+        while true; do
+          php bin/console app:scheduler:tick --no-interaction || true
+          php bin/console messenger:consume async --time-limit=300 --memory-limit=256M --no-interaction || sleep 10
+        done
+    healthcheck:
+      disable: true
+    networks:
+      - milkyway
+    restart: unless-stopped
+
 networks:
   milkyway:
     external: true
