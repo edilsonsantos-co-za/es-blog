@@ -1,0 +1,68 @@
+<div class="post-rows">
+    {% for post in posts %}
+    {% set post_date = post.publishedAt ?? post.createdAt %}
+    {% set post_url = path('app_blog_post', {year: post_date|date('Y'), month: post_date|date('m'), slug: post.slug}) %}
+    <article class="post-row">
+        <time class="row-date" datetime="{{ post_date|date('c') }}">
+            <span class="row-day">{{ post_date|date('d') }}</span>
+            <span class="mono">{{ post_date|date('M Y') }}</span>
+        </time>
+
+        <div class="row-main">
+            <div class="post-card-kicker">
+                {% if post.category %}
+                <a class="post-category" href="{{ path('app_blog_category', {slug: post.category.slug}) }}">{{ post.category.title }}</a>
+                {% endif %}
+                <span>{{ reading_time(post.body) }} min read</span>
+            </div>
+            <h2 class="row-title"><a href="{{ post_url }}">{{ post.title }}</a></h2>
+            <p class="row-excerpt">{{ post.description ?: excerpt(post.body|markdown, 200) }}</p>
+            {% if post.tags|length > 0 %}
+            <div class="post-card-tags" aria-label="Post tags">
+                {% for tag in post.tags|slice(0, 4) %}
+                <a href="{{ path('app_blog_tag', {slug: tag.slug}) }}" class="tag-pill">#{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <a class="row-thumb{{ post.image ? '' : ' row-thumb-empty' }}" href="{{ post_url }}" tabindex="-1" aria-hidden="true">
+            {% if post.image %}
+            <img src="{{ post.image }}" alt="" loading="lazy">
+            {% else %}
+            <span>{{ (post.category ? post.category.title : post.title)|first|upper }}</span>
+            {% endif %}
+        </a>
+    </article>
+    {% else %}
+    <div class="empty-state">
+        <p class="empty-state-eyebrow">Nothing to show yet</p>
+        <h2>No posts found</h2>
+        <p>Try a different search, browse the latest posts, or check back soon for new writing.</p>
+        <div class="empty-state-actions">
+            <a class="btn btn-primary" href="{{ path('app_blog_index') }}">Browse latest posts</a>
+            <a class="btn btn-secondary" href="{{ path('app_blog_search') }}">Search again</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if posts is not null and posts.pageCount > 1 %}
+<nav class="pagination" aria-label="Pagination">
+    {% if posts.currentPageNumber > 1 %}
+    <a href="{{ path(route, route_params|merge({page: posts.currentPageNumber - 1})) }}" class="pagination-prev">← Previous</a>
+    {% endif %}
+
+    {% for p in 1..posts.pageCount %}
+    {% if p == posts.currentPageNumber %}
+    <span class="pagination-current" aria-current="page">{{ p }}</span>
+    {% else %}
+    <a href="{{ path(route, route_params|merge({page: p})) }}" class="pagination-page">{{ p }}</a>
+    {% endif %}
+    {% endfor %}
+
+    {% if posts.currentPageNumber < posts.pageCount %}
+    <a href="{{ path(route, route_params|merge({page: posts.currentPageNumber + 1})) }}" class="pagination-next">Next →</a>
+    {% endif %}
+</nav>
+{% endif %}

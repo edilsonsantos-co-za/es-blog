@@ -43,20 +43,23 @@
 <body class="theme-atlas {% block body_class %}{% endblock %}">
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="top">
-    <div class="wrap">
-        {% if site_logo %}
-            <a href="{{ path('app_blog_index') }}" class="logo logo-img" aria-label="{{ site_title }} home">
-                <img src="{{ site_logo }}" alt="">
-            </a>
-        {% else %}
-            <a href="{{ path('app_blog_index') }}" class="logo" aria-label="{{ site_title }} home">{{ site_title|first|upper }}</a>
-        {% endif %}
-        <a href="{{ path('app_blog_index') }}" class="brand">{{ site_title }}</a>
+<header class="masthead">
+    <div class="wrap mast-row">
+        <a href="{{ path('app_blog_index') }}" class="brand" aria-label="{{ site_title }} home">
+            {% if site_logo %}
+                <span class="logo logo-img"><img src="{{ site_logo }}" alt=""></span>
+            {% else %}
+                <span class="logo" aria-hidden="true">{{ site_title|first|upper }}</span>
+            {% endif %}
+            <span class="brand-text">
+                <b>{{ site_title }}</b>
+                <small class="mono">Journal</small>
+            </span>
+        </a>
 
-        <nav aria-label="Primary navigation">
-            <ul class="tabs" id="menu">
-                <li><a href="{{ path('app_blog_index') }}"{% if current_route == 'app_blog_index' %} aria-current="page"{% endif %}>Home</a></li>
+        <nav class="mast-nav" aria-label="Primary navigation">
+            <ul class="nav" id="menu">
+                <li><a href="{{ path('app_blog_index') }}"{% if current_route == 'app_blog_index' %} aria-current="page"{% endif %}>Latest</a></li>
                 {% for item in menu_items %}
                     {% set has_children = item.children is defined and item.children|length > 0 %}
                     <li{% if has_children %} class="has-sub"{% endif %}>
@@ -70,16 +73,26 @@
                         {% endif %}
                     </li>
                 {% endfor %}
-                <li><a href="{{ path('app_blog_search') }}"{% if current_route == 'app_blog_search' %} aria-current="page"{% endif %}>Search</a></li>
+                {% for cat in all_categories|slice(0, 3) %}
+                <li><a href="{{ path('app_blog_category', {slug: cat.slug}) }}"{% if app.request.attributes.get('slug') == cat.slug and current_route == 'app_blog_category' %} aria-current="page"{% endif %}>{{ cat.title }}</a></li>
+                {% endfor %}
+                <li class="nav-mobile-only search-link"><a href="{{ path('app_blog_search') }}">Search</a></li>
                 {% if portfolio_url %}
-                <li class="tabs-portfolio"><a href="{{ portfolio_url }}">Portfolio ↗</a></li>
+                <li class="nav-mobile-only"><a href="{{ portfolio_url }}">Portfolio ↗</a></li>
                 {% endif %}
             </ul>
         </nav>
 
+        <form class="mast-search" action="{{ path('app_blog_search') }}" method="get" role="search">
+            <label class="sr-only" for="mast-search-input">Search posts</label>
+            <span aria-hidden="true">⌕</span>
+            <input id="mast-search-input" type="search" name="q" placeholder="Search posts" value="{{ app.request.query.get('q') }}">
+            <kbd aria-hidden="true">/</kbd>
+        </form>
+
         <div class="top-actions">
             {% if portfolio_url %}
-            <a class="btn primary portfolio-btn" href="{{ portfolio_url }}">Portfolio ↗</a>
+            <a class="btn btn-outline portfolio-btn" href="{{ portfolio_url }}">Portfolio ↗</a>
             {% endif %}
             <button class="icon-btn" id="theme-btn" type="button" aria-label="Toggle dark mode">☾</button>
             <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu">☰</button>
@@ -199,11 +212,20 @@
                 if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
             });
         }, { threshold: 0.08 });
-        document.querySelectorAll('.post-card, .bento > .tile').forEach(function (el) {
+        document.querySelectorAll('.post-row, .hero > *').forEach(function (el) {
             el.classList.add('reveal');
             io.observe(el);
         });
     }
+
+    var searchInput = document.getElementById('mast-search-input');
+    document.addEventListener('keydown', function (e) {
+        var tag = (e.target.tagName || '').toLowerCase();
+        if (e.key === '/' && searchInput && tag !== 'input' && tag !== 'textarea') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
 
     var clock = document.querySelector('[data-clock]');
     if (clock) {
