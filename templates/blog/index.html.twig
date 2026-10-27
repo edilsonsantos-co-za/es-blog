@@ -12,30 +12,74 @@
 {% set post_total = posts is not null ? posts.totalItemCount : 0 %}
 
 {% if first_page %}
-<section class="hero{{ latest ? '' : ' hero-solo' }}" aria-label="Introduction">
+{# Cover deck: the latest posts rotate as a stack of covers. Posts without an image get generative cover art
+   drawn from their title; with no posts yet, the deck shows the top topics instead. #}
+{% set slides = [] %}
+{% if posts is not null %}
+    {% for post in posts|slice(0, 4) %}
+        {% set post_date = post.publishedAt ?? post.createdAt %}
+        {% set slides = slides|merge([{
+            url: path('app_blog_post', {year: post_date|date('Y'), month: post_date|date('m'), slug: post.slug}),
+            title: post.title,
+            kicker: post.category ? post.category.title : 'Journal',
+            palette: post.category ? post.category.title : 'Journal',
+            meta: post_date|date('j M Y') ~ ' · ' ~ reading_time(post.body) ~ ' min',
+            excerpt: post.description ?: excerpt(post.body|markdown, 160),
+            image: post.image,
+            cta: 'Read article →'
+        }]) %}
+    {% endfor %}
+{% endif %}
+{% if slides is empty %}
+    {% for item in tag_cloud|slice(0, 4) %}
+        {% set slides = slides|merge([{
+            url: path('app_blog_tag', {slug: item.tag.slug}),
+            title: '#' ~ item.tag.name,
+            kicker: 'Topic',
+            palette: item.tag.name,
+            meta: item.postCount > 0 ? item.postCount ~ ' post' ~ (item.postCount == 1 ? '' : 's') : 'First posts coming soon',
+            excerpt: 'Everything written under #' ~ item.tag.name ~ ', newest first.',
+            image: null,
+            cta: 'Browse topic →'
+        }]) %}
+    {% endfor %}
+{% endif %}
+{% set first = slides|first %}
+<section class="hero hero-deck{{ first ? '' : ' hero-solo' }}" aria-label="Featured" data-deck>
+    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="hero-copy">
-        <span class="label">The journal · {{ post_total }} post{{ post_total == 1 ? '' : 's' }}</span>
-        <h1>{{ site_description ?: site_title }}</h1>
-        <p class="hero-by">Written by <b>{{ site_title }}</b>{% if tag_cloud|length > 0 %} on {% for item in tag_cloud|slice(0, 3) %}{{ item.tag.name }}{{ loop.last ? '' : (loop.revindex0 == 1 ? ' and ' : ', ') }}{% endfor %}{% endif %}.</p>
+        <span class="label" data-deck-label>The journal · {{ post_total }} post{{ post_total == 1 ? '' : 's' }}{% if first %} · {{ first.kicker }}{% endif %}</span>
+        <h1 data-deck-title>{{ first ? first.title : (site_description ?: site_title) }}</h1>
+        <p class="hero-by" data-deck-excerpt>{{ first ? first.excerpt : 'Written by ' ~ site_title ~ '.' }}</p>
         <div class="actions">
-            <a class="btn btn-primary" href="{{ path('app_blog_feed') }}">Subscribe via RSS</a>
+            {% if first %}<a class="btn btn-primary" href="{{ first.url }}" data-deck-cta>{{ first.cta }}</a>{% endif %}
+            <a class="btn" href="{{ path('app_blog_feed') }}">Subscribe via RSS</a>
             {% if portfolio_url %}<a class="btn" href="{{ portfolio_url }}">About me ↗</a>{% endif %}
         </div>
+        {% if slides|length > 1 %}
+        <div class="deck-nav" role="group" aria-label="Featured items">
+            {% for slide in slides %}<button type="button" aria-label="Show {{ slide.title }}"{{ loop.first ? ' aria-current="true"' : '' }}></button>{% endfor %}
+        </div>
+        {% endif %}
     </div>
 
-    {% if latest %}
-    {% set latest_url = path('app_blog_post', {
-        year: (latest.publishedAt ?? latest.createdAt)|date('Y'),
-        month: (latest.publishedAt ?? latest.createdAt)|date('m'),
-        slug: latest.slug
-    }) %}
-    <a class="feature" href="{{ latest_url }}">
-        {% if latest.image %}<img class="feature-img" src="{{ latest.image }}" alt="">{% endif %}
-        <span class="feature-meta mono"><i class="dot" aria-hidden="true"></i> Latest · {{ (latest.publishedAt ?? latest.createdAt)|date('j M Y') }} · {{ reading_time(latest.body) }} min</span>
-        <strong class="feature-title">{{ latest.title }}</strong>
-        <span class="feature-excerpt">{{ latest.description ?: excerpt(latest.body|markdown, 160) }}</span>
-        <span class="feature-cta">Read article →</span>
-    </a>
+    {% if first %}
+    <div class="deck">
+        {% for slide in slides %}
+        <a class="cover" href="{{ slide.url }}"{{ loop.first ? '' : ' tabindex="-1"' }}
+           data-title="{{ slide.title }}" data-kicker="{{ slide.kicker }}" data-palette="{{ slide.palette }}" data-excerpt="{{ slide.excerpt }}" data-cta="{{ slide.cta }}">
+            <span class="cover-art">
+                {% if slide.image %}<img src="{{ slide.image }}" alt="" loading="{{ loop.first ? 'eager' : 'lazy' }}">{% else %}<canvas aria-hidden="true"></canvas>{% endif %}
+            </span>
+            <span class="cover-kicker">{{ slide.kicker }}</span>
+            <span class="cover-body">
+                <span class="mono">{{ slide.meta }}</span>
+                <strong>{{ slide.title }}</strong>
+            </span>
+        </a>
+        {% endfor %}
+    </div>
+    <script src="{{ asset('assets/blog/cover-deck.js') }}" defer></script>
     {% endif %}
 </section>
 

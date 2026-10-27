@@ -196,7 +196,7 @@
                 if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
             });
         }, { threshold: 0.08 });
-        document.querySelectorAll('.post-row, .hero > *').forEach(function (el) {
+        document.querySelectorAll('.post-row, .hero > :not(.aurora)').forEach(function (el) {
             el.classList.add('reveal');
             io.observe(el);
         });
