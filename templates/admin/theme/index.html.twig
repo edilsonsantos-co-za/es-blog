@@ -1,0 +1,141 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Themes{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <p class="admin-kicker">Appearance</p>
+        <h1 class="m-0">Themes</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">Themes</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<style>
+    .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    .theme-card { display: flex; flex-direction: column; margin: 0; }
+    .theme-shot { aspect-ratio: 16 / 10; background: var(--card-2, #f5f7fb); border-bottom: 1px solid var(--line, #dde3ee); overflow: hidden; display: grid; place-items: center; color: var(--muted, #5b6478); font-weight: 800; font-size: 28px; }
+    .theme-shot img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .theme-card .card-body { flex: 1; display: grid; gap: 6px; align-content: start; }
+    .theme-meta { font: 500 12px 'JetBrains Mono', monospace; color: var(--muted, #5b6478); }
+    .theme-card .card-footer { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .theme-card form { margin: 0; }
+</style>
+
+<div class="card admin-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fa fa-palette"></i> Installed</h3>
+    </div>
+    <div class="card-body">
+        <div class="theme-grid">
+            {% for theme in installed %}
+            <div class="card theme-card">
+                <div class="theme-shot">
+                    {% if theme.preview %}<img src="{{ path('app_theme_asset', {id: theme.id, path: theme.preview}) }}" alt="" loading="lazy">{% else %}{{ theme.name|first }}{% endif %}
+                </div>
+                <div class="card-body">
+                    <strong>{{ theme.name }} {% if theme.id == active %}<span class="badge badge-success">Active</span>{% endif %}</strong>
+                    <span class="theme-meta">{{ theme.version ? 'v' ~ theme.version ~ ' · ' : 'Built in · ' }}{{ theme.license }}{{ theme.author ? ' · ' ~ theme.author : '' }}</span>
+                    {% if theme.summary %}<small class="text-muted">{{ theme.summary }}</small>{% endif %}
+                    {% if theme.id != 'atlas' and not theme.signed %}<small class="text-warning"><i class="fa fa-exclamation-triangle"></i> Unsigned package</small>{% endif %}
+                </div>
+                <div class="card-footer">
+                    {% if theme.id != active %}
+                    <form method="post" action="{{ path('app_admin_themes_activate', {id: theme.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('theme_activate') }}">
+                        <button class="btn btn-sm btn-primary">Activate</button>
+                    </form>
+                    {% endif %}
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_blog_index') }}" target="_blank" rel="noopener">View site</a>
+                    {% if theme.repository %}<a class="btn btn-sm btn-link" href="{{ theme.repository }}" target="_blank" rel="noopener">Source</a>{% endif %}
+                    {% if theme.id != 'atlas' %}
+                    <form method="post" action="{{ path('app_admin_themes_remove', {id: theme.id}) }}" class="ml-auto"
+                          onsubmit="return confirm('Remove {{ theme.name|e('js') }}? The site switches back to Atlas if it is active.')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('theme_remove') }}">
+                        <button class="btn btn-sm btn-outline-danger">Remove</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="card admin-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fa fa-store"></i> ES Marketplace</h3>
+        <div class="card-tools"><a href="{{ store_url }}" target="_blank" rel="noopener">Open the store ↗</a></div>
+    </div>
+    <div class="card-body">
+        {% if store_error %}
+        <div class="alert alert-warning mb-0">{{ store_error }}</div>
+        {% elseif store_themes is empty %}
+        <p class="text-muted mb-0">The store has no blog themes to install right now.</p>
+        {% else %}
+        <div class="theme-grid">
+            {% for theme in store_themes %}
+            <div class="card theme-card">
+                <div class="theme-shot">
+                    {% if theme.preview %}<img src="{{ store_url }}/{{ theme.preview }}" alt="" loading="lazy">{% else %}{{ theme.name|first }}{% endif %}
+                </div>
+                <div class="card-body">
+                    <strong>{{ theme.name }}</strong>
+                    <span class="theme-meta">v{{ theme.version }} · {{ theme.license }} · {{ (theme.size / 1024)|round }} KB</span>
+                    <small class="text-muted">{{ theme.summary }}</small>
+                </div>
+                <div class="card-footer">
+                    {% if theme.state == 'installed' %}
+                    <span class="badge badge-light">Installed</span>
+                    {% else %}
+                    <form method="post" action="{{ path('app_admin_themes_install', {id: theme.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('theme_install') }}">
+                        <input type="hidden" name="activate" value="1">
+                        <button class="btn btn-sm btn-primary">{{ theme.state == 'update' ? 'Update' : 'Install & activate' }}</button>
+                    </form>
+                    {% if theme.state == 'new' %}
+                    <form method="post" action="{{ path('app_admin_themes_install', {id: theme.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('theme_install') }}">
+                        <button class="btn btn-sm btn-outline-secondary">Install only</button>
+                    </form>
+                    {% endif %}
+                    {% endif %}
+                    {% if theme.repository %}<a class="btn btn-sm btn-link" href="{{ theme.repository }}" target="_blank" rel="noopener">Source</a>{% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card admin-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fa fa-upload"></i> Upload a package</h3>
+    </div>
+    <form method="post" action="{{ path('app_admin_themes_upload') }}" enctype="multipart/form-data">
+        <div class="card-body">
+            <p class="text-muted">Downloaded a theme from the store? Upload the .zip here. Only packages signed by the ES Marketplace store install.</p>
+            <input type="hidden" name="_token" value="{{ csrf_token('theme_upload') }}">
+            <div class="form-group">
+                <label for="theme_package">Theme package</label>
+                <input type="file" class="form-control-file" id="theme_package" name="package" accept=".zip,application/zip" required>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="theme_activate" name="activate" value="1" checked>
+                <label class="form-check-label" for="theme_activate">Activate after installing</label>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button class="btn btn-primary"><i class="fa fa-upload"></i> Install package</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

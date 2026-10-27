@@ -41,7 +41,8 @@ RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interactio
 COPY . .
 RUN APP_ENV=prod APP_DEBUG=0 composer run-script post-install-cmd --no-interaction
 
-RUN chown -R www-data:www-data var/
+# var/themes is a volume in production; create it here so the volume starts owned by www-data.
+RUN mkdir -p var/themes && chown -R www-data:www-data var/
 
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

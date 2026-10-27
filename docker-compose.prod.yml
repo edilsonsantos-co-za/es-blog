@@ -16,6 +16,7 @@ services:
     env_file: .env
     volumes:
       - uploads:/var/www/html/public/uploads
+      - themes:/var/www/html/var/themes
     networks:
       - milkyway
     restart: unless-stopped
@@ -54,6 +55,8 @@ services:
 volumes:
   # Post images and generated banners; survives rebuilds and redeploys.
   uploads:
+  # Themes installed from Admin -> Themes; survives rebuilds and redeploys.
+  themes:
 
 networks:
   milkyway:

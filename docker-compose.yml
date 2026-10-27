@@ -17,6 +17,8 @@ services:
       DATABASE_URL: "mysql://edfolio_blog_user:Edf0l!0Bl0g_2025@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
       MAILER_DSN: "null://null"
+      # The store container on milkyway; store.edilsonsantos.local only resolves on the host.
+      THEME_STORE_URL: http://es-marketplace-store
     networks:
       - milkyway
     restart: unless-stopped

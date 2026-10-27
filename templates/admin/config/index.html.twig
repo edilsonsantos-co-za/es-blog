@@ -90,7 +90,7 @@
                             <option value="{{ theme.id }}"{% if (c['site.theme'] ?? 'atlas') == theme.id %} selected{% endif %}>{{ theme.name }}</option>
                             {% endfor %}
                         </select>
-                        <small class="form-text text-muted">Get more themes from the <a href="{{ c['site.store_url'] ?? 'https://store.edilsonsantos.co.za' }}" target="_blank" rel="noopener">ES Marketplace store</a>, then unzip them into the blog root.</small>
+                        <small class="form-text text-muted">Install more themes from the ES Marketplace under <a href="{{ path('app_admin_themes') }}">Settings → Themes</a>.</small>
                     </div>
                     <div class="form-group">
                         <label for="site_logo">Logo URL</label>

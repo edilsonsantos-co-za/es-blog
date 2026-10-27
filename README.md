@@ -26,13 +26,14 @@ A self-hosted blog and publishing workspace built on Symfony 7.4 LTS.
   that match your topics and writes posts about them with a generated banner (drafts for review by default)
 
 **Design**
-- One built-in design, Atlas, shared with the EdFolio portfolio: a masthead, a featured-post hero, dated post rows,
-  and light and dark modes. The admin and sign-in pages use the same palette and type.
-- Older third-party themes moved to the ES Marketplace store. You install a downloaded theme by unzipping it
-  in the app root: it adds `templates/themes/<id>/blog/` and `public/assets/themes/<id>/`. Then run
-  `php bin/console cache:clear` and pick the theme under Admin → Configuration → Public theme. Admin pages always
-  use the core templates, and an unknown theme falls back to Atlas. In production the theme files are part of
-  the image, so commit them (or add them before the build) rather than unzipping into a running container.
+- One built-in design, Atlas, shared with the EdFolio portfolio: a masthead, a cover-deck hero of the latest posts,
+  dated post rows, and light and dark modes. The admin and sign-in pages use the same palette and type.
+- More themes install from the ES Marketplace under Admin → Settings → Themes: pick one from the store or upload a
+  downloaded package. No unzipping, file copying or cache clearing. Packages must be signed by a key in
+  `config/theme-keys/` (each file is checked against the signed manifest) and land in `var/themes/<id>/`, which is
+  a volume in production so themes survive redeploys. Admin pages always use the core templates, and an unknown or
+  removed theme falls back to Atlas. `THEME_STORE_URL` sets the store; `THEMES_ALLOW_UNSIGNED=1` allows unsigned
+  packages (not recommended: templates are code).
 
 **Operations**
 - Docker image (PHP 8.4 with Apache) and a production compose file. The container runs migrations and warms the cache on start.

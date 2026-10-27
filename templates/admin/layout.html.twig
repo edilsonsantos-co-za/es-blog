@@ -14,7 +14,7 @@
     'app_admin_pages',
     'app_admin_page_edit'
 ] %}
-{% set settings_active = current_route starts with 'app_admin_config' or current_route starts with 'app_admin_user' or current_route starts with 'app_admin_menu' %}
+{% set settings_active = current_route starts with 'app_admin_config' or current_route starts with 'app_admin_themes' or current_route starts with 'app_admin_user' or current_route starts with 'app_admin_menu' %}
 {% set maint_active = current_route starts with 'app_admin_cache' or current_route starts with 'app_admin_linkedin' or current_route starts with 'app_admin_automation' %}
 <!DOCTYPE html>
 <html lang="en">
@@ -205,6 +205,11 @@
                             </a>
                         </li>
                         {% if is_granted('ROLE_ADMIN') %}
+                        <li class="nav-item">
+                            <a href="{{ path('app_admin_themes') }}" class="nav-link {{ current_route starts with 'app_admin_themes' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon"></i><p>Themes</p>
+                            </a>
+                        </li>
                         <li class="nav-item">
                             <a href="{{ path('app_admin_users') }}" class="nav-link {{ current_route starts with 'app_admin_user' ? 'active' : '' }}">
                                 <i class="fas fa-circle nav-icon"></i><p>Users</p>
