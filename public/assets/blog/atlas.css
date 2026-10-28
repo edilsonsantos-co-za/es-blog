@@ -248,13 +248,15 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
 .post-nav-next { grid-column: 2; text-align: right; }
 
 /* Footer */
-.foot { padding: 32px 0 40px; }
-.foot-grid { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.foot-tile { padding: 18px 22px; flex: 1 1 320px; }
-.foot-tile .label { margin: 0; }
-.foot-copy { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
-.foot-meta { display: flex; gap: 14px; align-items: center; color: var(--muted); font-size: 14px; flex-wrap: wrap; }
-.foot-meta a { font-weight: 700; color: var(--text); }
+/* Footer: shared with the store and the portfolio */
+.site-foot { margin-top: 48px; border-top: 1px solid var(--line); background: var(--card); }
+.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px 28px; padding: 24px 0 28px; color: var(--muted); }
+.foot-brand .logo { width: 28px; height: 28px; border-radius: 8px; font-size: 13px; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 6px 20px; font-weight: 600; font-size: 14px; }
+.foot-links a { color: var(--muted); text-decoration: none; }
+.foot-links a:hover { color: var(--accent); }
+.foot-copy { font-size: 12px; }
+@media (max-width: 640px) { .foot { flex-direction: column; align-items: flex-start; } }
 
 .reveal { opacity: 0; transform: translateY(16px) scale(.98); transition: opacity .6s, transform .6s; }
 .reveal.in { opacity: 1; transform: none; }

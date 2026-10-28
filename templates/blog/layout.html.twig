@@ -70,11 +70,11 @@
                 {% for cat in all_categories|slice(0, 3) %}
                 <li><a href="{{ path('app_blog_category', {slug: cat.slug}) }}"{% if app.request.attributes.get('slug') == cat.slug and current_route == 'app_blog_category' %} aria-current="page"{% endif %}>{{ cat.title }}</a></li>
                 {% endfor %}
-                {% if store_url %}<li><a href="{{ store_url }}">Store ↗</a></li>{% endif %}
                 <li class="nav-mobile-only search-link"><a href="{{ path('app_blog_search') }}">Search</a></li>
                 {% if portfolio_url %}
                 <li class="nav-mobile-only"><a href="{{ portfolio_url }}">Portfolio ↗</a></li>
                 {% endif %}
+                {% if store_url %}<li class="nav-mobile-only"><a href="{{ store_url }}">Store ↗</a></li>{% endif %}
                 <li class="nav-mobile-only"><a href="{{ path('app_login') }}">Sign in</a></li>
             </ul>
         </nav>
@@ -88,8 +88,9 @@
 
         <div class="top-actions">
             {% if portfolio_url %}
-            <a class="btn btn-outline portfolio-btn" href="{{ portfolio_url }}">Portfolio ↗</a>
+            <a class="btn portfolio-btn" href="{{ portfolio_url }}">Portfolio ↗</a>
             {% endif %}
+            {% if store_url %}<a class="btn portfolio-btn" href="{{ store_url }}">Store ↗</a>{% endif %}
             <button class="icon-btn theme-toggle" id="theme-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
                 <svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 14.3A8.5 8.5 0 1 1 9.7 3.5a6.8 6.8 0 0 0 10.8 10.8z"/></svg>
                 <svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
@@ -163,19 +164,26 @@
     {% endblock %}
 </div>
 
-<footer class="foot">
-    <div class="wrap foot-grid">
-        <div class="tile foot-tile">
-            <p class="label">{{ site_title }}</p>
-            {% if site_description %}<p class="foot-copy">{{ site_description }}</p>{% endif %}
-        </div>
-        <div class="foot-meta">
+{# Same footer as the store and the portfolio: brand, this app's links, then the sister apps. #}
+<footer class="site-foot">
+    <div class="wrap foot">
+        <a class="brand foot-brand" href="{{ path('app_blog_index') }}">
+            {% if site_logo %}
+                <span class="logo logo-img"><img src="{{ site_logo }}" alt=""></span>
+            {% else %}
+                <span class="logo" aria-hidden="true">{{ site_title|first|upper }}</span>
+            {% endif %}
+            <span class="brand-text"><b>{{ site_title }}</b><small class="mono">Journal</small></span>
+        </a>
+        <nav class="foot-links" aria-label="Footer">
+            <a href="{{ path('app_blog_index') }}">Latest</a>
+            <a href="{{ path('app_blog_search') }}">Search</a>
             <a href="{{ path('app_blog_feed') }}">RSS</a>
-            {% if portfolio_url %}<a href="{{ portfolio_url }}">Portfolio</a>{% endif %}
-            {% if store_url %}<a href="{{ store_url }}">Store</a>{% endif %}
-            <span>&copy; {{ "now"|date("Y") }}</span>
-            <span class="mono">{{ app_release_tag }}</span>
-        </div>
+            {% if portfolio_url %}<a href="{{ portfolio_url }}">Portfolio ↗</a>{% endif %}
+            {% if store_url %}<a href="{{ store_url }}">Store ↗</a>{% endif %}
+            {% if portfolio_url %}<a href="{{ portfolio_url|trim('/', 'right') }}/#contact">Contact</a>{% endif %}
+        </nav>
+        <span class="foot-copy mono">&copy; {{ "now"|date("Y") }} {{ site_title }}{% if app_release_tag %} · {{ app_release_tag }}{% endif %}</span>
     </div>
 </footer>
 
