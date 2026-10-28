@@ -17,30 +17,53 @@
 {% endblock %}
 
 {% block content %}
+{# Dashboard bento: the same tile language as the public Atlas pages. A welcome tile leads, the status counts link to
+   their lists, and the most-read recent post fills the last slot. #}
 {% set dashboard_stats = [
-    {label: 'Published', value: stats.published, icon: 'fa-newspaper', tone: 'tone-success', badge: 'Live', badge_class: 'badge-success', help: 'Visible on the site'},
-    {label: 'Drafts', value: stats.draft, icon: 'fa-pen', tone: '', badge: 'In progress', badge_class: 'badge-secondary', help: 'Ready for more editing'},
-    {label: 'Scheduled', value: stats.scheduled, icon: 'fa-calendar-alt', tone: 'tone-warning', badge: 'Queued', badge_class: 'badge-warning', help: 'Waiting for publish time'}
+    {label: 'Published', value: stats.published, icon: 'fa-newspaper', tone: 'tone-success', help: 'Visible on the site', url: path('app_admin_posts')},
+    {label: 'Drafts', value: stats.draft, icon: 'fa-pen', tone: '', help: 'Ready for more editing', url: path('app_admin_posts_drafts')},
+    {label: 'Scheduled', value: stats.scheduled, icon: 'fa-calendar-alt', tone: 'tone-warning', help: 'Waiting for publish time', url: path('app_admin_posts_scheduled')}
 ] %}
+{% set top_post = recent_posts|length > 0 ? (recent_posts|sort((a, b) => b.views <=> a.views)|first) : null %}
+{% set hour = 'now'|date('G') %}
 
-<div class="admin-stat-grid" aria-label="Content status summary">
+<div class="admin-bento" aria-label="Overview">
+    <section class="admin-tile admin-welcome">
+        <p class="admin-kicker">{{ site_title }}</p>
+        <h2>{{ hour < 12 ? 'Good morning' : (hour < 18 ? 'Good afternoon' : 'Good evening') }}, {{ app.user.username }}.</h2>
+        <p class="admin-stat-help">{{ stats.published + stats.draft + stats.scheduled }} posts in total. Pick up a draft or start something new.</p>
+        <div class="admin-welcome-actions">
+            <a href="{{ path('app_admin_post_new') }}" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i> New post</a>
+            <a href="{{ path('app_blog_index') }}" class="btn btn-default" target="_blank" rel="noopener">View site ↗</a>
+            {% if is_granted('ROLE_ADMIN') %}<a href="{{ path('app_admin_themes') }}" class="btn btn-default"><i class="fas fa-palette" aria-hidden="true"></i> Themes</a>{% endif %}
+        </div>
+    </section>
     {% for item in dashboard_stats %}
-    <article class="admin-stat-card">
+    <a class="admin-tile admin-stat-card{{ loop.first ? ' is-accent' : '' }}" href="{{ item.url }}">
         <div class="admin-stat-top">
-            <span class="admin-stat-icon {{ item.tone }}" aria-hidden="true"><i class="fas {{ item.icon }}"></i></span>
-            <span class="badge {{ item.badge_class }}">{{ item.badge }}</span>
-        </div>
-        <div>
             <span class="admin-stat-label">{{ item.label }}</span>
-            <span class="admin-stat-number">{{ item.value }}</span>
+            <span class="admin-stat-icon {{ item.tone }}" aria-hidden="true"><i class="fas {{ item.icon }}"></i></span>
         </div>
+        <span class="admin-stat-number">{{ item.value }}</span>
         <span class="admin-stat-help">{{ item.help }}</span>
-    </article>
+    </a>
     {% endfor %}
+    <a class="admin-tile admin-stat-card" href="{{ top_post ? path('app_admin_post_edit', {id: top_post.id}) : path('app_admin_posts_popular') }}">
+        <div class="admin-stat-top">
+            <span class="admin-stat-label">Most read lately</span>
+            <span class="admin-stat-icon" aria-hidden="true"><i class="fas fa-chart-line"></i></span>
+        </div>
+        {% if top_post %}
+        <strong class="admin-top-title">{{ top_post.title }}</strong>
+        <span class="admin-stat-help">{{ top_post.views }} view{{ top_post.views == 1 ? '' : 's' }}</span>
+        {% else %}
+        <span class="admin-stat-help">Your most-read recent post shows here once you publish.</span>
+        {% endif %}
+    </a>
 </div>
 
 {# Recent posts #}
-<div class="card admin-table-card">
+<div class="card admin-table-card admin-tile-wide">
     <div class="card-header d-flex">
         <div>
             <p class="admin-kicker">Writing queue</p>
