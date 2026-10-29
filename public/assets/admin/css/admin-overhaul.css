@@ -108,6 +108,14 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 .admin-shell .nav-tabs, .admin-shell .card-header-tabs { border-color: var(--line); }
 .admin-shell .nav-tabs .nav-link { border-radius: 10px 10px 0 0; color: var(--muted); font-weight: 600; }
 .admin-shell .nav-tabs .nav-link.active { background: var(--card); color: var(--accent); border-color: var(--line) var(--line) var(--card); }
+/* A tab bar that is the card header: tabs fill the full bar height, the active one is a tinted segment with an accent underline */
+.admin-shell .card-header:has(> .nav-tabs) { padding: 0 !important; }
+.admin-shell .card-header:has(> .nav-tabs):last-child { border-bottom: 0; }
+.admin-shell .card-header > .nav-tabs { border-bottom: 0; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.admin-shell .card-header > .nav-tabs .nav-item { margin-bottom: 0; }
+.admin-shell .card-header > .nav-tabs .nav-link { display: flex; align-items: center; gap: 6px; height: 100%; min-height: 52px; margin: 0; padding: 0 20px; border: 0; border-radius: 0; white-space: nowrap; transition: background .15s, color .15s; }
+.admin-shell .card-header > .nav-tabs .nav-link:hover { background: var(--card-2); color: var(--text); }
+.admin-shell .card-header > .nav-tabs .nav-link.active { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 -2px 0 var(--accent); }
 
 .admin-stat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 20px; }
 .admin-stat-grid.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }

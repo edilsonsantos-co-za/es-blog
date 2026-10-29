@@ -22,7 +22,7 @@
 {% set enabled_sources = sources|filter(s => s.enabled)|length %}
 
 <div class="card admin-card mb-3">
-    <div class="card-header p-0 pt-1">
+    <div class="card-header p-0">
         <ul class="nav nav-tabs" id="automation-tabs">
             {% for key, t in {
                 overview: {route: 'app_admin_automation', icon: 'fa-robot', label: 'Overview'},

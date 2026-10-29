@@ -20,7 +20,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-6">
-        <div class="card card-warning admin-card">
+        <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-broom"></i> Clear Application Cache</h3>
             </div>
@@ -42,7 +42,7 @@
                 <form method="post" action="{{ path('app_admin_cache_clear') }}"
                       onsubmit="return confirm('Clear the application cache? The site may be briefly slower while rebuilding.')">
                     <input type="hidden" name="_token" value="{{ csrf_token('cache_clear') }}">
-                    <button type="submit" class="btn btn-warning btn-block">
+                    <button type="submit" class="btn btn-primary btn-block">
                         <i class="fa fa-broom"></i> Clear Cache Now
                     </button>
                 </form>
