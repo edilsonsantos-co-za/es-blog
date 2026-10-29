@@ -40,27 +40,40 @@ class AutomationController extends AbstractController
     ) {}
 
     #[Route('', name: 'app_admin_automation', methods: ['GET'])]
-    public function index(Request $request, PostDrafter $drafter, LinkedInPublisher $linkedIn, CategoryRepository $categories): Response
+    public function index(PostDrafter $drafter, LinkedInPublisher $linkedIn): Response
     {
-        $filter = $request->query->get('items', FeedItem::STATUS_NEW);
-        $filter = in_array($filter, [FeedItem::STATUS_NEW, FeedItem::STATUS_DRAFTED, FeedItem::STATUS_SKIPPED, FeedItem::STATUS_FAILED, 'all'], true)
-            ? $filter : FeedItem::STATUS_NEW;
-
-        return $this->render('admin/automation/index.html.twig', [
-            'settings' => $this->settings,
-            'sources' => $this->sources->findAllOrdered(),
-            'items' => $this->items->findLatest(40, $filter === 'all' ? null : $filter),
-            'item_filter' => $filter,
-            'item_counts' => $this->items->countByStatus(),
+        return $this->renderTab('overview', [
             'runs' => $this->runs->findLatest(8),
             'ai_enabled' => $drafter->isAiEnabled(),
             'ai_model' => $drafter->model(),
             'linkedin' => $linkedIn->connection(),
-            'categories' => $categories->findAllOrdered(),
         ]);
     }
 
-    #[Route('/settings', name: 'app_admin_automation_settings', methods: ['POST'])]
+    #[Route('/items', name: 'app_admin_automation_items', methods: ['GET'])]
+    public function itemList(Request $request): Response
+    {
+        $filter = $this->itemFilter($request);
+
+        return $this->renderTab('items', [
+            'items' => $this->items->findLatest(40, $filter === 'all' ? null : $filter),
+            'item_filter' => $filter,
+        ]);
+    }
+
+    #[Route('/feeds', name: 'app_admin_automation_feeds', methods: ['GET'])]
+    public function feeds(): Response
+    {
+        return $this->renderTab('feeds');
+    }
+
+    #[Route('/settings', name: 'app_admin_automation_settings', methods: ['GET'])]
+    public function settingsForm(CategoryRepository $categories): Response
+    {
+        return $this->renderTab('settings', ['categories' => $categories->findAllOrdered()]);
+    }
+
+    #[Route('/settings', name: 'app_admin_automation_settings_save', methods: ['POST'])]
     public function settings(Request $request): Response
     {
         $this->guard($request, 'automation_settings');
@@ -79,7 +92,7 @@ class AutomationController extends AbstractController
         ]);
         $this->addFlash('success', 'Automation settings saved.');
 
-        return $this->redirectToRoute('app_admin_automation');
+        return $this->redirectToRoute('app_admin_automation_settings');
     }
 
     #[Route('/run', name: 'app_admin_automation_run', methods: ['POST'])]
@@ -110,12 +123,12 @@ class AutomationController extends AbstractController
         if (!preg_match('#^https?://#i', $url) || filter_var($url, FILTER_VALIDATE_URL) === false) {
             $this->addFlash('error', 'Enter a full feed URL starting with http:// or https://.');
 
-            return $this->redirectToRoute('app_admin_automation');
+            return $this->redirectToRoute('app_admin_automation_feeds');
         }
         if ($this->sources->findOneBy(['url' => $url])) {
             $this->addFlash('info', 'That feed is already in the list.');
 
-            return $this->redirectToRoute('app_admin_automation');
+            return $this->redirectToRoute('app_admin_automation_feeds');
         }
         $name = trim((string) $request->request->get('name')) ?: (parse_url($url, PHP_URL_HOST) ?: $url);
         $folder = trim((string) $request->request->get('folder')) ?: null;
@@ -123,7 +136,7 @@ class AutomationController extends AbstractController
         $this->em->flush();
         $this->addFlash('success', sprintf('Added "%s".', $name));
 
-        return $this->redirectToRoute('app_admin_automation');
+        return $this->redirectToRoute('app_admin_automation_feeds');
     }
 
     #[Route('/feeds/import', name: 'app_admin_automation_import', methods: ['POST'])]
@@ -134,7 +147,7 @@ class AutomationController extends AbstractController
         if ($file === null || !$file->isValid() || $file->getSize() > 2_000_000) {
             $this->addFlash('error', 'Choose the OPML file exported from Feeder.co (under 2 MB).');
 
-            return $this->redirectToRoute('app_admin_automation');
+            return $this->redirectToRoute('app_admin_automation_feeds');
         }
 
         try {
@@ -142,7 +155,7 @@ class AutomationController extends AbstractController
         } catch (\InvalidArgumentException) {
             $this->addFlash('error', 'That file is not valid OPML.');
 
-            return $this->redirectToRoute('app_admin_automation');
+            return $this->redirectToRoute('app_admin_automation_feeds');
         }
 
         $added = 0;
@@ -158,7 +171,7 @@ class AutomationController extends AbstractController
         $this->em->flush();
         $this->addFlash('success', sprintf('Imported %d new feeds (%d in the file).', $added, count($feeds)));
 
-        return $this->redirectToRoute('app_admin_automation');
+        return $this->redirectToRoute('app_admin_automation_feeds');
     }
 
     #[Route('/feeds/{id}/toggle', name: 'app_admin_automation_feed_toggle', methods: ['POST'])]
@@ -168,7 +181,7 @@ class AutomationController extends AbstractController
         $source->setEnabled(!$source->isEnabled());
         $this->em->flush();
 
-        return $this->redirectToRoute('app_admin_automation');
+        return $this->redirectToRoute('app_admin_automation_feeds');
     }
 
     #[Route('/feeds/{id}/delete', name: 'app_admin_automation_feed_delete', methods: ['POST'])]
@@ -179,7 +192,7 @@ class AutomationController extends AbstractController
         $this->em->flush();
         $this->addFlash('success', sprintf('Removed "%s" and its items.', $source->getName()));
 
-        return $this->redirectToRoute('app_admin_automation');
+        return $this->redirectToRoute('app_admin_automation_feeds');
     }
 
     #[Route('/items/{id}/draft', name: 'app_admin_automation_item_draft', methods: ['POST'])]
@@ -196,7 +209,7 @@ class AutomationController extends AbstractController
             $this->em->flush();
             $this->addFlash('error', 'Could not write the draft: ' . $e->getMessage());
 
-            return $this->redirectToRoute('app_admin_automation');
+            return $this->redirectToRoute('app_admin_automation_items', ['items' => FeedItem::STATUS_FAILED]);
         }
         $this->addFlash('success', 'Draft created. Review it, then publish.');
 
@@ -210,7 +223,7 @@ class AutomationController extends AbstractController
         $item->setStatus($item->getStatus() === FeedItem::STATUS_SKIPPED ? FeedItem::STATUS_NEW : FeedItem::STATUS_SKIPPED);
         $this->em->flush();
 
-        return $this->redirectToRoute('app_admin_automation', ['items' => $request->query->get('items', FeedItem::STATUS_NEW)]);
+        return $this->redirectToRoute('app_admin_automation_items', ['items' => $this->itemFilter($request)]);
     }
 
     #[Route('/banner-preview', name: 'app_admin_automation_banner', methods: ['GET'])]
@@ -222,6 +235,29 @@ class AutomationController extends AbstractController
         imagepng($image);
 
         return new Response((string) ob_get_clean(), 200, ['Content-Type' => 'image/png', 'Cache-Control' => 'no-store']);
+    }
+
+    /**
+     * Every tab shows the same tab bar, whose badges need the feed and item counts.
+     *
+     * @param array<string, mixed> $vars
+     */
+    private function renderTab(string $tab, array $vars = []): Response
+    {
+        return $this->render('admin/automation/index.html.twig', $vars + [
+            'active_tab' => $tab,
+            'settings' => $this->settings,
+            'sources' => $this->sources->findAllOrdered(),
+            'item_counts' => $this->items->countByStatus(),
+        ]);
+    }
+
+    private function itemFilter(Request $request): string
+    {
+        $filter = $request->query->get('items', FeedItem::STATUS_NEW);
+
+        return in_array($filter, [FeedItem::STATUS_NEW, FeedItem::STATUS_DRAFTED, FeedItem::STATUS_SKIPPED, FeedItem::STATUS_FAILED, 'all'], true)
+            ? $filter : FeedItem::STATUS_NEW;
     }
 
     private function guard(Request $request, string $tokenId): void

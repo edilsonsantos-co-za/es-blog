@@ -18,8 +18,32 @@
 {% endblock %}
 
 {% block content %}
-{% set next_run = settings.nextRunAt %}
+{% set tab = active_tab|default('overview') %}
 {% set enabled_sources = sources|filter(s => s.enabled)|length %}
+
+<div class="card admin-card mb-3">
+    <div class="card-header p-0 pt-1">
+        <ul class="nav nav-tabs" id="automation-tabs">
+            {% for key, t in {
+                overview: {route: 'app_admin_automation', icon: 'fa-robot', label: 'Overview'},
+                items: {route: 'app_admin_automation_items', icon: 'fa-inbox', label: 'Items', count: item_counts['new']|default(0)},
+                feeds: {route: 'app_admin_automation_feeds', icon: 'fa-rss', label: 'Feeds', count: sources|length},
+                settings: {route: 'app_admin_automation_settings', icon: 'fa-sliders-h', label: 'Settings'},
+            } %}
+            <li class="nav-item">
+                <a href="{{ path(t.route) }}" class="nav-link {{ tab == key ? 'active' : '' }}" {{ tab == key ? 'aria-current="page"' }}>
+                    <i class="fas {{ t.icon }}" aria-hidden="true"></i> {{ t.label }}
+                    {% if t.count is defined and t.count %}<span class="badge badge-secondary ml-1">{{ t.count }}</span>{% endif %}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{# ── Overview tab ── #}
+{% if tab == 'overview' %}
+{% set next_run = settings.nextRunAt %}
 <div class="admin-stat-grid cols-4" aria-label="Automation summary">
     <article class="admin-stat-card">
         <div class="admin-stat-top">
@@ -31,7 +55,7 @@
             <span class="admin-stat-number">{{ settings.enabled ? 'Every ' ~ settings.intervalHours ~ 'h' : 'Paused' }}</span>
         </div>
         <span class="admin-stat-help">
-            {% if next_run %}Next run {{ next_run|date('j M H:i') }}{% else %}Turn it on below to run on a schedule{% endif %}
+            {% if next_run %}Next run {{ next_run|date('j M H:i') }}{% else %}<a href="{{ path('app_admin_automation_settings') }}">Turn it on in Settings</a> to run on a schedule{% endif %}
         </span>
     </article>
     <article class="admin-stat-card">
@@ -70,7 +94,7 @@
 </div>
 
 <div class="row">
-    <div class="col-lg-5">
+    <div class="col-lg-7">
         <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-play"></i> Run now</h3>
@@ -100,12 +124,178 @@
                 <p class="admin-form-help mt-2 mb-0">A run with AI drafting can take a minute or two per post.</p>
             </div>
         </div>
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-history"></i> Recent runs</h3></div>
+            <div class="card-body p-0">
+                <table class="table table-sm admin-table mb-0">
+                    <thead><tr><th>Started</th><th>Trigger</th><th>Feeds</th><th>New</th><th>Posts</th><th>Log</th></tr></thead>
+                    <tbody>
+                    {% for run in runs %}
+                        <tr>
+                            <td class="small text-nowrap">{{ run.startedAt|date('j M H:i') }}</td>
+                            <td><span class="badge badge-secondary">{{ run.trigger }}</span></td>
+                            <td>{{ run.feedsRead }}</td>
+                            <td>{{ run.itemsAdded }}</td>
+                            <td>{{ run.postsCreated }}</td>
+                            <td>
+                                <details>
+                                    <summary class="small {{ run.success ? '' : 'text-danger' }}">{{ run.success ? 'OK' : 'Errors' }} · {{ run.log|length }} lines</summary>
+                                    <pre class="small mb-0" style="white-space:pre-wrap">{{ run.log|join("\n") }}</pre>
+                                </details>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="text-center p-3 text-muted">No runs yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title"><i class="fas fa-image"></i> Banner preview</h3></div>
+            <div class="card-body">
+                <img src="{{ path('app_admin_automation_banner') }}" alt="Example of a generated post banner" class="img-fluid rounded" width="1200" height="630" loading="lazy">
+                <p class="admin-form-help mt-2 mb-0">Each post gets a 1200×630 banner like this one. It is the post image, the social preview and the LinkedIn picture.</p>
+            </div>
+        </div>
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title"><i class="fab fa-linkedin"></i> LinkedIn</h3></div>
+            <div class="card-body">
+                {% if linkedin %}
+                    <p class="mb-2"><span class="badge badge-success">Connected</span> Published posts are shared to your profile.</p>
+                {% else %}
+                    <p class="mb-2"><span class="badge badge-secondary">Not connected</span> Posts stay on the blog only.</p>
+                {% endif %}
+                <a href="{{ path('app_admin_linkedin') }}" class="btn btn-sm btn-outline-primary">LinkedIn settings</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
+{# ── Items tab ── #}
+{% if tab == 'items' %}
+<div class="card admin-table-card">
+    <div class="card-header d-flex flex-wrap align-items-center" style="gap:.5rem">
+        <div>
+            <p class="admin-kicker">Found in your feeds</p>
+            <h3 class="card-title mb-0">Items</h3>
+        </div>
+        <div class="btn-group btn-group-sm ml-auto" role="group" aria-label="Filter items">
+            {% for key, label in {new: 'New', drafted: 'Written', skipped: 'Skipped', failed: 'Failed', all: 'All'} %}
+                <a href="{{ path('app_admin_automation_items', {items: key}) }}" class="btn {{ item_filter == key ? 'btn-primary' : 'btn-outline-secondary' }}" {{ item_filter == key ? 'aria-current="true"' }}>{{ label }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="admin-table-wrap">
+        <table class="table table-striped table-hover admin-table mb-0">
+            <thead><tr><th>Article</th><th>Score</th><th>Published</th><th class="text-right">Actions</th></tr></thead>
+            <tbody>
+            {% for item in items %}
+                <tr>
+                    <td>
+                        <a class="admin-title-link" href="{{ item.link }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
+                        <div class="small text-muted">{{ item.source.name }}{% if item.summary %} · {{ item.summary|u.truncate(140, '…') }}{% endif %}</div>
+                        {% if item.error %}<div class="small text-danger">{{ item.error|u.truncate(200, '…') }}</div>{% endif %}
+                    </td>
+                    <td><span class="badge {{ item.score >= 3 ? 'badge-success' : (item.score >= 1 ? 'badge-info' : 'badge-secondary') }}">{{ item.score }}</span></td>
+                    <td class="small text-nowrap">{{ item.publishedAt ? item.publishedAt|date('j M') : '—' }}</td>
+                    <td class="text-right text-nowrap">
+                        {% if item.post %}
+                            <a class="btn btn-xs btn-outline-primary" href="{{ path('app_admin_post_edit', {id: item.post.id}) }}">Open post</a>
+                        {% else %}
+                            <form method="post" action="{{ path('app_admin_automation_item_draft', {id: item.id}) }}" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('item_' ~ item.id) }}">
+                                <button class="btn btn-xs btn-primary" type="submit" data-loading-text="Writing…"><i class="fas fa-pen-nib"></i> Write draft</button>
+                            </form>
+                            <form method="post" action="{{ path('app_admin_automation_item_skip', {id: item.id, items: item_filter}) }}" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('item_' ~ item.id) }}">
+                                <button class="btn btn-xs btn-outline-secondary" type="submit">{{ item.status == 'skipped' ? 'Restore' : 'Skip' }}</button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" class="admin-empty-state text-center p-4">Nothing here yet. Run the automation to read your feeds.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Feeds tab ── #}
+{% if tab == 'feeds' %}
+<div class="card admin-card">
+    <div class="card-header">
+        <h3 class="card-title"><i class="fas fa-rss"></i> Feeds</h3>
+    </div>
+    <div class="card-body">
+        <p class="admin-section-title"><i class="fas fa-file-import" aria-hidden="true"></i> Import from Feeder.co</p>
+        <p class="admin-form-help">In Feeder, open <strong>Library → Import &amp; Export → Export to OPML</strong>, then upload the file here. Folders carry over and re-importing skips feeds you already have.</p>
+        <form method="post" action="{{ path('app_admin_automation_import') }}" enctype="multipart/form-data" class="d-flex flex-wrap mb-3" style="gap:.5rem">
+            <input type="hidden" name="_token" value="{{ csrf_token('automation_import') }}">
+            <input type="file" name="opml" accept=".opml,.xml,text/xml,text/x-opml" class="form-control-file" style="max-width:320px" required>
+            <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload"></i> Import OPML</button>
+        </form>
+
+        <p class="admin-section-title"><i class="fas fa-plus" aria-hidden="true"></i> Add one feed</p>
+        <form method="post" action="{{ path('app_admin_automation_feed_add') }}" class="form-row">
+            <input type="hidden" name="_token" value="{{ csrf_token('automation_feed_add') }}">
+            <div class="col-md-5 mb-2"><input type="url" name="url" class="form-control form-control-sm" placeholder="https://example.com/feed.xml" required aria-label="Feed URL"></div>
+            <div class="col-md-3 mb-2"><input type="text" name="name" class="form-control form-control-sm" placeholder="Name (optional)" aria-label="Feed name"></div>
+            <div class="col-md-2 mb-2"><input type="text" name="folder" class="form-control form-control-sm" placeholder="Folder" aria-label="Folder"></div>
+            <div class="col-md-2 mb-2"><button type="submit" class="btn btn-sm btn-outline-primary btn-block">Add</button></div>
+        </form>
+    </div>
+    <div class="card-body p-0">
+        <div class="admin-table-wrap">
+        <table class="table table-sm table-hover admin-table mb-0">
+            <thead><tr><th>Feed</th><th>Folder</th><th>Last read</th><th class="text-right"><span class="sr-only">Actions</span></th></tr></thead>
+            <tbody>
+            {% for source in sources %}
+                <tr class="{{ source.enabled ? '' : 'text-muted' }}">
+                    <td>
+                        <strong>{{ source.name }}</strong>
+                        <div class="small text-muted text-truncate" style="max-width:240px" title="{{ source.url }}">{{ source.url }}</div>
+                        {% if source.lastError %}<div class="small text-danger">{{ source.lastError|u.truncate(120, '…') }}</div>{% endif %}
+                    </td>
+                    <td>{{ source.folder ?: '—' }}</td>
+                    <td class="small">{{ source.lastFetchedAt ? source.lastFetchedAt|date('j M H:i') : 'Never' }}</td>
+                    <td class="text-right text-nowrap">
+                        <form method="post" action="{{ path('app_admin_automation_feed_toggle', {id: source.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('feed_' ~ source.id) }}">
+                            <button class="btn btn-xs btn-outline-secondary" type="submit" title="{{ source.enabled ? 'Pause' : 'Resume' }}" aria-label="{{ source.enabled ? 'Pause' : 'Resume' }} {{ source.name }}"><i class="fas fa-{{ source.enabled ? 'pause' : 'play' }}"></i></button>
+                        </form>
+                        <form method="post" action="{{ path('app_admin_automation_feed_delete', {id: source.id}) }}" class="d-inline" onsubmit="return confirm('Remove this feed and its items?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token('feed_' ~ source.id) }}">
+                            <button class="btn btn-xs btn-outline-danger" type="submit" aria-label="Remove {{ source.name }}"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr><td colspan="4" class="admin-empty-state text-center p-4">No feeds yet. Import your Feeder.co OPML to start.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{# ── Settings tab ── #}
+{% if tab == 'settings' %}
+<div class="row">
+    <div class="col-xl-8">
         <div class="card admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fas fa-sliders-h"></i> Settings</h3>
             </div>
-            <form method="post" action="{{ path('app_admin_automation_settings') }}">
+            <form method="post" action="{{ path('app_admin_automation_settings_save') }}">
                 <input type="hidden" name="_token" value="{{ csrf_token('automation_settings') }}">
                 <div class="card-body">
                     <div class="custom-control custom-switch mb-3">
@@ -162,167 +352,8 @@
             </form>
         </div>
     </div>
-
-    <div class="col-lg-7">
-        <div class="card admin-card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-rss"></i> Feeds</h3>
-            </div>
-            <div class="card-body">
-                <p class="admin-section-title"><i class="fas fa-file-import" aria-hidden="true"></i> Import from Feeder.co</p>
-                <p class="admin-form-help">In Feeder, open <strong>Library → Import &amp; Export → Export to OPML</strong>, then upload the file here. Folders carry over and re-importing skips feeds you already have.</p>
-                <form method="post" action="{{ path('app_admin_automation_import') }}" enctype="multipart/form-data" class="d-flex flex-wrap mb-3" style="gap:.5rem">
-                    <input type="hidden" name="_token" value="{{ csrf_token('automation_import') }}">
-                    <input type="file" name="opml" accept=".opml,.xml,text/xml,text/x-opml" class="form-control-file" style="max-width:320px" required>
-                    <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-upload"></i> Import OPML</button>
-                </form>
-
-                <p class="admin-section-title"><i class="fas fa-plus" aria-hidden="true"></i> Add one feed</p>
-                <form method="post" action="{{ path('app_admin_automation_feed_add') }}" class="form-row">
-                    <input type="hidden" name="_token" value="{{ csrf_token('automation_feed_add') }}">
-                    <div class="col-md-5 mb-2"><input type="url" name="url" class="form-control form-control-sm" placeholder="https://example.com/feed.xml" required aria-label="Feed URL"></div>
-                    <div class="col-md-3 mb-2"><input type="text" name="name" class="form-control form-control-sm" placeholder="Name (optional)" aria-label="Feed name"></div>
-                    <div class="col-md-2 mb-2"><input type="text" name="folder" class="form-control form-control-sm" placeholder="Folder" aria-label="Folder"></div>
-                    <div class="col-md-2 mb-2"><button type="submit" class="btn btn-sm btn-outline-primary btn-block">Add</button></div>
-                </form>
-            </div>
-            <div class="card-body p-0">
-                <div class="admin-table-wrap">
-                <table class="table table-sm table-hover admin-table mb-0">
-                    <thead><tr><th>Feed</th><th>Folder</th><th>Last read</th><th class="text-right"><span class="sr-only">Actions</span></th></tr></thead>
-                    <tbody>
-                    {% for source in sources %}
-                        <tr class="{{ source.enabled ? '' : 'text-muted' }}">
-                            <td>
-                                <strong>{{ source.name }}</strong>
-                                <div class="small text-muted text-truncate" style="max-width:240px" title="{{ source.url }}">{{ source.url }}</div>
-                                {% if source.lastError %}<div class="small text-danger">{{ source.lastError|u.truncate(120, '…') }}</div>{% endif %}
-                            </td>
-                            <td>{{ source.folder ?: '—' }}</td>
-                            <td class="small">{{ source.lastFetchedAt ? source.lastFetchedAt|date('j M H:i') : 'Never' }}</td>
-                            <td class="text-right text-nowrap">
-                                <form method="post" action="{{ path('app_admin_automation_feed_toggle', {id: source.id}) }}" class="d-inline">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('feed_' ~ source.id) }}">
-                                    <button class="btn btn-xs btn-outline-secondary" type="submit" title="{{ source.enabled ? 'Pause' : 'Resume' }}" aria-label="{{ source.enabled ? 'Pause' : 'Resume' }} {{ source.name }}"><i class="fas fa-{{ source.enabled ? 'pause' : 'play' }}"></i></button>
-                                </form>
-                                <form method="post" action="{{ path('app_admin_automation_feed_delete', {id: source.id}) }}" class="d-inline" onsubmit="return confirm('Remove this feed and its items?')">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('feed_' ~ source.id) }}">
-                                    <button class="btn btn-xs btn-outline-danger" type="submit" aria-label="Remove {{ source.name }}"><i class="fas fa-trash"></i></button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr><td colspan="4" class="admin-empty-state text-center p-4">No feeds yet. Import your Feeder.co OPML to start.</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
-
-<div class="card admin-table-card">
-    <div class="card-header d-flex flex-wrap align-items-center" style="gap:.5rem">
-        <div>
-            <p class="admin-kicker">Found in your feeds</p>
-            <h3 class="card-title mb-0">Items</h3>
-        </div>
-        <div class="btn-group btn-group-sm ml-auto" role="group" aria-label="Filter items">
-            {% for key, label in {new: 'New', drafted: 'Written', skipped: 'Skipped', failed: 'Failed', all: 'All'} %}
-                <a href="{{ path('app_admin_automation', {items: key}) }}" class="btn {{ item_filter == key ? 'btn-primary' : 'btn-outline-secondary' }}" {{ item_filter == key ? 'aria-current="true"' }}>{{ label }}</a>
-            {% endfor %}
-        </div>
-    </div>
-    <div class="card-body p-0">
-        <div class="admin-table-wrap">
-        <table class="table table-striped table-hover admin-table mb-0">
-            <thead><tr><th>Article</th><th>Score</th><th>Published</th><th class="text-right">Actions</th></tr></thead>
-            <tbody>
-            {% for item in items %}
-                <tr>
-                    <td>
-                        <a class="admin-title-link" href="{{ item.link }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a>
-                        <div class="small text-muted">{{ item.source.name }}{% if item.summary %} · {{ item.summary|u.truncate(140, '…') }}{% endif %}</div>
-                        {% if item.error %}<div class="small text-danger">{{ item.error|u.truncate(200, '…') }}</div>{% endif %}
-                    </td>
-                    <td><span class="badge {{ item.score >= 3 ? 'badge-success' : (item.score >= 1 ? 'badge-info' : 'badge-secondary') }}">{{ item.score }}</span></td>
-                    <td class="small text-nowrap">{{ item.publishedAt ? item.publishedAt|date('j M') : '—' }}</td>
-                    <td class="text-right text-nowrap">
-                        {% if item.post %}
-                            <a class="btn btn-xs btn-outline-primary" href="{{ path('app_admin_post_edit', {id: item.post.id}) }}">Open post</a>
-                        {% else %}
-                            <form method="post" action="{{ path('app_admin_automation_item_draft', {id: item.id}) }}" class="d-inline">
-                                <input type="hidden" name="_token" value="{{ csrf_token('item_' ~ item.id) }}">
-                                <button class="btn btn-xs btn-primary" type="submit" data-loading-text="Writing…"><i class="fas fa-pen-nib"></i> Write draft</button>
-                            </form>
-                            <form method="post" action="{{ path('app_admin_automation_item_skip', {id: item.id, items: item_filter}) }}" class="d-inline">
-                                <input type="hidden" name="_token" value="{{ csrf_token('item_' ~ item.id) }}">
-                                <button class="btn btn-xs btn-outline-secondary" type="submit">{{ item.status == 'skipped' ? 'Restore' : 'Skip' }}</button>
-                            </form>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% else %}
-                <tr><td colspan="4" class="admin-empty-state text-center p-4">Nothing here yet. Run the automation to read your feeds.</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-7">
-        <div class="card admin-card">
-            <div class="card-header"><h3 class="card-title"><i class="fas fa-history"></i> Recent runs</h3></div>
-            <div class="card-body p-0">
-                <table class="table table-sm admin-table mb-0">
-                    <thead><tr><th>Started</th><th>Trigger</th><th>Feeds</th><th>New</th><th>Posts</th><th>Log</th></tr></thead>
-                    <tbody>
-                    {% for run in runs %}
-                        <tr>
-                            <td class="small text-nowrap">{{ run.startedAt|date('j M H:i') }}</td>
-                            <td><span class="badge badge-secondary">{{ run.trigger }}</span></td>
-                            <td>{{ run.feedsRead }}</td>
-                            <td>{{ run.itemsAdded }}</td>
-                            <td>{{ run.postsCreated }}</td>
-                            <td>
-                                <details>
-                                    <summary class="small {{ run.success ? '' : 'text-danger' }}">{{ run.success ? 'OK' : 'Errors' }} · {{ run.log|length }} lines</summary>
-                                    <pre class="small mb-0" style="white-space:pre-wrap">{{ run.log|join("\n") }}</pre>
-                                </details>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr><td colspan="6" class="text-center p-3 text-muted">No runs yet.</td></tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-5">
-        <div class="card admin-card">
-            <div class="card-header"><h3 class="card-title"><i class="fas fa-image"></i> Banner preview</h3></div>
-            <div class="card-body">
-                <img src="{{ path('app_admin_automation_banner') }}" alt="Example of a generated post banner" class="img-fluid rounded" width="1200" height="630" loading="lazy">
-                <p class="admin-form-help mt-2 mb-0">Each post gets a 1200×630 banner like this one. It is the post image, the social preview and the LinkedIn picture.</p>
-            </div>
-        </div>
-        <div class="card admin-card">
-            <div class="card-header"><h3 class="card-title"><i class="fab fa-linkedin"></i> LinkedIn</h3></div>
-            <div class="card-body">
-                {% if linkedin %}
-                    <p class="mb-2"><span class="badge badge-success">Connected</span> Published posts are shared to your profile.</p>
-                {% else %}
-                    <p class="mb-2"><span class="badge badge-secondary">Not connected</span> Posts stay on the blog only.</p>
-                {% endif %}
-                <a href="{{ path('app_admin_linkedin') }}" class="btn btn-sm btn-outline-primary">LinkedIn settings</a>
-            </div>
-        </div>
-    </div>
-</div>
+{% endif %}
 {% endblock %}
 
 {% block javascripts %}
