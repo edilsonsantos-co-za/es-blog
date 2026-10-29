@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}EdFolio Blog{% endblock %}</title>
-    <link rel="icon" href="{{ asset('favicon.png') }}">
+    {% set favicon = config('site.favicon') ?: site_logo %}{% if favicon %}<link rel="icon" href="{{ favicon }}">{% endif %}
     {% block stylesheets %}{% endblock %}
     {% block javascripts %}{% endblock %}
 </head>

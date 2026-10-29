@@ -22,7 +22,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}Admin{% endblock %} — {{ site_title|default('EdFolio Blog') }}</title>
-    <link rel="icon" href="{{ asset('favicon.png') }}">
+    {% set favicon = config('site.favicon') ?: site_logo %}{% if favicon %}<link rel="icon" href="{{ favicon }}">{% endif %}
     <script src="{{ asset('assets/theme-mode.js') }}"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
