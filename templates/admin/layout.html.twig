@@ -271,7 +271,7 @@
             {% for type, messages in app.flashes(['success','error','warning','info']) %}
                 {% for message in messages %}
                     {% set alert_class = type == 'error' ? 'danger' : type %}
-                    <div class="alert alert-{{ alert_class }} alert-dismissible">
+                    <div class="alert alert-{{ alert_class }} alert-dismissible fade show js-flash" role="{{ type == 'error' ? 'alert' : 'status' }}" data-flash-timeout="{{ type == 'error' ? 8000 : 5000 }}">
                         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
                         <i class="icon fas fa-{{ type == 'success' ? 'check' : (type == 'error' ? 'ban' : (type == 'warning' ? 'exclamation-triangle' : 'info')) }}"></i>
                         {{ message }}
@@ -300,6 +300,19 @@
 <script src="{{ asset('assets/admin/js/admin-sidebar.js') }}"></script>
 <script>
 document.getElementById('theme-toggle').addEventListener('click', window.esTheme.toggle);
+
+// Flash messages close themselves after a few seconds (errors stay a little longer);
+// hovering or focusing one holds it open.
+document.querySelectorAll('.js-flash').forEach(function (el) {
+    var timer;
+    var start = function () { timer = setTimeout(function () { $(el).alert('close'); }, +el.dataset.flashTimeout || 5000); };
+    var stop = function () { clearTimeout(timer); };
+    el.addEventListener('mouseenter', stop);
+    el.addEventListener('mouseleave', start);
+    el.addEventListener('focusin', stop);
+    el.addEventListener('focusout', start);
+    start();
+});
 </script>
 {% block javascripts %}{% endblock %}
 </body>

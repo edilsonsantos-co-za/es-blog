@@ -125,8 +125,8 @@ class PostController extends AbstractController
                 $user = $this->getUser();
                 $data = $this->extractPostData($request);
                 $post = $this->postService->create($data, $user);
-                $this->addFlash('success', 'Post created successfully.');
-                return $this->redirectToRoute('app_admin_post_edit', ['id' => $post->getId()]);
+                $this->addFlash('success', sprintf('Post "%s" created.', $post->getTitle()));
+                return $this->redirectToRoute('app_admin_posts');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Error creating post: ' . $e->getMessage());
             }
