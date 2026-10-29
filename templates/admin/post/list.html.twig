@@ -67,7 +67,7 @@
                     <td>{{ post.category ? post.category.title : '—' }}</td>
                     <td>
                         {% for tag in post.tags %}
-                            <span class="badge badge-light">{{ tag.name }}</span>
+                            <span class="badge badge-secondary">{{ tag.name }}</span>
                         {% endfor %}
                     </td>
                     <td>{{ post.views }}</td>

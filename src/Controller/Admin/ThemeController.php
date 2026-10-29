@@ -36,8 +36,13 @@ class ThemeController extends AbstractController
     #[Route('/admin/themes', name: 'app_admin_themes', methods: ['GET'])]
     public function index(): Response
     {
-        $installed = $this->themes->all();
-        $versions = array_column($installed, 'version', 'id');
+        return $this->renderTab('installed');
+    }
+
+    #[Route('/admin/themes/store', name: 'app_admin_themes_store', methods: ['GET'])]
+    public function storeTab(): Response
+    {
+        $versions = array_column($this->themes->all(), 'version', 'id');
 
         $storeThemes = [];
         $storeError = null;
@@ -53,13 +58,16 @@ class ThemeController extends AbstractController
             $storeError = 'The ES Marketplace store could not be reached. You can still upload a downloaded package.';
         }
 
-        return $this->render('admin/theme/index.html.twig', [
-            'installed' => $installed,
-            'active' => $this->config->get('site.theme', InstalledThemes::DEFAULT),
+        return $this->renderTab('store', [
             'store_themes' => $storeThemes,
             'store_error' => $storeError,
-            'store_url' => rtrim((string) $this->config->get('site.store_url', BlogExtension::DEFAULT_STORE_URL), '/'),
         ]);
+    }
+
+    #[Route('/admin/themes/upload', name: 'app_admin_themes_upload_form', methods: ['GET'])]
+    public function uploadTab(): Response
+    {
+        return $this->renderTab('upload');
     }
 
     #[Route('/admin/themes/install/{id}', name: 'app_admin_themes_install', requirements: ['id' => '[a-z0-9][a-z0-9-]*'], methods: ['POST'])]
@@ -67,7 +75,7 @@ class ThemeController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('theme_install', $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid CSRF token.');
-            return $this->redirectToRoute('app_admin_themes');
+            return $this->redirectToRoute('app_admin_themes_store');
         }
 
         $file = null;
@@ -85,7 +93,7 @@ class ThemeController extends AbstractController
             }
         }
 
-        return $this->redirectToRoute('app_admin_themes');
+        return $this->redirectToRoute('app_admin_themes_store');
     }
 
     #[Route('/admin/themes/upload', name: 'app_admin_themes_upload', methods: ['POST'])]
@@ -93,17 +101,19 @@ class ThemeController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('theme_upload', $request->request->get('_token'))) {
             $this->addFlash('error', 'Invalid CSRF token.');
-            return $this->redirectToRoute('app_admin_themes');
+            return $this->redirectToRoute('app_admin_themes_upload_form');
         }
 
         $upload = $request->files->get('package');
         if ($upload === null || !$upload->isValid()) {
             $this->addFlash('error', 'Choose a theme package (.zip) downloaded from the ES Marketplace store.');
-            return $this->redirectToRoute('app_admin_themes');
+            return $this->redirectToRoute('app_admin_themes_upload_form');
         }
 
         try {
             $this->finishInstall($upload->getPathname(), $request->request->getBoolean('activate'));
+
+            return $this->redirectToRoute('app_admin_themes');
         } catch (ThemePackageException $e) {
             $this->addFlash('error', $e->getMessage());
         } catch (\Throwable $e) {
@@ -111,7 +121,7 @@ class ThemeController extends AbstractController
             $this->addFlash('error', 'The theme could not be installed. Check the logs for details.');
         }
 
-        return $this->redirectToRoute('app_admin_themes');
+        return $this->redirectToRoute('app_admin_themes_upload_form');
     }
 
     #[Route('/admin/themes/{id}/activate', name: 'app_admin_themes_activate', requirements: ['id' => '[a-z0-9][a-z0-9-]*'], methods: ['POST'])]
@@ -149,6 +159,19 @@ class ThemeController extends AbstractController
         }
 
         return $this->redirectToRoute('app_admin_themes');
+    }
+
+    /**
+     * @param array<string, mixed> $vars
+     */
+    private function renderTab(string $tab, array $vars = []): Response
+    {
+        return $this->render('admin/theme/index.html.twig', $vars + [
+            'active_tab' => $tab,
+            'installed' => $this->themes->all(),
+            'active' => $this->config->get('site.theme', InstalledThemes::DEFAULT),
+            'store_url' => rtrim((string) $this->config->get('site.store_url', BlogExtension::DEFAULT_STORE_URL), '/'),
+        ]);
     }
 
     private function finishInstall(string $path, bool $activate): void

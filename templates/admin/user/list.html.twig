@@ -54,15 +54,15 @@
                         {% endif %}
                         <strong>{{ user.username }}</strong>
                         {% if user.id == app.user.id %}
-                            <span class="badge badge-light ml-1">you</span>
+                            <span class="badge badge-secondary ml-1">you</span>
                         {% endif %}
                     </td>
                     <td>{{ user.email ?? '—' }}</td>
                     <td>
                         {% if user.role.value == 'admin' %}
-                            <span class="badge badge-danger">Admin</span>
+                            <span class="badge badge-info">Admin</span>
                         {% elseif user.role.value == 'editor' %}
-                            <span class="badge badge-warning">Editor</span>
+                            <span class="badge badge-secondary">Editor</span>
                         {% else %}
                             <span class="badge badge-secondary">Author</span>
                         {% endif %}

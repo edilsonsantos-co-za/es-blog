@@ -62,7 +62,7 @@
                 {% if integration %}
                     <form method="post" action="{{ path('app_admin_linkedin_disconnect') }}" onsubmit="return confirm('Disconnect LinkedIn? Posts will stop being shared.')">
                         <input type="hidden" name="_token" value="{{ csrf_token('linkedin_disconnect') }}">
-                        <button type="submit" class="btn btn-outline-danger">Disconnect</button>
+                        <button type="submit" class="btn btn-danger">Disconnect</button>
                     </form>
                 {% endif %}
             </div>
@@ -98,7 +98,7 @@
                             <td class="text-right">
                                 <form method="post" action="{{ path('app_admin_linkedin_share', {id: post.id}) }}" onsubmit="return confirm('Share this post on LinkedIn now?')">
                                     <input type="hidden" name="_token" value="{{ csrf_token('linkedin_share_' ~ post.id) }}">
-                                    <button type="submit" class="btn btn-xs btn-outline-primary" {{ token_valid ? '' : 'disabled' }}>Share now</button>
+                                    <button type="submit" class="btn btn-xs btn-default" {{ token_valid ? '' : 'disabled' }}>Share now</button>
                                 </form>
                             </td>
                         </tr>

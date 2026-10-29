@@ -105,6 +105,14 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 .admin-shell .card-body.p-0 { padding: 0; }
 .admin-shell .card-footer { padding: 14px 24px; }
 .admin-shell .card-primary.card-outline, .admin-shell .card-outline { border-top: 1px solid var(--line); }
+/* Colour roles, the same on every admin page:
+   card-primary  the one "add / edit" form card on a page; every other card has a plain header
+   btn-primary   the main action (save, create, run); btn-default for neutral ones (cancel, edit, view, filters);
+                 btn-danger for anything destructive (delete, remove, disconnect)
+   badge-success live/on · badge-warning scheduled/needs review · badge-danger errors · badge-info labels · badge-secondary neutral/meta */
+.admin-shell .card-primary:not(.card-outline) > .card-header { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.admin-shell .card-primary:not(.card-outline) > .card-header .card-title { color: var(--accent-ink); }
+.admin-inline-panel { padding: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--card-2); }
 .admin-shell .nav-tabs, .admin-shell .card-header-tabs { border-color: var(--line); }
 .admin-shell .nav-tabs .nav-link { border-radius: 10px 10px 0 0; color: var(--muted); font-weight: 600; }
 .admin-shell .nav-tabs .nav-link.active { background: var(--card); color: var(--accent); border-color: var(--line) var(--line) var(--card); }
@@ -174,7 +182,6 @@ a.admin-tile:hover { transform: translateY(-2px); border-color: var(--accent); c
 .admin-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 20px; }
 .admin-form-help { color: var(--muted); font-size: 14px; }
 .admin-panel-note { padding: 16px; border: 1px solid var(--line); border-radius: 16px; background: var(--card-2); }
-.admin-sticky-panel { position: sticky; top: 80px; z-index: 10; }
 .admin-menu-item { padding: 14px 18px; border-color: var(--line); background: var(--card); color: var(--text); }
 .admin-menu-item .fa-grip-vertical { cursor: grab; }
 .admin-shell .list-group-item { background: var(--card); border-color: var(--line); color: var(--text); }

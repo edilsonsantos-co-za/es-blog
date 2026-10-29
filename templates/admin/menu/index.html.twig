@@ -99,7 +99,7 @@
                             <div class="flex-grow-1">
                                 <strong>{{ item.name }}</strong>
                                 {% if item.parent %}
-                                    <span class="badge badge-light ml-1">child of: {{ item.parent.name }}</span>
+                                    <span class="badge badge-secondary ml-1">child of: {{ item.parent.name }}</span>
                                 {% endif %}
                                 <br>
                                 <code style="font-size:.8rem;">{{ item.slug }}</code>
@@ -107,7 +107,7 @@
                                     <span class="badge badge-secondary ml-1">{{ item.target }}</span>
                                 {% endif %}
                                 {% if item.class %}
-                                    <span class="badge badge-light ml-1">.{{ item.class }}</span>
+                                    <span class="badge badge-secondary ml-1">.{{ item.class }}</span>
                                 {% endif %}
                             </div>
                             <div class="admin-actions ml-2">
@@ -127,7 +127,7 @@
 
                         {# Inline edit form #}
                         <div class="collapse mt-2" id="edit-{{ item.id }}">
-                            <form method="post" action="{{ path('app_admin_menu_edit', {id: item.id}) }}" class="bg-light p-2 rounded">
+                            <form method="post" action="{{ path('app_admin_menu_edit', {id: item.id}) }}" class="admin-inline-panel">
                                 <input type="hidden" name="_token" value="{{ csrf_token('menu_edit_' ~ item.id) }}">
                                 <div class="row">
                                     <div class="col-sm-6">
@@ -176,7 +176,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-sm btn-warning">
+                                <button type="submit" class="btn btn-sm btn-primary">
                                     <i class="fa fa-save"></i> Save
                                 </button>
                                 <button type="button" class="btn btn-sm btn-default" data-toggle="collapse" data-target="#edit-{{ item.id }}">

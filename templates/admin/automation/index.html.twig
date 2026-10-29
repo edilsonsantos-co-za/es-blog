@@ -168,7 +168,7 @@
                 {% else %}
                     <p class="mb-2"><span class="badge badge-secondary">Not connected</span> Posts stay on the blog only.</p>
                 {% endif %}
-                <a href="{{ path('app_admin_linkedin') }}" class="btn btn-sm btn-outline-primary">LinkedIn settings</a>
+                <a href="{{ path('app_admin_linkedin') }}" class="btn btn-sm btn-default">LinkedIn settings</a>
             </div>
         </div>
     </div>
@@ -185,7 +185,7 @@
         </div>
         <div class="btn-group btn-group-sm ml-auto" role="group" aria-label="Filter items">
             {% for key, label in {new: 'New', drafted: 'Written', skipped: 'Skipped', failed: 'Failed', all: 'All'} %}
-                <a href="{{ path('app_admin_automation_items', {items: key}) }}" class="btn {{ item_filter == key ? 'btn-primary' : 'btn-outline-secondary' }}" {{ item_filter == key ? 'aria-current="true"' }}>{{ label }}</a>
+                <a href="{{ path('app_admin_automation_items', {items: key}) }}" class="btn {{ item_filter == key ? 'btn-primary' : 'btn-default' }}" {{ item_filter == key ? 'aria-current="true"' }}>{{ label }}</a>
             {% endfor %}
         </div>
     </div>
@@ -205,7 +205,7 @@
                     <td class="small text-nowrap">{{ item.publishedAt ? item.publishedAt|date('j M') : '—' }}</td>
                     <td class="text-right text-nowrap">
                         {% if item.post %}
-                            <a class="btn btn-xs btn-outline-primary" href="{{ path('app_admin_post_edit', {id: item.post.id}) }}">Open post</a>
+                            <a class="btn btn-xs btn-default" href="{{ path('app_admin_post_edit', {id: item.post.id}) }}">Open post</a>
                         {% else %}
                             <form method="post" action="{{ path('app_admin_automation_item_draft', {id: item.id}) }}" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('item_' ~ item.id) }}">
@@ -213,7 +213,7 @@
                             </form>
                             <form method="post" action="{{ path('app_admin_automation_item_skip', {id: item.id, items: item_filter}) }}" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('item_' ~ item.id) }}">
-                                <button class="btn btn-xs btn-outline-secondary" type="submit">{{ item.status == 'skipped' ? 'Restore' : 'Skip' }}</button>
+                                <button class="btn btn-xs btn-default" type="submit">{{ item.status == 'skipped' ? 'Restore' : 'Skip' }}</button>
                             </form>
                         {% endif %}
                     </td>
@@ -249,7 +249,7 @@
             <div class="col-md-5 mb-2"><input type="url" name="url" class="form-control form-control-sm" placeholder="https://example.com/feed.xml" required aria-label="Feed URL"></div>
             <div class="col-md-3 mb-2"><input type="text" name="name" class="form-control form-control-sm" placeholder="Name (optional)" aria-label="Feed name"></div>
             <div class="col-md-2 mb-2"><input type="text" name="folder" class="form-control form-control-sm" placeholder="Folder" aria-label="Folder"></div>
-            <div class="col-md-2 mb-2"><button type="submit" class="btn btn-sm btn-outline-primary btn-block">Add</button></div>
+            <div class="col-md-2 mb-2"><button type="submit" class="btn btn-sm btn-primary btn-block">Add</button></div>
         </form>
     </div>
     <div class="card-body p-0">
@@ -269,11 +269,11 @@
                     <td class="text-right text-nowrap">
                         <form method="post" action="{{ path('app_admin_automation_feed_toggle', {id: source.id}) }}" class="d-inline">
                             <input type="hidden" name="_token" value="{{ csrf_token('feed_' ~ source.id) }}">
-                            <button class="btn btn-xs btn-outline-secondary" type="submit" title="{{ source.enabled ? 'Pause' : 'Resume' }}" aria-label="{{ source.enabled ? 'Pause' : 'Resume' }} {{ source.name }}"><i class="fas fa-{{ source.enabled ? 'pause' : 'play' }}"></i></button>
+                            <button class="btn btn-xs btn-default" type="submit" title="{{ source.enabled ? 'Pause' : 'Resume' }}" aria-label="{{ source.enabled ? 'Pause' : 'Resume' }} {{ source.name }}"><i class="fas fa-{{ source.enabled ? 'pause' : 'play' }}"></i></button>
                         </form>
                         <form method="post" action="{{ path('app_admin_automation_feed_delete', {id: source.id}) }}" class="d-inline" onsubmit="return confirm('Remove this feed and its items?')">
                             <input type="hidden" name="_token" value="{{ csrf_token('feed_' ~ source.id) }}">
-                            <button class="btn btn-xs btn-outline-danger" type="submit" aria-label="Remove {{ source.name }}"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-xs btn-danger" type="submit" aria-label="Remove {{ source.name }}"><i class="fas fa-trash"></i></button>
                         </form>
                     </td>
                 </tr>

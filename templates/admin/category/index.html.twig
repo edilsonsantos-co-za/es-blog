@@ -23,7 +23,7 @@
     <div class="col-lg-4">
         {% if edit_category is defined and edit_category %}
         {# Edit form #}
-        <div class="card card-warning admin-card">
+        <div class="card card-primary admin-card">
             <div class="card-header">
                 <h3 class="card-title"><i class="fa fa-edit"></i> Edit Category</h3>
             </div>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="card-footer">
-                    <button type="submit" class="btn btn-warning">
+                    <button type="submit" class="btn btn-primary">
                         <i class="fa fa-save"></i> Update Category
                     </button>
                     <a href="{{ path('app_admin_categories') }}" class="btn btn-default ml-2">Cancel</a>
