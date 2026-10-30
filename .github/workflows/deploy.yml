@@ -58,12 +58,14 @@ jobs:
           fi
           printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  BatchMode yes\n  StrictHostKeyChecking accept-new\n  ConnectTimeout 30\n  ServerAliveInterval 30\n' "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
           ssh vps true || { echo "::error::Cannot SSH to the VPS as $DEPLOY_USER (port 22 reachable from GitHub runners? key authorised?)"; exit 1; }
-          # DEPLOY_PATH is either this app's folder or the workspace root (then <root>/<owner>/<repo>)
+          # DEPLOY_PATH is either this app's folder or the workspace root. The folder under the root
+          # comes from APP_DIR, not the repo name, so renaming the repo never moves the app on the
+          # server (a new folder would mean a new compose project with empty volumes).
           if [[ -n "$DEPLOY_PATH" ]]; then
             if [[ "$(basename "$DEPLOY_PATH")" == "$(basename "$APP_DIR")" ]]; then
               APP_DIR="$DEPLOY_PATH"
             else
-              APP_DIR="${DEPLOY_PATH%/}/$GITHUB_REPOSITORY"
+              APP_DIR="${DEPLOY_PATH%/}/${APP_DIR#/workspace/}"
             fi
           fi
           echo "APP_DIR=$APP_DIR" >> "$GITHUB_ENV"
