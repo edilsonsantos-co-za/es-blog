@@ -58,14 +58,24 @@ jobs:
           fi
           printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  BatchMode yes\n  StrictHostKeyChecking accept-new\n  ConnectTimeout 30\n  ServerAliveInterval 30\n' "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
           ssh vps true || { echo "::error::Cannot SSH to the VPS as $DEPLOY_USER (port 22 reachable from GitHub runners? key authorised?)"; exit 1; }
-          echo "APP_DIR=${DEPLOY_PATH:-$APP_DIR}" >> "$GITHUB_ENV"
+          # DEPLOY_PATH is either this app's folder or the workspace root (then <root>/<owner>/<repo>)
+          if [[ -n "$DEPLOY_PATH" ]]; then
+            if [[ "$(basename "$DEPLOY_PATH")" == "$(basename "$APP_DIR")" ]]; then
+              APP_DIR="$DEPLOY_PATH"
+            else
+              APP_DIR="${DEPLOY_PATH%/}/$GITHUB_REPOSITORY"
+            fi
+          fi
+          echo "APP_DIR=$APP_DIR" >> "$GITHUB_ENV"
+          # Earlier deploys left root-owned files: use passwordless sudo on the server when the user has it
+          if ssh vps 'sudo -n true' 2>/dev/null; then echo "REMOTE_SUDO=sudo -n" >> "$GITHUB_ENV"; else echo "REMOTE_SUDO=" >> "$GITHUB_ENV"; fi
 
       - name: Ship committed files
         run: |
           # Everything git tracks except env files (examples excepted): the server keeps its own .env*.
           { git ls-files | grep -vE '(^|/)\.env' ; git ls-files | grep -E '(^|/)\.env[^/]*\.example$' ; } | sort -u > .deploy-manifest.new
-          tar -czf - -T .deploy-manifest.new .deploy-manifest.new | ssh vps "set -e; mkdir -p '$APP_DIR'; tar -xzf - -C '$APP_DIR'"
-          ssh vps "APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' bash -s" <<'REMOTE'
+          tar -czf - -T .deploy-manifest.new .deploy-manifest.new | ssh vps "set -e; $REMOTE_SUDO mkdir -p '$APP_DIR'; $REMOTE_SUDO tar -xzf - -C '$APP_DIR'"
+          ssh vps "$REMOTE_SUDO env APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' bash -s" <<'REMOTE'
           set -euo pipefail
           cd "$APP_DIR"
           # Files an earlier deploy shipped that are gone in this one
@@ -84,7 +94,7 @@ jobs:
 
       - name: Build and start on the VPS
         run: |
-          ssh vps "APP_DIR='$APP_DIR' COMPOSE_FILE='$COMPOSE_FILE' bash -s" <<'REMOTE'
+          ssh vps "$REMOTE_SUDO env APP_DIR='$APP_DIR' COMPOSE_FILE='$COMPOSE_FILE' bash -s" <<'REMOTE'
           set -euo pipefail
           cd "$APP_DIR"
           if ! docker compose -f "$COMPOSE_FILE" up -d --build --remove-orphans --wait --wait-timeout 300; then
