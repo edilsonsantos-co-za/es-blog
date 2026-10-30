@@ -86,8 +86,8 @@
                 aria-expanded="false"
                 title="Account"
             >
-                {% if app.user and app.user.avatar %}
-                    <img src="{{ app.user.avatar }}" class="admin-avatar elevation-1" alt="{{ app.user.username }} avatar">
+                {% if avatar_url(app.user) %}
+                    <img src="{{ avatar_url(app.user, 64) }}" class="admin-avatar elevation-1" alt="{{ app.user.username }} avatar">
                 {% else %}
                     <i class="fas fa-user-circle" style="font-size:20px;"></i>
                 {% endif %}

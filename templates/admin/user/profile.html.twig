@@ -63,15 +63,15 @@
                     <div class="form-group">
                         <label for="avatar">Avatar URL</label>
                         <div class="input-group">
-                            {% if user.avatar %}
+                            {% if avatar_url(user) %}
                             <div class="input-group-prepend">
                                 <span class="input-group-text p-1">
-                                    <img src="{{ user.avatar }}" style="width:28px;height:28px;object-fit:cover;border-radius:50%;" alt="">
+                                    <img src="{{ avatar_url(user, 56) }}" style="width:28px;height:28px;object-fit:cover;border-radius:50%;" alt="">
                                 </span>
                             </div>
                             {% endif %}
                             <input type="url" class="form-control" id="avatar" name="avatar"
-                                   value="{{ user.avatar }}" placeholder="https://example.com/avatar.jpg">
+                                   value="{{ user.avatar }}" placeholder="Leave empty to use your Gravatar">
                         </div>
                     </div>
 

@@ -76,8 +76,8 @@
     {% endif %}
 
     <div class="author-box">
-        {% if post.author.avatar %}
-        <img src="{{ post.author.avatar }}" alt="{{ post.author.username }}" class="author-avatar">
+        {% if avatar_url(post.author) %}
+        <img src="{{ avatar_url(post.author, 160) }}" alt="{{ post.author.username }}" class="author-avatar">
         {% else %}
         <div class="author-avatar author-avatar-fallback" aria-hidden="true">{{ post.author.username|first|upper }}</div>
         {% endif %}

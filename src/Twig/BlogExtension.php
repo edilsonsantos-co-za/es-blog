@@ -36,6 +36,7 @@ use Twig\TwigFunction;
  *   {{ config('site.title') }}
  *   {{ reading_time(post.body) }}
  *   {{ excerpt(post.body, 300) }}
+ *   {{ avatar_url(user, 160) }}  (own avatar, else Gravatar, else null)
  *
  * Filters:
  *   {{ post.body | markdown }}
@@ -83,7 +84,26 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('config', [$this->config, 'get']),
             new TwigFunction('reading_time', $this->readingTime(...)),
             new TwigFunction('excerpt', $this->excerpt(...)),
+            new TwigFunction('avatar_url', $this->avatarUrl(...)),
         ];
+    }
+
+    /**
+     * The user's own avatar URL, otherwise their Gravatar (identicon when they have none),
+     * matching the other ES apps. Null when there is no email to hash.
+     */
+    private function avatarUrl(?object $user, int $size = 80): ?string
+    {
+        if (!$user) {
+            return null;
+        }
+        $avatar = method_exists($user, 'getAvatar') ? trim((string) $user->getAvatar()) : '';
+        if ($avatar !== '') {
+            return $avatar;
+        }
+        $email = method_exists($user, 'getEmail') ? strtolower(trim((string) $user->getEmail())) : '';
+
+        return $email === '' ? null : sprintf('https://gravatar.com/avatar/%s?s=%d&d=identicon', hash('sha256', $email), $size);
     }
 
     public function getFilters(): array

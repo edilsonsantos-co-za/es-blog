@@ -4,8 +4,8 @@
 
 {% block content %}
 <header class="author-header">
-    {% if author.avatar %}
-    <img src="{{ author.avatar }}" alt="{{ author.username }}" class="author-avatar-large">
+    {% if avatar_url(author) %}
+    <img src="{{ avatar_url(author, 240) }}" alt="{{ author.username }}" class="author-avatar-large">
     {% else %}
     <div class="author-avatar-large author-avatar-fallback" aria-hidden="true">{{ author.username|first|upper }}</div>
     {% endif %}

@@ -47,8 +47,8 @@
                 {% for user in users %}
                 <tr>
                     <td>
-                        {% if user.avatar %}
-                        <img src="{{ user.avatar }}" class="admin-avatar mr-2" alt="{{ user.username }} avatar">
+                        {% if avatar_url(user) %}
+                        <img src="{{ avatar_url(user, 64) }}" class="admin-avatar mr-2" alt="{{ user.username }} avatar">
                         {% else %}
                         <i class="fa fa-user-circle mr-2 text-muted"></i>
                         {% endif %}
