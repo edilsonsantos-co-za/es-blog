@@ -4,7 +4,7 @@
     {% for post in posts %}
     {% set post_date = post.publishedAt ?? post.createdAt %}
     {% set post_url = path('app_blog_post', {year: post_date|date('Y'), month: post_date|date('m'), slug: post.slug}) %}
-    {% set kicker = post.category ? post.category.title : 'Journal' %}
+    {% set kicker = post.category ? post.category.title : 'Article' %}
     <article class="tile post-tile">
         <a class="cover-art" href="{{ post_url }}" tabindex="-1" aria-hidden="true">
             {% if post.image %}<img src="{{ post.image }}" alt="" loading="lazy">{% else %}<canvas data-cover="{{ post.title }}" data-palette="{{ kicker }}"></canvas>{% endif %}

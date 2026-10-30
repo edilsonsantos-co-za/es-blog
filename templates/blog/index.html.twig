@@ -21,7 +21,7 @@
 <section class="hero hero-bento{{ lead ? '' : ' hero-solo' }}" aria-label="Featured">
     <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="tile masthead-tile{{ side|length == 0 ? ' tall' : '' }}">
-        <span class="label">The journal</span>
+        <span class="label">Latest writing</span>
         <h1>{{ site_description ?: site_title }}</h1>
         <div class="actions">
             {% if lead %}<a class="btn btn-primary" href="#latest-posts-heading">Start reading</a>{% endif %}
@@ -30,7 +30,7 @@
     </div>
     {% if lead %}
     {% set lead_date = lead.publishedAt ?? lead.createdAt %}
-    {% set lead_kicker = lead.category ? lead.category.title : 'Journal' %}
+    {% set lead_kicker = lead.category ? lead.category.title : 'Article' %}
     <a class="tile story story-lead" href="{{ path('app_blog_post', {year: lead_date|date('Y'), month: lead_date|date('m'), slug: lead.slug}) }}">
         <span class="cover-art">{% if lead.image %}<img src="{{ lead.image }}" alt="" loading="eager">{% else %}<canvas data-cover="{{ lead.title }}" data-palette="{{ lead_kicker }}" aria-hidden="true"></canvas>{% endif %}</span>
         <span class="story-kicker">Latest · {{ lead_kicker }}</span>
@@ -42,7 +42,7 @@
     </a>
     {% for post in side %}
     {% set post_date = post.publishedAt ?? post.createdAt %}
-    {% set kicker = post.category ? post.category.title : 'Journal' %}
+    {% set kicker = post.category ? post.category.title : 'Article' %}
     <a class="tile story{{ side|length == 1 ? ' wide' : '' }}" href="{{ path('app_blog_post', {year: post_date|date('Y'), month: post_date|date('m'), slug: post.slug}) }}">
         <span class="cover-art">{% if post.image %}<img src="{{ post.image }}" alt="" loading="lazy">{% else %}<canvas data-cover="{{ post.title }}" data-palette="{{ kicker }}" aria-hidden="true"></canvas>{% endif %}</span>
         <span class="story-kicker">{{ kicker }}</span>
