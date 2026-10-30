@@ -53,9 +53,11 @@ jobs:
           if [[ -n "$DEPLOY_KNOWN_HOSTS" ]]; then
             printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
           else
-            ssh-keyscan -T 15 "$DEPLOY_HOST" > ~/.ssh/known_hosts 2>/dev/null
+            # No pinned host key: trust the first one seen (set DEPLOY_KNOWN_HOSTS to pin it)
+            ssh-keyscan -T 30 "$DEPLOY_HOST" > ~/.ssh/known_hosts 2>/dev/null || true
           fi
-          printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  BatchMode yes\n  ServerAliveInterval 30\n' "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
+          printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  BatchMode yes\n  StrictHostKeyChecking accept-new\n  ConnectTimeout 30\n  ServerAliveInterval 30\n' "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
+          ssh vps true || { echo "::error::Cannot SSH to the VPS as $DEPLOY_USER (port 22 reachable from GitHub runners? key authorised?)"; exit 1; }
           echo "APP_DIR=${DEPLOY_PATH:-$APP_DIR}" >> "$GITHUB_ENV"
 
       - name: Ship committed files
