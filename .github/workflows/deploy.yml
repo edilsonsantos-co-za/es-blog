@@ -1,0 +1,95 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time; a newer push waits for the running one instead of cancelling it mid-way
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # Ships the committed files straight to the VPS and builds them there: no image registry.
+  # Same layout as `console vps:deploy` (linux-workspace): files land in APP_DIR with a
+  # .deploy-manifest, and server-only .env files are never shipped or overwritten.
+  # Secrets (environment "production"): DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_PRIVATE_KEY,
+  # optional DEPLOY_KNOWN_HOSTS (else ssh-keyscan) and DEPLOY_PATH (else APP_DIR below).
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      APP_DIR: /workspace/edilsonsantos-co-za/edfolio-blog-v2
+      COMPOSE_FILE: docker-compose.prod.yml
+      REQUIRED_ENV_FILES: ".env"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up SSH
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_PRIVATE_KEY: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          missing=()
+          [[ -n "$DEPLOY_HOST" ]] || missing+=(DEPLOY_HOST)
+          [[ -n "$DEPLOY_USER" ]] || missing+=(DEPLOY_USER)
+          [[ -n "$DEPLOY_SSH_PRIVATE_KEY" ]] || missing+=(DEPLOY_SSH_PRIVATE_KEY)
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing deploy secret(s) in the production environment: ${missing[*]}"
+            exit 1
+          fi
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_PRIVATE_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          if [[ -n "$DEPLOY_KNOWN_HOSTS" ]]; then
+            printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 15 "$DEPLOY_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  BatchMode yes\n  ServerAliveInterval 30\n' "$DEPLOY_HOST" "$DEPLOY_USER" > ~/.ssh/config
+          echo "APP_DIR=${DEPLOY_PATH:-$APP_DIR}" >> "$GITHUB_ENV"
+
+      - name: Ship committed files
+        run: |
+          # Everything git tracks except env files (examples excepted): the server keeps its own .env*.
+          { git ls-files | grep -vE '(^|/)\.env' ; git ls-files | grep -E '(^|/)\.env[^/]*\.example$' ; } | sort -u > .deploy-manifest.new
+          tar -czf - -T .deploy-manifest.new .deploy-manifest.new | ssh vps "set -e; mkdir -p '$APP_DIR'; tar -xzf - -C '$APP_DIR'"
+          ssh vps "APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$APP_DIR"
+          # Files an earlier deploy shipped that are gone in this one
+          if [ -f .deploy-manifest ]; then
+            comm -23 <(sort .deploy-manifest) <(sort .deploy-manifest.new) | while IFS= read -r f; do [ -n "$f" ] && rm -f -- "./$f"; done
+          fi
+          mv .deploy-manifest.new .deploy-manifest
+          echo "$RELEASE $(date -u +%FT%TZ)" > .deploy-release
+          missing=""
+          for f in $REQUIRED_ENV_FILES; do [ -f "$f" ] || missing="$missing $APP_DIR/$f"; done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing on the server:$missing. Create it from the repo's example env file, then re-run this workflow."
+            exit 1
+          fi
+          REMOTE
+
+      - name: Build and start on the VPS
+        run: |
+          ssh vps "APP_DIR='$APP_DIR' COMPOSE_FILE='$COMPOSE_FILE' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$APP_DIR"
+          if ! docker compose -f "$COMPOSE_FILE" up -d --build --remove-orphans --wait --wait-timeout 300; then
+            docker compose -f "$COMPOSE_FILE" ps
+            docker compose -f "$COMPOSE_FILE" logs --tail 80
+            exit 1
+          fi
+          docker compose -f "$COMPOSE_FILE" ps
+          docker image prune -f >/dev/null
+          REMOTE
