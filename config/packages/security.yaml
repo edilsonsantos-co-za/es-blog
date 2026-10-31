@@ -24,6 +24,8 @@ security:
 
             # Sign-in only happens on the SSO (App\Controller\Auth\SsoController): no password form
             entry_point: App\Security\SsoEntryPoint
+            custom_authenticators:
+                - App\Security\SsoAuthenticator
 
             two_factor:
                 auth_form_path: app_2fa

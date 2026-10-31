@@ -6,6 +6,7 @@ namespace App\Controller\Auth;
 
 use App\Repository\UserRepository;
 use App\Security\LogtoClient;
+use App\Security\SsoAuthenticator;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -79,7 +80,7 @@ class SsoController extends AbstractController
             return $this->fail('That account does not have access to this blog.');
         }
 
-        $security->login($user, 'form_login', 'main');
+        $security->login($user, SsoAuthenticator::class, 'main');
 
         return $this->redirectToRoute('app_admin_dashboard');
     }
