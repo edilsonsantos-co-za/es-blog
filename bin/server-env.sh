@@ -47,6 +47,8 @@ chmod 600 "$ENV_FILE"
 ensure() { grep -qE "^$1=" "$ENV_FILE" || { set_env "$1" "$2"; echo "  added $1"; }; }
 site_url="$(get_env "$ENV_FILE" SITE_URL)"; site_url="${site_url:-$SITE_URL}"
 ensure DEFAULT_URI "${site_url%/}"
+# Trust the reverse proxy on the docker network so https, host and client IP come through
+ensure SYMFONY_TRUSTED_PROXIES private_ranges
 ensure SITE_TITLE "\"$(get_env "$ENV_FILE" SITE_NAME | sed 's/^$/ES Blog/')\""
 
 if [ "$fresh" = 1 ] || get_env "$ENV_FILE" DATABASE_URL | grep -q "USER:PASSWORD@HOST"; then
