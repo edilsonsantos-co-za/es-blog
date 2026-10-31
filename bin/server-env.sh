@@ -43,6 +43,12 @@ if [ ! -s "$ENV_FILE" ]; then
 fi
 chmod 600 "$ENV_FILE"
 
+# Keys the Symfony config reads that older env files may lack (added only when absent)
+ensure() { grep -qE "^$1=" "$ENV_FILE" || { set_env "$1" "$2"; echo "  added $1"; }; }
+site_url="$(get_env "$ENV_FILE" SITE_URL)"; site_url="${site_url:-$SITE_URL}"
+ensure DEFAULT_URI "${site_url%/}"
+ensure SITE_TITLE "\"$(get_env "$ENV_FILE" SITE_NAME | sed 's/^$/ES Blog/')\""
+
 if [ "$fresh" = 1 ] || get_env "$ENV_FILE" DATABASE_URL | grep -q "USER:PASSWORD@HOST"; then
   docker ps --format '{{.Names}}' | grep -qx "$MYSQL" || { echo "::error::Container $MYSQL is not running on the server."; exit 1; }
   pw="$(sed -n "/username: *$DB_USER/,/password:/p" "$DB_YML" 2>/dev/null | sed -n 's/^ *password: *//p' | tr -d "\"'" | head -1 || true)"
