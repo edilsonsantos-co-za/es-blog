@@ -97,10 +97,17 @@ class SsoController extends AbstractController
         return $this->generateUrl('app_login_sso_callback', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
+    /**
+     * No error screen of our own: end the SSO session (so another account can be used) and come back
+     * to /login, which goes straight to the SSO sign-in page. The reason is only logged.
+     */
     private function fail(string $message): RedirectResponse
     {
-        $this->addFlash('error', $message);
+        $this->logger->notice('SSO sign-in refused: ' . $message);
+        $login = $this->baseUri
+            ? rtrim($this->baseUri, '/') . $this->generateUrl('app_login')
+            : $this->generateUrl('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        return $this->redirectToRoute('app_login');
+        return $this->redirect($this->logto->endSessionUrl($login));
     }
 }

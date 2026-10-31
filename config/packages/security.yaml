@@ -22,13 +22,8 @@ security:
             lazy: true
             provider: app_users
 
-            form_login:
-                login_path: app_login
-                check_path: app_login
-                username_parameter: _username
-                password_parameter: _password
-                default_target_path: app_admin_dashboard
-                enable_csrf: true
+            # Sign-in only happens on the SSO (App\Controller\Auth\SsoController): no password form
+            entry_point: App\Security\SsoEntryPoint
 
             two_factor:
                 auth_form_path: app_2fa

@@ -14,32 +14,22 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class AuthController extends AbstractController
 {
-    #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(Request $request, AuthenticationUtils $authenticationUtils, LogtoClient $logto): Response
+    #[Route('/login', name: 'app_login', methods: ['GET'])]
+    public function login(LogtoClient $logto): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_admin_dashboard');
         }
 
-        // With SSO configured, sign-in happens on the DataSparkLab SSO page. Only a failed attempt stops here,
-        // so the error can be shown instead of bouncing straight back to the SSO.
-        if ($logto->isEnabled()) {
-            $errors = $request->getSession()->getFlashBag()->get('error');
-            if ($errors === []) {
-                return $this->redirectToRoute('app_login_sso');
-            }
-
-            return $this->render('auth/sso_error.html.twig', ['errors' => $errors]);
+        // Sign-in only happens on the SSO page; problems are handled there (see SsoController::fail)
+        if (!$logto->isEnabled()) {
+            return new Response('Sign-in is not set up: this blog signs in through the SSO (LOGTO_ENDPOINT, LOGTO_APP_ID, LOGTO_APP_SECRET).', Response::HTTP_SERVICE_UNAVAILABLE);
         }
 
-        return $this->render('auth/login.html.twig', [
-            'last_username' => $authenticationUtils->getLastUsername(),
-            'error'         => $authenticationUtils->getLastAuthenticationError(),
-        ]);
+        return $this->redirectToRoute('app_login_sso');
     }
 
     #[Route('/logout', name: 'app_logout')]
