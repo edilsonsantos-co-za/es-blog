@@ -73,11 +73,14 @@ jobs:
           if ssh vps 'sudo -n true' 2>/dev/null; then echo "REMOTE_SUDO=sudo -n" >> "$GITHUB_ENV"; else echo "REMOTE_SUDO=" >> "$GITHUB_ENV"; fi
 
       - name: Ship committed files
+        env:
+          MAILTRAP_USERNAME: ${{ secrets.MAILTRAP_USERNAME }}
+          MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
         run: |
           # Everything git tracks except env files (examples excepted): the server keeps its own .env*.
           { git ls-files | grep -vE '(^|/)\.env' ; git ls-files | grep -E '(^|/)\.env[^/]*\.example$' ; } | sort -u > .deploy-manifest.new
           tar -czf - -T .deploy-manifest.new .deploy-manifest.new | ssh vps "set -e; $REMOTE_SUDO mkdir -p '$APP_DIR'; $REMOTE_SUDO tar -xzf - -C '$APP_DIR'"
-          ssh vps "$REMOTE_SUDO env APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' bash -s" <<'REMOTE'
+          ssh vps "$REMOTE_SUDO env APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' MAILTRAP_USERNAME='$MAILTRAP_USERNAME' MAILTRAP_PASSWORD='$MAILTRAP_PASSWORD' bash -s" <<'REMOTE'
           set -euo pipefail
           cd "$APP_DIR"
           # Files an earlier deploy shipped that are gone in this one
@@ -86,6 +89,8 @@ jobs:
           fi
           mv .deploy-manifest.new .deploy-manifest
           echo "$RELEASE $(date -u +%FT%TZ)" > .deploy-release
+          # Create or complete the server-only env file (database, SSO link, Mailtrap); nothing printed
+          bash bin/server-env.sh
           missing=""
           for f in $REQUIRED_ENV_FILES; do [ -f "$f" ] || missing="$missing $APP_DIR/$f"; done
           if [ -n "$missing" ]; then
