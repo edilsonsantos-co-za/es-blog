@@ -44,6 +44,9 @@ RUN APP_ENV=prod APP_DEBUG=0 composer run-script post-install-cmd --no-interacti
 # var/themes is a volume in production; create it here so the volume starts owned by www-data.
 RUN mkdir -p var/themes && chown -R www-data:www-data var/
 
+# The server's .env is private (mode 600); only the web user needs to read it inside the image.
+RUN if [ -f .env ]; then chown www-data:www-data .env && chmod 400 .env; fi
+
 COPY docker/php/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
