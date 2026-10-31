@@ -19,10 +19,10 @@
     }
 
     const APPS = [
-        { id: 'portfolio', name: 'Portfolio', url: 'https://edilsonsantos.co.za/', color: '#2563eb', icon: 'M4 5h16v11H4z M8 20h8 M12 16v4' },
-        { id: 'blog', name: 'Blog', url: 'https://blog.edilsonsantos.co.za/', color: '#7c3aed', icon: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5' },
-        { id: 'store', name: 'Store', url: 'https://store.edilsonsantos.co.za/', color: '#0891b2', icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
-        { id: 'journal', name: 'Journal', url: 'https://journal.edilsonsantos.co.za/', color: '#0f9d58', private: true, icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
+        { id: 'portfolio', name: 'Portfolio', url: 'https://edilsonsantos.co.za/', icon: 'M4 5h16v11H4z M8 20h8 M12 16v4' },
+        { id: 'blog', name: 'Blog', url: 'https://blog.edilsonsantos.co.za/', icon: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5' },
+        { id: 'store', name: 'Store', url: 'https://store.edilsonsantos.co.za/', icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
+        { id: 'journal', name: 'Journal', url: 'https://journal.edilsonsantos.co.za/', private: true, icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
     ];
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -48,6 +48,7 @@
         .app:hover { background: var(--bg-2); }
         .app[aria-current="page"] { background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
         .tile { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; }
+        .tile-portfolio { background: #2563eb; } .tile-blog { background: #7c3aed; } .tile-store { background: #0891b2; } .tile-journal { background: #0f9d58; }
         .tile svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
         .who { display: grid; justify-items: center; gap: 4px; padding: 8px 4px 14px; text-align: center; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
         .who strong { font-size: 15px; font-weight: 800; letter-spacing: -.01em; }
@@ -62,12 +63,17 @@
         @media (max-width: 480px) { .panel { position: fixed; top: 64px; left: 12px; right: 12px; min-width: 0; } }
     `;
 
+    let SHEET = null;
+    try { SHEET = new CSSStyleSheet(); SHEET.replaceSync(CSS); } catch { SHEET = null; }
+
     class EsApps extends HTMLElement {
         static get observedAttributes() { return ['current', 'signed-in', 'user-name', 'user-email', 'avatar']; }
 
         constructor() {
             super();
             this.attachShadow({ mode: 'open' });
+            // A constructed stylesheet works under a strict CSP (no 'unsafe-inline' for styles)
+            if (SHEET) this.shadowRoot.adoptedStyleSheets = [SHEET];
             this.onDocClick = (e) => { if (!this.contains(e.target) && !e.composedPath().includes(this)) this.close(); };
             this.onKey = (e) => { if (e.key === 'Escape') this.close(true); };
         }
@@ -117,7 +123,7 @@
 
             const appGrid = apps.map((a) => `
                 <a class="app" href="${a.url}" ${a.id === current ? 'aria-current="page"' : ''}>
-                    <span class="tile" style="background:${a.color}">${icon(a.icon)}</span>${esc(a.name)}
+                    <span class="tile tile-${a.id}">${icon(a.icon)}</span>${esc(a.name)}
                 </a>`).join('');
 
             const signOut = this.getAttribute('sign-out-url');
@@ -135,7 +141,7 @@
                 </div>`
                 : (this.getAttribute('sign-in-url') ? `<a class="signin" href="${esc(this.getAttribute('sign-in-url'))}">Sign in</a>` : '');
 
-            this.shadowRoot.innerHTML = `<style>${CSS}</style>
+            this.shadowRoot.innerHTML = `${SHEET ? '' : `<style>${CSS}</style>`}
                 <button class="trigger" part="launcher" aria-label="ES apps" aria-haspopup="true" aria-expanded="false" data-for="apps">${icon('M5 5h3v3H5zM10.5 5h3v3h-3zM16 5h3v3h-3zM5 10.5h3v3H5zM10.5 10.5h3v3h-3zM16 10.5h3v3h-3zM5 16h3v3H5zM10.5 16h3v3h-3zM16 16h3v3h-3z')}</button>
                 <div class="panel" id="apps" role="menu" hidden><p class="kicker">Edilson Santos apps</p><div class="grid">${appGrid}</div></div>
                 ${account}`;
