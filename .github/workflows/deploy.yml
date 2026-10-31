@@ -90,8 +90,9 @@ jobs:
           fi
           mv .deploy-manifest.new .deploy-manifest
           echo "$RELEASE $(date -u +%FT%TZ)" > .deploy-release
-          # Create or complete the server-only env file (database, SSO link, Mailtrap); nothing printed
-          bash bin/server-env.sh
+          # Create or complete the server-only env file (database, SSO link, Mailtrap); nothing printed.
+          # </dev/null: the script runs docker exec -i, which would otherwise eat the rest of this heredoc.
+          bash bin/server-env.sh < /dev/null
           missing=""
           for f in $REQUIRED_ENV_FILES; do [ -f "$f" ] || missing="$missing $APP_DIR/$f"; done
           if [ -n "$missing" ]; then
