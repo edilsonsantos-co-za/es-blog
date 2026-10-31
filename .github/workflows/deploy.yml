@@ -78,7 +78,8 @@ jobs:
           MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
         run: |
           # Everything git tracks except env files (examples excepted): the server keeps its own .env*.
-          { git ls-files | grep -vE '(^|/)\.env' ; git ls-files | grep -E '(^|/)\.env[^/]*\.example$' ; } | sort -u > .deploy-manifest.new
+          # Each part ends in || true: the step runs with bash -e, and a grep that matches nothing would end the list early.
+          { git ls-files | grep -vE '(^|/)\.env' || true ; git ls-files | grep -E '(^|/)\.env[^/]*\.example$' || true ; } | sort -u > .deploy-manifest.new
           tar -czf - -T .deploy-manifest.new .deploy-manifest.new | ssh vps "set -e; $REMOTE_SUDO mkdir -p '$APP_DIR'; $REMOTE_SUDO tar -xzf - -C '$APP_DIR'"
           ssh vps "$REMOTE_SUDO env APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' MAILTRAP_USERNAME='$MAILTRAP_USERNAME' MAILTRAP_PASSWORD='$MAILTRAP_PASSWORD' bash -s" <<'REMOTE'
           set -euo pipefail
