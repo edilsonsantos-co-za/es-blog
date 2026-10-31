@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Security\LogtoClient;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -18,6 +19,8 @@ final class SsoLogoutSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly LogtoClient $logto,
         private readonly UrlGeneratorInterface $urls,
+        #[Autowire('%env(default::DEFAULT_URI)%')]
+        private readonly ?string $baseUri = null,
     ) {}
 
     public static function getSubscribedEvents(): array
@@ -32,7 +35,10 @@ final class SsoLogoutSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $home = $this->urls->generate('app_blog_index', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        // Same base as the sign-in callback, so the post-logout redirect matches what Logto registered
+        $home = $this->baseUri
+            ? rtrim($this->baseUri, '/') . $this->urls->generate('app_blog_index')
+            : $this->urls->generate('app_blog_index', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $event->setResponse(new RedirectResponse($this->logto->endSessionUrl($home)));
     }
 }

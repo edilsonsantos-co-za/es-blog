@@ -12,6 +12,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -25,6 +26,8 @@ class SsoController extends AbstractController
         private readonly LogtoClient $logto,
         private readonly UserRepository $users,
         private readonly LoggerInterface $logger,
+        #[Autowire('%env(default::DEFAULT_URI)%')]
+        private readonly ?string $baseUri = null,
     ) {}
 
     #[Route('/login/sso', name: 'app_login_sso', methods: ['GET'])]
@@ -81,8 +84,16 @@ class SsoController extends AbstractController
         return $this->redirectToRoute('app_admin_dashboard');
     }
 
+    /**
+     * Built from DEFAULT_URI (the public https address) rather than the request, so the redirect_uri
+     * matches what Logto has registered whether the page was opened over http or behind a proxy.
+     */
     private function callbackUrl(): string
     {
+        if ($this->baseUri) {
+            return rtrim($this->baseUri, '/') . $this->generateUrl('app_login_sso_callback');
+        }
+
         return $this->generateUrl('app_login_sso_callback', [], UrlGeneratorInterface::ABSOLUTE_URL);
     }
 
