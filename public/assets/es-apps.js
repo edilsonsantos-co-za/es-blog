@@ -10,7 +10,8 @@
  *          sign-in-url="/login"                    where "Sign in" goes
  *          sign-out-url="/logout"                  where "Sign out" goes
  *          sign-out-method="post" csrf-name="_token" csrf-token="…"   for apps that sign out with a POST
- *          manage-url="/admin/profile">            optional "Your profile" link
+ *          manage-url="/admin/profile"             optional "Your profile" link
+ *          dashboard-url="/admin">                 optional "Dashboard" link (opens in a new tab)
  *
  * Signing out here also writes the shared `es-signout` cookie, so the other ES apps sign out too.
  * Signed in here, it publishes who you are (display only) in the shared `es-user` cookie, so apps where
@@ -113,7 +114,7 @@
     try { SHEET = new CSSStyleSheet(); SHEET.replaceSync(CSS); } catch { SHEET = null; }
 
     class EsApps extends HTMLElement {
-        static get observedAttributes() { return ['current', 'signed-in', 'user-name', 'user-email', 'avatar']; }
+        static get observedAttributes() { return ['current', 'signed-in', 'user-name', 'user-email', 'avatar', 'dashboard-url']; }
 
         constructor() {
             super();
@@ -200,12 +201,13 @@
                 ? `<form method="post" action="${esc(signOut)}"><input type="hidden" name="${esc(this.getAttribute('csrf-name') || '_token')}" value="${esc(this.getAttribute('csrf-token') || '')}"><button type="submit">Sign out</button></form>`
                 : `<a href="${esc(signOut)}" data-signout>Sign out</a>`;
             const manage = who?.local ? this.getAttribute('manage-url') : null;
+            const dashboard = this.getAttribute('dashboard-url');
 
             const account = hasUser ? `
                 <button class="trigger" part="account" aria-label="Account: ${esc(label)}" aria-haspopup="true" aria-expanded="false" data-for="account">${this.avatarHtml(false)}</button>
                 <div class="panel" id="account" role="menu" hidden>
                     <div class="who">${this.avatarHtml(true)}<strong>${esc(label)}</strong>${name && email ? `<span>${esc(email)}</span>` : ''}<span class="sso">Signed in with DataSparkLab SSO</span></div>
-                    <div class="menu">${manage ? `<a href="${esc(manage)}">Your profile</a>` : ''}${signOutItem}</div>
+                    <div class="menu">${dashboard ? `<a href="${esc(dashboard)}" target="_blank" rel="noopener">Dashboard</a>` : ''}${manage ? `<a href="${esc(manage)}">Your profile</a>` : ''}${signOutItem}</div>
                 </div>`
                 : (this.getAttribute('sign-in-url') ? `<a class="signin" href="${esc(this.getAttribute('sign-in-url'))}">Sign in</a>` : '');
 
