@@ -21,8 +21,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}Admin{% endblock %} — {{ site_title|default('EdFolio Blog') }}</title>
-    {% set favicon = config('site.favicon') ?: site_logo %}{% if favicon %}<link rel="icon" href="{{ favicon }}">{% endif %}
+    <title>{% block title %}Admin{% endblock %} — ES Blog</title>
+    {# The admin carries the ES app identity (ES mark, "ES Blog") like the other ES apps;
+       the site logo and favicon in Settings brand the public blog. #}
+    <link rel="icon" type="image/svg+xml" href="{{ asset('assets/brand/es-mark.svg') }}">
+    <link rel="alternate icon" type="image/png" sizes="32x32" href="{{ asset('assets/brand/es-icon-32.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/brand/es-icon-180.png') }}">
     <script src="{{ asset('assets/theme-mode.js') }}"></script>
     <script src="{{ asset('assets/es-apps.js') }}" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -78,7 +82,7 @@
         </li>
         <li class="nav-item d-flex align-items-center">
             {# The ES app launcher and account menu, shared by every ES app (public/assets/es-apps.js) #}
-            <es-apps current="blog" {% if app.user %}signed-in user-name="{{ app.user.username }}" user-email="{{ app.user.email }}" avatar="{{ avatar_url(app.user, 128) }}"{% endif %}
+            <es-apps current="blog" {% if app.user %}signed-in user-name="{{ app.user.username }}" user-email="{{ app.user.email }}" avatar="{{ gravatar_url(app.user, 128) }}"{% endif %}
                      manage-url="{{ path('app_admin_profile') }}" sign-out-url="{{ path('app_logout') }}"></es-apps>
         </li>
     </ul>
@@ -87,13 +91,9 @@
 {# ── Sidebar ── #}
 <aside class="main-sidebar sidebar-light-primary" id="main-sidebar">
     <a href="{{ path('app_admin_dashboard') }}" class="brand-link">
-        {% if site_logo %}
-        <span class="brand-logo has-img" aria-hidden="true"><img src="{{ site_logo }}" alt=""></span>
-        {% else %}
-        <span class="brand-logo" aria-hidden="true">{{ site_title|default('EdFolio Blog')|first|upper }}</span>
-        {% endif %}
+        <span class="brand-logo has-img" aria-hidden="true"><img src="{{ asset('assets/brand/es-mark.svg') }}" alt=""></span>
         <span class="brand-text">
-            <span class="brand-title">{{ site_title|default('EdFolio Blog') }}</span>
+            <span class="brand-title">ES Blog</span>
             <span class="brand-subtitle">Blog admin</span>
         </span>
     </a>

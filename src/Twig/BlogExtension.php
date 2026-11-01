@@ -37,6 +37,7 @@ use Twig\TwigFunction;
  *   {{ reading_time(post.body) }}
  *   {{ excerpt(post.body, 300) }}
  *   {{ avatar_url(user, 160) }}  (own avatar, else Gravatar, else null)
+ *   {{ gravatar_url(user, 128) }}  (Gravatar only: the ES account menu)
  *
  * Filters:
  *   {{ post.body | markdown }}
@@ -85,6 +86,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('reading_time', $this->readingTime(...)),
             new TwigFunction('excerpt', $this->excerpt(...)),
             new TwigFunction('avatar_url', $this->avatarUrl(...)),
+            new TwigFunction('gravatar_url', $this->gravatarUrl(...)),
         ];
     }
 
@@ -101,7 +103,17 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
         if ($avatar !== '') {
             return $avatar;
         }
-        $email = method_exists($user, 'getEmail') ? strtolower(trim((string) $user->getEmail())) : '';
+
+        return $this->gravatarUrl($user, $size);
+    }
+
+    /**
+     * The user's Gravatar (identicon when they have none): the account menu picture in every ES app.
+     * Null when there is no email to hash.
+     */
+    private function gravatarUrl(?object $user, int $size = 80): ?string
+    {
+        $email = $user && method_exists($user, 'getEmail') ? strtolower(trim((string) $user->getEmail())) : '';
 
         return $email === '' ? null : sprintf('https://gravatar.com/avatar/%s?s=%d&d=identicon', hash('sha256', $email), $size);
     }
