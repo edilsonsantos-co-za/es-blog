@@ -69,13 +69,13 @@ final class ThemePackageVerifierTest extends TestCase
 
     public function testRejectsAnotherAppsPackage(): void
     {
-        $this->expectExceptionMessage('not EdFolio Blog');
+        $this->expectExceptionMessage('not ES Blog');
         $this->verifier()->verify($this->package(manifest: ['app' => 'edfolio-portfolio']));
     }
 
     public function testRejectsAnIncompatibleAppVersion(): void
     {
-        $this->expectExceptionMessage('needs EdFolio Blog');
+        $this->expectExceptionMessage('needs ES Blog');
         $this->verifier()->verify($this->package(manifest: ['requires' => '>=2.0.0']));
     }
 

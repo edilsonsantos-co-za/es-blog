@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
 /**
- * Initial schema — creates all tables for edfolio-blog-v2.
+ * Initial schema — creates all tables for ES Blog.
  *
  * This migration is the single source of truth for the database structure.
  * It is intentionally non-destructive: every CREATE TABLE uses IF NOT EXISTS

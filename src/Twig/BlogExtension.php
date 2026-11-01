@@ -63,7 +63,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
         $version = $this->appVersion->getVersion();
 
         return [
-            'site_title'       => $this->config->get('site.title', 'EdFolio Blog'),
+            'site_title'       => $this->config->get('site.title', 'ES Blog'),
             'site_description' => $this->config->get('site.description', ''),
             'site_url'         => $this->config->get('site.url', ''),
             'site_portfolio_url' => $this->config->get('site.portfolio_url', ''),

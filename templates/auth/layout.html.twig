@@ -19,10 +19,10 @@
             {% if site_logo %}
             <span class="atlas-auth-logo has-img" aria-hidden="true"><img src="{{ site_logo }}" alt=""></span>
             {% else %}
-            <span class="atlas-auth-logo" aria-hidden="true">{{ site_title|default('EdFolio Blog')|first|upper }}</span>
+            <span class="atlas-auth-logo" aria-hidden="true">{{ site_title|default('ES Blog')|first|upper }}</span>
             {% endif %}
             <span class="atlas-auth-brand-text">
-                <b>{{ site_title|default('EdFolio Blog') }}</b>
+                <b>{{ site_title|default('ES Blog') }}</b>
                 <span class="mono">Blog admin</span>
             </span>
         </a>
@@ -38,7 +38,7 @@
     </main>
 
     <footer class="atlas-auth-foot mono">
-        <span>&copy; {{ "now"|date("Y") }} {{ site_title|default('EdFolio Blog') }}</span>
+        <span>&copy; {{ "now"|date("Y") }} {{ site_title|default('ES Blog') }}</span>
         {% if app_release_tag is defined %}<span>{{ app_release_tag }}</span>{% endif %}
     </footer>
 </div>

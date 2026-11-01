@@ -100,7 +100,7 @@ final class ThemePackageVerifier
             throw new ThemePackageException('The manifest has an invalid theme id.');
         }
         if (($m['app'] ?? null) !== self::APP) {
-            throw new ThemePackageException(sprintf('This theme is for "%s", not EdFolio Blog.', is_string($m['app'] ?? null) ? $m['app'] : 'another app'));
+            throw new ThemePackageException(sprintf('This theme is for "%s", not ES Blog.', is_string($m['app'] ?? null) ? $m['app'] : 'another app'));
         }
         if (!is_string($m['name'] ?? null) || $m['name'] === '' || mb_strlen($m['name']) > 80) {
             throw new ThemePackageException('The manifest has no theme name.');
@@ -109,7 +109,7 @@ final class ThemePackageVerifier
             throw new ThemePackageException('The manifest has an invalid version.');
         }
         if (!self::satisfies($this->appVersion->getVersion(), (string) ($m['requires'] ?? ''))) {
-            throw new ThemePackageException(sprintf('This theme needs EdFolio Blog %s; this site runs %s.', $m['requires'], $this->appVersion->getVersion()));
+            throw new ThemePackageException(sprintf('This theme needs ES Blog %s; this site runs %s.', $m['requires'], $this->appVersion->getVersion()));
         }
         if (!is_array($m['files'] ?? null) || !isset($m['files']['templates/blog/layout.html.twig'])) {
             throw new ThemePackageException('The package has no blog layout template.');

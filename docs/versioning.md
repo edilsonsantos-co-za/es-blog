@@ -59,7 +59,7 @@ For active repos, protect `main` and require pull requests when practical. That 
 
 GitHub Releases automatically show what changed since the previous tag, which is much more useful than relying on commit names alone.
 
-## Project-specific notes for `edfolio-blog-v2`
+## Project-specific notes for ES Blog
 
 - `VERSION` is the release source of truth.
 - Symfony reads `VERSION` through `App\Service\AppVersion`.

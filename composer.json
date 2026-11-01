@@ -1,4 +1,6 @@
 {
+    "name": "edilsonsantos-co-za/es-blog",
+    "description": "ES Blog: a Symfony publishing workspace with the HTMLy content model.",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",

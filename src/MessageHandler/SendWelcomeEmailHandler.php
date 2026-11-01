@@ -27,19 +27,19 @@ final class SendWelcomeEmailHandler
         }
 
         $html = sprintf(
-            '<h1>Welcome to EdFolio, %s!</h1>'
+            '<h1>Welcome to ES Blog, %s!</h1>'
             . '<p>Your account has been created successfully.</p>'
             . '<p>We\'re thrilled to have you. Start exploring posts or create your own!</p>'
-            . '<p>— The EdFolio Team</p>',
+            . '<p>— The ES Blog Team</p>',
             htmlspecialchars($message->username, ENT_QUOTES, 'UTF-8'),
         );
 
         $email = (new Email())
             ->to($message->email)
-            ->subject('Welcome to EdFolio!')
+            ->subject('Welcome to ES Blog!')
             ->html($html)
             ->text(sprintf(
-                "Welcome to EdFolio, %s!\n\nYour account has been created successfully.\n\nWe're thrilled to have you.\n\n— The EdFolio Team",
+                "Welcome to ES Blog, %s!\n\nYour account has been created successfully.\n\nWe're thrilled to have you.\n\n— The ES Blog Team",
                 $message->username,
             ));
 

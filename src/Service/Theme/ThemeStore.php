@@ -67,7 +67,7 @@ final class ThemeStore
             }
         }
         if ($item === null || !is_string($item['download'] ?? null) || !is_string($item['sha256'] ?? null)) {
-            throw new ThemePackageException('The store does not offer that theme for EdFolio Blog.');
+            throw new ThemePackageException('The store does not offer that theme for ES Blog.');
         }
 
         $response = $this->http->request('GET', $this->url($item['download']), [

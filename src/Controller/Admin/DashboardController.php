@@ -29,7 +29,7 @@ class DashboardController extends AbstractController
                 'draft'     => $postService->countByStatus(PostStatus::Draft),
                 'scheduled' => $postService->countByStatus(PostStatus::Scheduled),
             ],
-            'site_title'   => $siteConfigService->get('site.title', 'EdFolio Blog'),
+            'site_title'   => $siteConfigService->get('site.title', 'ES Blog'),
         ]);
     }
 }

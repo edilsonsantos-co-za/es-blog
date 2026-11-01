@@ -1,6 +1,6 @@
-# Deployment
+# ES Blog deployment
 
-This project is designed to sit behind the shared Nginx Proxy Manager stack from `~/workspace/datasparklab/core-reverse-proxy-webapp`.
+ES Blog is designed to sit behind the shared Nginx Proxy Manager stack from `~/workspace/datasparklab/core-reverse-proxy-webapp`.
 
 ## Network and ports
 

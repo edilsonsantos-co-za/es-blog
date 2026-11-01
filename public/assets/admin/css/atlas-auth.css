@@ -1,4 +1,4 @@
-/* Dark-only Atlas sign-in for EdFolio Blog. */
+/* Dark-only Atlas sign-in for ES Blog. */
 :root { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-ink: #ffffff; --accent-soft: #15213a; --danger: #f97066; --danger-soft: #2a1414; color-scheme: dark; }
 
 .atlas-auth, .atlas-auth *, .atlas-auth *::before, .atlas-auth *::after { box-sizing: border-box; }

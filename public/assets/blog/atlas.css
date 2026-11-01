@@ -1,4 +1,4 @@
-/* Atlas — blog companion to the EdFolio Atlas portfolio theme: same palette and type, its own masthead and list layout. */
+/* Atlas — blog companion to the ES Portfolio Atlas theme: same palette and type, its own masthead and list layout. */
 :root { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-2: #93c5fd; --accent-ink: #ffffff; --accent-soft: #15213a; --dark: #3b82f6; --on-dark: #ffffff; color-scheme: dark; }
 
 *, *::before, *::after { box-sizing: border-box; }

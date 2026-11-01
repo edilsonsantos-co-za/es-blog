@@ -113,7 +113,7 @@ jobs:
           fi
           docker compose -f "$COMPOSE_FILE" ps
           docker image prune -f >/dev/null
-          # The owner signs in through the SSO with the same email as EdFolio's admin: make sure the
+          # The owner signs in through the SSO with the same email as ES Portfolio's admin: make sure the
           # blog has an admin with it (fresh database; the email and the unused password aren't printed)
           email="$(docker exec edfolio-prod php artisan tinker --execute='echo App\Models\Admin::orderBy("id")->value("email");' < /dev/null 2>/dev/null | tail -1 || true)"
           if [ -n "$email" ]; then
