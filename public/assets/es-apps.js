@@ -39,9 +39,8 @@
     const icon = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
 
     const CSS = `
-        :host { --bg: #ffffff; --bg-2: #f5f7fb; --text: #0f172a; --muted: #5b6478; --line: #dde3ee; --accent: #2563eb; --shadow: 0 18px 48px rgba(15, 23, 42, .16);
+        :host { --bg: #121620; --bg-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --shadow: 0 18px 48px rgba(0, 0, 0, .5);
                 display: inline-flex; align-items: center; gap: 6px; font: 600 14px/1.4 Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif; color: var(--text); position: relative; }
-        :host([data-dark]) { --bg: #121620; --bg-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --shadow: 0 18px 48px rgba(0, 0, 0, .5); }
         button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
         .trigger { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); }
         .trigger:hover, .trigger[aria-expanded="true"] { background: var(--bg-2); color: var(--text); }
@@ -72,7 +71,7 @@
         @media (max-width: 480px) { .panel { position: fixed; top: 64px; left: 12px; right: 12px; min-width: 0; } }
     `;
 
-    // Write a cookie on the parent domain (the widest one the browser accepts, as theme-mode.js does),
+    // Write a cookie on the parent domain (the widest one the browser accepts),
     // so every ES app sees it. An empty value deletes it (on every level, wherever it was written).
     const setSharedCookie = (name, value, maxAge) => {
         const base = `${name}=${value}; path=/; ${value ? (maxAge ? `max-age=${maxAge}; ` : '') : 'max-age=0; '}SameSite=Lax`;
@@ -128,10 +127,6 @@
         }
 
         connectedCallback() {
-            this.syncTheme();
-            this.themeWatch = new MutationObserver(() => this.syncTheme());
-            this.themeWatch.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme', 'data-bs-theme'] });
-            matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => this.syncTheme());
             document.addEventListener('click', this.onDocClick);
             document.addEventListener('keydown', this.onKey);
             document.addEventListener('visibilitychange', this.onVisible);
@@ -139,21 +134,12 @@
         }
 
         disconnectedCallback() {
-            this.themeWatch?.disconnect();
             document.removeEventListener('click', this.onDocClick);
             document.removeEventListener('keydown', this.onKey);
             document.removeEventListener('visibilitychange', this.onVisible);
         }
 
         attributeChangedCallback() { if (this.shadowRoot.childElementCount) this.render(); }
-
-        syncTheme() {
-            const root = document.documentElement;
-            const explicit = root.getAttribute('data-theme') || root.getAttribute('data-bs-theme');
-            const dark = root.classList.contains('dark-mode') || root.classList.contains('dark') || explicit === 'dark'
-                || (!explicit && !root.classList.contains('light-mode') && matchMedia('(prefers-color-scheme: dark)').matches && !root.classList.length);
-            this.toggleAttribute('data-dark', dark);
-        }
 
         avatarHtml(large) {
             const { name, email, avatar: src } = this.who();

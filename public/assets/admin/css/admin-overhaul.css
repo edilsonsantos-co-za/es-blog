@@ -1,26 +1,12 @@
 /* EdFolio Blog admin on AdminLTE, restyled to the Atlas design shared with the portfolio admin. */
 :root {
-    --bg: #f3f5f9; --card: #ffffff; --card-2: #f5f7fb; --text: #0f172a; --muted: #5b6478; --line: #dde3ee;
-    --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eeff;
-    --success: #059669; --success-soft: #e3f6ee; --warning: #b45309; --warning-soft: #fdf1dc; --danger: #b42318; --danger-soft: #fdecea;
-    --shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38;
+    --accent: #3b82f6; --accent-ink: #ffffff; --accent-soft: #15213a;
+    --success: #34d399; --success-soft: #0f2a20; --warning: #fbbf24; --warning-soft: #2b2110; --danger: #f97066; --danger-soft: #2a1414;
+    --shadow: none;
     --font: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
     --mono: 'JetBrains Mono', ui-monospace, monospace;
-    color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38;
-        --accent: #3b82f6; --accent-soft: #15213a;
-        --success: #34d399; --success-soft: #0f2a20; --warning: #fbbf24; --warning-soft: #2b2110; --danger: #f97066; --danger-soft: #2a1414;
-        --shadow: none; color-scheme: dark;
-    }
-}
-:root[data-theme="dark"] {
-    --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38;
-    --accent: #3b82f6; --accent-soft: #15213a;
-    --success: #34d399; --success-soft: #0f2a20; --warning: #fbbf24; --warning-soft: #2b2110; --danger: #f97066; --danger-soft: #2a1414;
-    --shadow: none; color-scheme: dark;
+    color-scheme: dark;
 }
 
 html { background: var(--bg); }
@@ -44,15 +30,6 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 .admin-shell .main-header { min-height: 64px; padding: 0 16px; border-bottom: 1px solid var(--line) !important; background: color-mix(in srgb, var(--card) 88%, transparent) !important; backdrop-filter: blur(12px); box-shadow: none; }
 .admin-shell .main-header .nav-link { display: inline-flex; align-items: center; justify-content: center; height: 38px; min-width: 38px; margin: 0 3px; padding: 0 10px; border-radius: 10px; color: var(--muted) !important; }
 .admin-shell .main-header .nav-link:hover, .admin-shell .main-header .nav-link:focus { background: var(--card-2); color: var(--text) !important; }
-.admin-shell .main-header .atlas-icon-btn { border: 1px solid var(--line); background: var(--card); color: var(--text) !important; padding: 0; width: 38px; }
-.admin-shell .main-header .atlas-icon-btn:hover { border-color: var(--accent); color: var(--accent) !important; }
-.atlas-icon-btn svg { display: block; }
-.atlas-icon-btn .i-sun, :root[data-theme="dark"] .atlas-icon-btn .i-moon { display: none; }
-:root[data-theme="dark"] .atlas-icon-btn .i-sun { display: block; }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .atlas-icon-btn .i-moon { display: none; }
-    :root:not([data-theme="light"]) .atlas-icon-btn .i-sun { display: block; }
-}
 .admin-topbar-title { margin-left: 8px; padding-left: 14px; border-left: 1px solid var(--line); font: 500 11px/1.4 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .admin-shell .main-footer { border-top: 1px solid var(--line); background: var(--bg); color: var(--muted); font-size: 13px; }
 .admin-shell .main-footer strong { font-weight: 700; color: var(--text); }

@@ -1,9 +1,5 @@
 /* Atlas — blog companion to the EdFolio Atlas portfolio theme: same palette and type, its own masthead and list layout. */
-:root { --bg: #f3f5f9; --card: #ffffff; --card-2: #f5f7fb; --text: #0f172a; --muted: #5b6478; --line: #dde3ee; --accent: #2563eb; --accent-2: #60a5fa; --accent-ink: #ffffff; --accent-soft: #e6eeff; --dark: #0f172a; --on-dark: #f1f5f9; color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-2: #93c5fd; --accent-ink: #ffffff; --accent-soft: #15213a; --dark: #3b82f6; --on-dark: #ffffff; color-scheme: dark; }
-}
-:root[data-theme="dark"] { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-2: #93c5fd; --accent-ink: #ffffff; --accent-soft: #15213a; --dark: #3b82f6; --on-dark: #ffffff; color-scheme: dark; }
+:root { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-2: #93c5fd; --accent-ink: #ffffff; --accent-soft: #15213a; --dark: #3b82f6; --on-dark: #ffffff; color-scheme: dark; }
 
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 90px; }
@@ -47,13 +43,6 @@ h2.label { margin: 0 0 12px; }
 .top-actions { display: flex; gap: 8px; align-items: center; }
 .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; display: grid; place-items: center; font-size: 16px; }
 .menu-btn { display: none; }
-.theme-toggle svg { display: block; }
-.theme-toggle .i-sun, :root[data-theme="dark"] .theme-toggle .i-moon { display: none; }
-:root[data-theme="dark"] .theme-toggle .i-sun { display: block; }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .theme-toggle .i-moon { display: none; }
-    :root:not([data-theme="light"]) .theme-toggle .i-sun { display: block; }
-}
 .signin { padding: 8px 14px; border-radius: 10px; }
 
 /* Buttons, pills */

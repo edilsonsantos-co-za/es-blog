@@ -27,7 +27,7 @@ A self-hosted blog and publishing workspace built on Symfony 7.4 LTS.
 
 **Design**
 - One built-in design, Atlas, shared with the EdFolio portfolio: a masthead, a cover-deck hero of the latest posts,
-  dated post rows, and light and dark modes. The admin and sign-in pages use the same palette and type.
+  dated post rows, and a dark-only palette. The admin and sign-in pages use the same palette and type.
 - More themes install from the ES Marketplace under Admin → Settings → Themes: pick one from the store or upload a
   downloaded package. No unzipping, file copying or cache clearing. Packages must be signed by a key in
   `config/theme-keys/` (each file is checked against the signed manifest) and land in `var/themes/<id>/`, which is

@@ -1,9 +1,5 @@
-/* Atlas sign-in: shared by EdFolio Blog (public/assets/admin/css) and the EdFolio portfolio admin (resources/js/client/common/assets/css). Keep both copies identical. */
-:root { --bg: #f3f5f9; --card: #ffffff; --card-2: #f5f7fb; --text: #0f172a; --muted: #5b6478; --line: #dde3ee; --accent: #2563eb; --accent-ink: #ffffff; --accent-soft: #e6eeff; --danger: #b42318; --danger-soft: #fdecea; color-scheme: light; }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-soft: #15213a; --danger: #f97066; --danger-soft: #2a1414; color-scheme: dark; }
-}
-:root[data-theme="dark"] { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-soft: #15213a; --danger: #f97066; --danger-soft: #2a1414; color-scheme: dark; }
+/* Dark-only Atlas sign-in for EdFolio Blog. */
+:root { --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-ink: #ffffff; --accent-soft: #15213a; --danger: #f97066; --danger-soft: #2a1414; color-scheme: dark; }
 
 .atlas-auth, .atlas-auth *, .atlas-auth *::before, .atlas-auth *::after { box-sizing: border-box; }
 body.atlas-auth-body { margin: 0; background: var(--bg); }
@@ -20,16 +16,8 @@ body.atlas-auth-body { margin: 0; background: var(--bg); }
 .atlas-auth-brand-text b { font-weight: 800; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .atlas-auth-brand-text .mono { font-size: 10px; }
 .atlas-auth-actions { display: flex; align-items: center; gap: 8px; }
-.atlas-auth-icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); display: grid; place-items: center; cursor: pointer; padding: 0; }
 .atlas-auth-link-btn { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); text-decoration: none; font-weight: 700; font-size: 14px; }
-.atlas-auth-icon-btn:hover, .atlas-auth-link-btn:hover { border-color: var(--accent); color: var(--accent); }
-.atlas-auth-icon-btn svg { display: block; }
-.atlas-auth-icon-btn .i-sun, :root[data-theme="dark"] .atlas-auth-icon-btn .i-moon { display: none; }
-:root[data-theme="dark"] .atlas-auth-icon-btn .i-sun { display: block; }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .atlas-auth-icon-btn .i-moon { display: none; }
-    :root:not([data-theme="light"]) .atlas-auth-icon-btn .i-sun { display: block; }
-}
+.atlas-auth-link-btn:hover { border-color: var(--accent); color: var(--accent); }
 
 .atlas-auth-main { flex: 1; display: grid; place-items: center; padding: 24px 16px 48px; }
 .atlas-auth-card { width: min(420px, 100%); background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 32px; box-shadow: 0 24px 60px -32px rgba(15, 23, 42, .25); }

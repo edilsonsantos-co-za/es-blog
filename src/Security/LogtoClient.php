@@ -50,21 +50,10 @@ final class LogtoClient
             'nonce' => $nonce,
             'code_challenge' => $challenge,
             'code_challenge_method' => 'S256',
-        ] + self::themeParam());
+            'theme' => 'dark',
+        ]);
 
         return ['url' => $url, 'state' => $state, 'nonce' => $nonce, 'verifier' => $verifier];
-    }
-
-    /**
-     * Open the Logto page in the light/dark mode picked in the ES apps (the shared `es-theme` cookie).
-     *
-     * @return array<string, string>
-     */
-    private static function themeParam(): array
-    {
-        $mode = $_COOKIE['es-theme'] ?? null;
-
-        return $mode === 'dark' || $mode === 'light' ? ['theme' => $mode] : [];
     }
 
     /**
