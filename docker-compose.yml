@@ -10,8 +10,9 @@ services:
     volumes:
       - .:/var/www/html
     environment:
-      APP_ENV: prod
-      APP_DEBUG: "0"
+      # dev: template and config edits apply on reload (prod caches them until cache:clear)
+      APP_ENV: dev
+      APP_DEBUG: "1"
       APP_SECRET: ${APP_SECRET:-8f07e8904c675e1a885a7f20225ab8cc}
       # Containers resolve DB via milkyway network hostname
       DATABASE_URL: "mysql://edfolio_blog_user:Edf0l!0Bl0g_2025@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
@@ -30,8 +31,9 @@ services:
     volumes:
       - .:/var/www/html
     environment:
-      APP_ENV: prod
-      APP_DEBUG: "0"
+      # dev: template and config edits apply on reload (prod caches them until cache:clear)
+      APP_ENV: dev
+      APP_DEBUG: "1"
       APP_SECRET: ${APP_SECRET:-8f07e8904c675e1a885a7f20225ab8cc}
       DATABASE_URL: "mysql://edfolio_blog_user:Edf0l!0Bl0g_2025@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
