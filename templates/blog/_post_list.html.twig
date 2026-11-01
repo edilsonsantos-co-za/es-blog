@@ -1,7 +1,7 @@
 {# Bento list: the newest post leads as a wide poster and the last one widens so rows end flush (see .post-bento). #}
 <div class="post-bento-wrap">
 <div class="post-bento">
-    {% for post in posts %}
+    {% for post in items ?? posts %}
     {% set post_date = post.publishedAt ?? post.createdAt %}
     {% set post_url = path('app_blog_post', {year: post_date|date('Y'), month: post_date|date('m'), slug: post.slug}) %}
     {% set kicker = post.category ? post.category.title : 'Article' %}

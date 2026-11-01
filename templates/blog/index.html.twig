@@ -18,13 +18,12 @@
 {% set lead = recent|first %}
 {% set side = recent|slice(1, 2) %}
 {% set topic_total = tag_cloud|length %}
-<section class="hero hero-bento{{ lead ? '' : ' hero-solo' }}" aria-label="Featured">
-    <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
-    <div class="tile masthead-tile{{ side|length == 0 ? ' tall' : '' }}">
-        <span class="label">Latest writing</span>
+<section class="hero hero-bento" aria-label="Featured">
+    <div class="tile masthead-tile">
+        <span class="label">Edilson Santos · Blog</span>
         <h1>{{ site_description ?: site_title }}</h1>
         <div class="actions">
-            {% if lead %}<a class="btn btn-primary" href="#latest-posts-heading">Start reading</a>{% endif %}
+            {% if lead %}<a class="btn btn-primary" href="{{ path('app_blog_post', {year: (lead.publishedAt ?? lead.createdAt)|date('Y'), month: (lead.publishedAt ?? lead.createdAt)|date('m'), slug: lead.slug}) }}">Start reading</a>{% endif %}
             {% if portfolio_url %}<a class="btn" href="{{ portfolio_url }}">About me ↗</a>{% endif %}
         </div>
     </div>
@@ -54,7 +53,7 @@
     {% endfor %}
     {% endif %}
     {% if topic_total > 0 %}
-    <nav class="tile topics-tile" aria-label="Topics">
+    <nav class="tile topics-tile{{ side|length > 0 ? ' wide' : '' }}" aria-label="Topics">
         <span class="label">Topics</span>
         <div class="tag-cloud">
             {% for item in tag_cloud|slice(0, 14) %}
@@ -76,10 +75,15 @@
 </section>
 {% endif %}
 
+{# The hero already shows the newest posts, so page one lists the rest instead of repeating them. #}
+{% set shown = first_page and latest ? (posts|slice(0, 3))|length : 0 %}
+{% set items = posts is not null ? posts|slice(shown) : [] %}
+{% if shown == 0 or items|length > 0 or posts.pageCount > 1 %}
 <section class="list-head" aria-labelledby="latest-posts-heading">
-    <h2 id="latest-posts-heading">{{ first_page ? 'All writing' : 'All writing · page ' ~ posts.currentPageNumber }}</h2>
+    <h2 id="latest-posts-heading">{{ shown ? 'More writing' : (first_page ? 'All writing' : 'All writing · page ' ~ posts.currentPageNumber) }}</h2>
     <a class="list-head-link" href="{{ path('app_blog_feed') }}">RSS</a>
 </section>
 
-{% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_index', route_params: {}} %}
+{% include 'blog/_post_list.html.twig' with {posts: posts, items: items, route: 'app_blog_index', route_params: {}} %}
+{% endif %}
 {% endblock %}

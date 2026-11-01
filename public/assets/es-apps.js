@@ -67,7 +67,7 @@
         .sso::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #0ca30c; }
         .menu a, .menu button { display: flex; width: 100%; padding: 10px 12px; border-radius: 12px; text-decoration: none; color: var(--text); text-align: left; box-sizing: border-box; }
         .menu a:hover, .menu button:hover { background: var(--bg-2); }
-        .signin { padding: 8px 14px; border-radius: 12px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700; }
+        .signin { padding: 8px 14px; border-radius: 12px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700; white-space: nowrap; }
         form { margin: 0; }
         @media (max-width: 480px) { .panel { position: fixed; top: 64px; left: 12px; right: 12px; min-width: 0; } }
     `;
