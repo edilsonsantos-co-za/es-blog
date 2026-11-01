@@ -29,3 +29,7 @@ var/log/
 
 # User uploads (media library, brand assets) live in a volume, not in git
 /public/uploads/
+
+# Local environment files may contain credentials
+/.env
+/.env.dev
