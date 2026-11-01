@@ -61,13 +61,6 @@
         </li>
     </ul>
     <ul class="navbar-nav ml-auto">
-        {% if site_store_url starts with 'http' %}
-        <li class="nav-item d-flex align-items-center">
-            <a href="{{ site_store_url }}" target="_blank" rel="noopener" class="nav-link atlas-store-link" title="ES Marketplace store">
-                <i class="fas fa-store" aria-hidden="true"></i><span>Store ↗</span>
-            </a>
-        </li>
-        {% endif %}
         <li class="nav-item d-flex align-items-center">
             <a href="{{ path('app_blog_index') }}" target="_blank" class="nav-link" title="View site">
                 <i class="fas fa-external-link-alt" aria-hidden="true"></i>

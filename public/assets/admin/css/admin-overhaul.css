@@ -46,7 +46,6 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 .admin-shell .main-header .nav-link:hover, .admin-shell .main-header .nav-link:focus { background: var(--card-2); color: var(--text) !important; }
 .admin-shell .main-header .atlas-icon-btn { border: 1px solid var(--line); background: var(--card); color: var(--text) !important; padding: 0; width: 38px; }
 .admin-shell .main-header .atlas-icon-btn:hover { border-color: var(--accent); color: var(--accent) !important; }
-.admin-shell .main-header .atlas-store-link { gap: 6px; border: 1px solid var(--line); background: var(--card); color: var(--text) !important; font-weight: 700; font-size: 14px; }
 .atlas-icon-btn svg { display: block; }
 .atlas-icon-btn .i-sun, :root[data-theme="dark"] .atlas-icon-btn .i-moon { display: none; }
 :root[data-theme="dark"] .atlas-icon-btn .i-sun { display: block; }
@@ -241,5 +240,4 @@ a.admin-tile:hover { transform: translateY(-2px); border-color: var(--accent); c
     .admin-shell .card-header.d-flex, .admin-actions { align-items: stretch !important; flex-direction: column; }
     .admin-shell .card-tools { margin-left: 0 !important; margin-top: 12px; }
     .admin-shell .card-body, .admin-shell .card-header { padding: 18px; }
-    .admin-shell .main-header .atlas-store-link span { display: none; }
 }
