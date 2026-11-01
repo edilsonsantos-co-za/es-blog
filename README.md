@@ -6,12 +6,12 @@
     <th align="center">ES Blog (ours)</th>
   </tr>
   <tr>
-    <td><img src="docs/readme/original.jpg" alt="HTMLy original" width="420"></td>
-    <td><img src="docs/readme/es.jpg" alt="ES Blog" width="420"></td>
+    <td><img src="docs/readme/original.jpg" alt="Original HTMLy admin dashboard with demo data" width="420"></td>
+    <td><img src="docs/readme/es.jpg" alt="ES Blog Atlas admin dashboard with demo data" width="420"></td>
   </tr>
   <tr>
-    <td colspan="2" align="center"><img src="docs/readme/compare.gif" alt="Slider comparing HTMLy with ES Blog" width="840"><br>
-    <sub>Before/after slider: HTMLy on the left, ES Blog on the right. Original image: HTMLy default (Tailwind) theme screenshot, from the HTMLy repository (HTMLy is GPL-2.0 licensed).</sub></td>
+    <td colspan="2" align="center"><img src="docs/readme/compare.gif" alt="Before/after slider comparing the HTMLy and ES Blog admin dashboards" width="840"><br>
+    <sub>Admin dashboard comparison: HTMLy on the left, ES Blog on the right. Both rendered locally with demo data. Before: <a href="https://github.com/danpros/htmly/tree/master/system/admin/views">upstream HTMLy admin templates</a> and assets (GPL-2.0 or later). After: the ES Blog Atlas admin dashboard.</sub></td>
   </tr>
 </table>
 
