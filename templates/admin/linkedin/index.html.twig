@@ -47,7 +47,7 @@
                             <p class="mb-0 text-muted">LinkedIn tokens last 60 days. Reconnect to keep sharing posts.</p>
                         {% else %}
                             <h5 class="mb-1">Not connected</h5>
-                            <p class="mb-0 text-muted">Connect your LinkedIn profile and every post you publish is shared there with its banner and a link back to the blog.</p>
+                            <p class="mb-0 text-muted">Connect your LinkedIn profile to share posts written by your blog account with a link back to the blog.</p>
                         {% endif %}
                     </div>
                 </div>
@@ -70,20 +70,12 @@
 
         <div class="card admin-card">
             <div class="card-header"><h3 class="card-title"><i class="fas fa-share-alt"></i> Sharing</h3></div>
-            <form method="post" action="{{ path('app_admin_linkedin_settings') }}">
-                <input type="hidden" name="_token" value="{{ csrf_token('linkedin_settings') }}">
-                <div class="card-body">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" class="custom-control-input" id="auto_share" name="auto_share" value="1" {{ auto_share ? 'checked' }}>
-                        <label class="custom-control-label" for="auto_share">Share posts on LinkedIn when they are published</label>
-                    </div>
-                    <p class="admin-form-help mt-2 mb-0">
-                        Covers posts you publish by hand, scheduled posts going live and automated posts. Each post is shared once.
-                        The text comes from the post's <code>linkedin_text</code> custom field (automation fills it in), otherwise the title and description.
-                    </p>
-                </div>
-                <div class="card-footer"><button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Save</button></div>
-            </form>
+            <div class="card-body">
+                <p class="admin-form-help mb-0">
+                    Publishing a post never shares it automatically. Review the post's saved <code>linkedin_text</code> (otherwise its title and description), then use <strong>Share on LinkedIn</strong> on the post.
+                    The share is queued once; editing the text after clicking cancels it.
+                </p>
+            </div>
         </div>
 
         <div class="card admin-table-card">
@@ -118,8 +110,8 @@
                     {% for post in shared %}
                         <tr>
                             <td>{{ post.title }}</td>
-                            <td class="small text-nowrap">{{ post.linkedInSharedAt|date('j M Y H:i') }}</td>
-                            <td class="small"><a href="https://www.linkedin.com/feed/update/{{ post.linkedInPostUrn|url_encode }}/" target="_blank" rel="noopener noreferrer">View</a></td>
+                            <td class="small text-nowrap">{{ post.linkedInSharedAt ? post.linkedInSharedAt|date('j M Y H:i') : '—' }}</td>
+                            <td class="small">{% if post.linkedInPostUrn starts with 'urn:' %}<a href="https://www.linkedin.com/feed/update/{{ post.linkedInPostUrn|url_encode }}/" target="_blank" rel="noopener noreferrer">View</a>{% else %}<span class="text-warning" title="Check LinkedIn manually before clearing this marker">{{ post.linkedInPostUrn }}</span>{% endif %}</td>
                         </tr>
                     {% else %}
                         <tr><td class="text-center text-muted p-3">Nothing shared yet.</td></tr>

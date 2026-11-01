@@ -1,0 +1,49 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Newsletter subscribers{% endblock %}
+{% block page_title %}Newsletter subscribers{% endblock %}
+{% block content %}
+<div class="card"><div class="card-body">
+<h2>Delivery controls</h2>
+<p>Transport configuration: {{ ready ? 'ready (provider acceptance still requires verification)' : 'unavailable' }}. Delivery: {{ enabled ? 'enabled' : 'disabled' }}.</p>
+<p>Every subscriber must confirm their email. Post alerts and product/release updates have separate consent. No historical posts are sent to newly confirmed subscribers.</p>
+{% if is_granted('ROLE_ADMIN') %}
+<form action="{{ path('app_admin_newsletter_settings') }}" method="post">
+<input type="hidden" name="_token" value="{{ csrf_token('newsletter_settings') }}">
+<label for="newsletter-sender">Verified sender email</label>
+<input id="newsletter-sender" class="form-control" type="email" name="sender" maxlength="254" value="{{ sender }}">
+<p><label><input type="checkbox" name="enabled" value="1" {% if enabled %}checked{% endif %}> Enable future post alerts and approved product deliveries</label></p>
+<button class="btn btn-primary">Save settings</button>
+</form>
+{% endif %}
+</div></div>
+<div class="card"><div class="card-body">
+<h2>{{ total }} subscribers</h2>
+<div class="table-responsive"><table class="table">
+<thead><tr><th>Email</th><th>Status</th><th>Posts</th><th>Products/releases</th><th>Consent</th><th>Action</th></tr></thead>
+<tbody>{% for subscriber in subscribers %}<tr>
+<td>{{ subscriber.email }}</td>
+<td>{{ subscriber.unsubscribedAt ? 'Unsubscribed' : (subscriber.confirmedAt ? 'Confirmed' : 'Pending confirmation') }}</td>
+<td>{{ subscriber.posts ? 'Yes' : 'No' }}</td><td>{{ subscriber.products ? 'Yes' : 'No' }}</td>
+<td>{{ subscriber.confirmedAt ? subscriber.confirmedAt|date('Y-m-d H:i') : 'Not confirmed' }}<br><small>Terms {{ subscriber.consentVersion }}{% if subscriber.consentUpdatedAt %}; choices updated {{ subscriber.consentUpdatedAt|date('Y-m-d H:i') }}{% endif %}</small></td>
+<td>{% if not subscriber.unsubscribedAt %}<form action="{{ path('app_admin_newsletter_disable', {id: subscriber.id}) }}" method="post">
+<input type="hidden" name="_token" value="{{ csrf_token('newsletter_disable_' ~ subscriber.id) }}"><button class="btn btn-sm btn-outline-danger">Unsubscribe</button>
+</form>{% endif %}</td>
+</tr>{% else %}<tr><td colspan="6">No subscribers yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% if page > 1 %}<a href="{{ path('app_admin_newsletter', {page: page - 1}) }}">Previous</a>{% endif %}
+{% if page * 50 < total %}<a href="{{ path('app_admin_newsletter', {page: page + 1}) }}">Next</a>{% endif %}
+</div></div>
+<div class="card"><div class="card-body">
+<h2>Review-first product and release updates</h2>
+<p>Review the subject, text and audience in a dry run before approving a queued send. There is no automatic product marketing or draft publication.</p>
+<pre>php bin/console app:newsletter:product --subject="Release title" --body-file=release.txt --dry-run
+php bin/console app:newsletter:product --subject="Release title" --body-file=release.txt --send --approve
+php bin/console app:newsletter:queue --dry-run</pre>
+<p>Interrupted queueing can be recovered with <code>app:newsletter:queue --send --approve</code>. This does not replay sent or uncertain deliveries.</p>
+<h3>Delivery ledger</h3>
+<ul>{% for row in deliveries %}<li>{{ row.status }}: {{ row.total }}</li>{% else %}<li>No deliveries.</li>{% endfor %}</ul>
+<p><strong>Sending/uncertain:</strong> provider acceptance is ambiguous. Review provider logs manually; do not blindly replay. Sent means provider accepted, not inbox delivery.</p>
+<h3>Recent campaigns</h3>
+<ul>{% for campaign in campaigns %}<li>{{ campaign.createdAt|date('Y-m-d H:i') }} · {{ campaign.kind }} · {{ campaign.subject }} · {{ campaign.queuedAt ? 'audience queued' : 'awaiting queue' }}</li>{% else %}<li>No campaigns.</li>{% endfor %}</ul>
+</div></div>
+{% endblock %}

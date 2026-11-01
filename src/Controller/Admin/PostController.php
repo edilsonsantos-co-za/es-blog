@@ -81,13 +81,37 @@ class PostController extends AbstractController
     #[Route('/admin/posts/drafts', name: 'app_admin_posts_drafts', methods: ['GET'])]
     public function drafts(Request $request): Response
     {
+        $platform = (string) $request->query->get('platform', 'blog');
+        if (!in_array($platform, ['blog', 'linkedin', 'twitter'], true)) {
+            throw $this->createNotFoundException('Unknown publishing platform.');
+        }
+        /** @var User $user */
+        $user = $this->getUser();
         $page = max(1, $request->query->getInt('page', 1));
-        $pagination = $this->postService->paginateAdmin($page, 20, PostStatus::Draft);
+        $qb = $this->em->getRepository(Post::class)->createQueryBuilder('p')
+            ->where('p.type = :type')->setParameter('type', PostType::Post)
+            ->orderBy('p.updatedAt', 'DESC');
+        if ($platform === 'blog') {
+            $qb->andWhere('p.status = :status')->setParameter('status', PostStatus::Draft);
+        } else {
+            $qb->andWhere('p.status IN (:statuses)')->setParameter('statuses', [PostStatus::Draft, PostStatus::Published]);
+            if ($platform === 'linkedin') {
+                $qb->andWhere('p.linkedInPostUrn IS NULL');
+            } else {
+                $qb->andWhere("NOT EXISTS (SELECT cf.id FROM App\Entity\CustomField cf WHERE cf.post = p AND cf.fieldKey = :shared AND cf.fieldValue IS NOT NULL AND cf.fieldValue != '')")
+                    ->setParameter('shared', 'twitter_post_id');
+            }
+        }
+        if (!$this->isGranted('ROLE_EDITOR')) {
+            $qb->andWhere('p.author = :author')->setParameter('author', $user);
+        }
+        $pagination = $this->paginator->paginate($qb, $page, 20);
 
         return $this->render('admin/post/list.html.twig', [
             'posts'      => $pagination,
             'list_title' => 'Draft Posts',
             'route'      => 'app_admin_posts_drafts',
+            'platform'   => $platform,
         ]);
     }
 
@@ -124,6 +148,9 @@ class PostController extends AbstractController
                 /** @var User $user */
                 $user = $this->getUser();
                 $data = $this->extractPostData($request);
+                if ($data['status'] !== PostStatus::Draft->value) {
+                    $this->denyAccessUnlessGranted(PostVoter::PUBLISH, new Post());
+                }
                 $post = $this->postService->create($data, $user);
                 $this->addFlash('success', sprintf('Post "%s" created.', $post->getTitle()));
                 return $this->redirectToRoute('app_admin_posts');
@@ -157,6 +184,9 @@ class PostController extends AbstractController
 
             try {
                 $data = $this->extractPostData($request);
+                if ($data['status'] !== PostStatus::Draft->value && $data['status'] !== $post->getStatus()->value) {
+                    $this->denyAccessUnlessGranted(PostVoter::PUBLISH, $post);
+                }
                 $this->postService->update($post, $data);
                 $this->addFlash('success', 'Post updated successfully.');
                 return $this->redirectToRoute('app_admin_post_edit', ['id' => $id]);
@@ -170,6 +200,35 @@ class PostController extends AbstractController
             'categories' => $this->categoryService->findAll(),
             'page_mode'  => false,
         ]);
+    }
+
+    #[Route('/admin/post/{id}/preview', name: 'app_admin_post_preview', methods: ['GET'])]
+    public function preview(Post $post): Response
+    {
+        $this->denyAccessUnlessGranted(PostVoter::EDIT, $post);
+        $response = $this->render('blog/post/preview.html.twig', ['post' => $post, 'prev' => null, 'next' => null]);
+        $response->setPrivate();
+        $response->headers->set('Cache-Control', 'private, no-store');
+        $response->headers->set('X-Robots-Tag', 'noindex, nofollow, noarchive');
+
+        return $response;
+    }
+
+    #[Route('/admin/post/{id}/social/{platform}', name: 'app_admin_post_social_save', methods: ['POST'], requirements: ['platform' => 'linkedin|twitter'])]
+    public function saveSocial(Post $post, string $platform, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted(PostVoter::EDIT, $post);
+        if (!$this->isCsrfTokenValid('post_social_' . $post->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
+        try {
+            $this->postService->update($post, [$platform . '_text' => (string) $request->request->get('text', '')]);
+            $this->addFlash('success', 'Platform draft saved. Sharing remains a separate, explicit action.');
+        } catch (\InvalidArgumentException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
+        return $this->redirectToRoute('app_admin_posts_drafts', ['platform' => $platform]);
     }
 
     #[Route('/admin/post/{id}/delete', name: 'app_admin_post_delete', methods: ['POST'])]
@@ -227,6 +286,8 @@ class PostController extends AbstractController
             'link'         => $request->request->get('link', ''),
             'quote'        => $request->request->get('quote', ''),
             'published_at' => $publishedAt,
+            'linkedin_text' => $request->request->get('linkedin_text', ''),
+            'twitter_text'  => $request->request->get('twitter_text', ''),
         ];
     }
 }

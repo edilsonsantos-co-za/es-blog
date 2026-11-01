@@ -53,12 +53,7 @@ class AutomationController extends AbstractController
     #[Route('/items', name: 'app_admin_automation_items', methods: ['GET'])]
     public function itemList(Request $request): Response
     {
-        $filter = $this->itemFilter($request);
-
-        return $this->renderTab('items', [
-            'items' => $this->items->findLatest(40, $filter === 'all' ? null : $filter),
-            'item_filter' => $filter,
-        ]);
+        return $this->redirectToRoute('app_admin_posts_drafts');
     }
 
     #[Route('/feeds', name: 'app_admin_automation_feeds', methods: ['GET'])]
@@ -84,8 +79,7 @@ class AutomationController extends AbstractController
             'automation.posts_per_run' => (string) max(0, min(5, $r->getInt('posts_per_run', 1))),
             'automation.max_age_days' => (string) max(1, min(30, $r->getInt('max_age_days', 7))),
             'automation.min_score' => (string) max(0, min(20, $r->getInt('min_score', 1))),
-            'automation.publish_mode' => $r->get('publish_mode') === AutomationSettings::MODE_PUBLISH
-                ? AutomationSettings::MODE_PUBLISH : AutomationSettings::MODE_DRAFT,
+            'automation.publish_mode' => AutomationSettings::MODE_DRAFT,
             'automation.category' => trim((string) $r->get('category', '')) ?: null,
             'automation.topics' => trim((string) $r->get('topics', '')) ?: AutomationSettings::DEFAULT_TOPICS,
             'automation.voice' => trim((string) $r->get('voice', '')) ?: null,
@@ -112,7 +106,7 @@ class AutomationController extends AbstractController
             $run->isSuccess() ? '' : ' Some steps failed; see the run log.'
         ));
 
-        return $this->redirectToRoute('app_admin_automation');
+        return $this->redirectToRoute($run->getPostsCreated() > 0 ? 'app_admin_posts_drafts' : 'app_admin_automation');
     }
 
     #[Route('/feeds', name: 'app_admin_automation_feed_add', methods: ['POST'])]

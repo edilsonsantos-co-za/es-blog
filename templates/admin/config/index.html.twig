@@ -81,6 +81,17 @@
                                value="{{ c['site.store_url'] ?? 'https://store.edilsonsantos.co.za' }}" placeholder="https://store.edilsonsantos.co.za">
                         <small class="form-text text-muted">Shown as a "Store" link to the ES Marketplace. Leave empty to hide.</small>
                     </div>
+                    {% for field, link in {
+                        site_developers_url: {key: 'site.developers_url', label: 'Developers URL', fallback: site_developers_url},
+                        site_upwork_url: {key: 'site.upwork_url', label: 'Public Upwork profile URL', fallback: site_upwork_url},
+                        site_support_url: {key: 'site.support_url', label: 'Verified funding / support URL', fallback: site_support_url}
+                    } %}
+                    <div class="form-group">
+                        <label for="{{ field }}">{{ link.label }}</label>
+                        <input type="url" class="form-control" id="{{ field }}" name="{{ field }}" value="{{ c[link.key] ?? link.fallback }}">
+                        <small class="form-text text-muted">HTTP(S) only. Leave empty to hide; do not use guessed account URLs.</small>
+                    </div>
+                    {% endfor %}
                 </div>
                 <div class="col-lg-6">
                     <div class="form-group">

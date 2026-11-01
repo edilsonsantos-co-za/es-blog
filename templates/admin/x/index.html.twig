@@ -1,0 +1,103 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}X Integration{% endblock %}
+
+{% block page_header %}
+<div class="row mb-2">
+    <div class="col-sm-6">
+        <p class="admin-kicker">Distribution</p>
+        <h1 class="m-0">X Integration</h1>
+    </div>
+    <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="{{ path('app_admin_dashboard') }}">Dashboard</a></li>
+            <li class="breadcrumb-item active">X</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title"><i class="fab fa-x-twitter"></i> Connection</h3></div>
+            <div class="card-body">
+                {% if not configured %}
+                    <div class="alert alert-warning">
+                        Add <code>X_CLIENT_ID</code>, <code>X_CLIENT_SECRET</code> and <code>X_REDIRECT_URI</code> to the app environment.
+                    </div>
+                {% endif %}
+                {% if integration and token_valid %}
+                    <h5>Connected <span class="badge badge-success">Active</span></h5>
+                    <p class="text-muted mb-0">
+                        Account {% if integration.username %}<strong>@{{ integration.username }}</strong>{% else %}<code>{{ integration.xUserId }}</code>{% endif %}.
+                        {% if integration.tokenExpiresAt %}Token expires {{ integration.tokenExpiresAt|date('j M Y H:i') }}; refresh is automatic.{% endif %}
+                    </p>
+                {% elseif integration %}
+                    <h5>Token expired <span class="badge badge-danger">Reconnect</span></h5>
+                    <p class="text-muted mb-0">Reconnect X to restore publishing.</p>
+                {% else %}
+                    <h5>Not connected</h5>
+                    <p class="text-muted mb-0">Connect your X account to publish reviewed post drafts. Sharing is never triggered by saving a blog post.</p>
+                {% endif %}
+            </div>
+            <div class="card-footer d-flex flex-wrap" style="gap:.5rem">
+                <form method="post" action="{{ path('app_admin_x_connect') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('x_connect') }}">
+                    <button type="submit" class="btn btn-primary" {{ configured ? '' : 'disabled' }}>
+                        <i class="fab fa-x-twitter"></i> {{ integration ? 'Reconnect X' : 'Connect X' }}
+                    </button>
+                </form>
+                {% if integration %}
+                    <form method="post" action="{{ path('app_admin_x_disconnect') }}" onsubmit="return confirm('Disconnect X?')">
+                        <input type="hidden" name="_token" value="{{ csrf_token('x_disconnect') }}">
+                        <button type="submit" class="btn btn-danger">Disconnect</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title"><i class="fa fa-info-circle"></i> Publishing</h3></div>
+            <div class="card-body">
+                <p class="mb-2">X is only called from the explicit <strong>Share on X</strong> action for a reviewed, currently published post. Repeated actions are deduplicated.</p>
+                <p class="mb-0">The post text uses the saved <code>twitter_text</code> custom field, with the public post URL appended. OAuth tokens are encrypted at rest.</p>
+            </div>
+        </div>
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title">Recent share attempts</h3></div>
+            <div class="card-body">
+                <p class="text-muted text-sm">Pending or unknown attempts are not automatically retried. Check X before an operator reconciles the database record.</p>
+                <table class="table table-sm">
+                    <thead><tr><th>Post</th><th>Status</th><th>Attempted</th></tr></thead>
+                    <tbody>
+                    {% for share in shares %}
+                        <tr>
+                            <td><a href="{{ path('app_admin_post_edit', {id: share.post.id}) }}">{{ share.post.title }}</a></td>
+                            <td>{% if share.status == 'sent' and share.xPostId %}<a href="https://x.com/i/web/status/{{ share.xPostId|url_encode }}" target="_blank" rel="noopener noreferrer">Sent</a>{% else %}<span class="text-warning">{{ share.status }}</span>{% endif %}</td>
+                            <td>{{ share.sharedAt|date('j M Y H:i') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="3">No share attempts yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card admin-card">
+            <div class="card-header"><h3 class="card-title">Setup guide</h3></div>
+            <div class="card-body">
+                <ol class="text-sm pl-3">
+                    <li>Create an app in the <a href="https://developer.x.com/" target="_blank" rel="noopener noreferrer">X Developer Portal</a> and enable OAuth 2.0 user authentication.</li>
+                    <li>Add this exact callback URL: <code class="text-break">{{ redirect_uri ?: url('app_admin_x_callback') }}</code></li>
+                    <li>Set the three <code>X_*</code> variables and enable <code>tweet.read tweet.write users.read offline.access</code>.</li>
+                    <li>Reconnect this account after setting app permissions.</li>
+                </ol>
+                <p class="text-muted text-sm mb-0">Scopes requested: <code>{{ scopes }}</code>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

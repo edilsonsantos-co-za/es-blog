@@ -26,7 +26,7 @@
         <ul class="nav nav-tabs" id="automation-tabs">
             {% for key, t in {
                 overview: {route: 'app_admin_automation', icon: 'fa-robot', label: 'Overview'},
-                items: {route: 'app_admin_automation_items', icon: 'fa-inbox', label: 'Items', count: item_counts['new']|default(0)},
+                drafts: {route: 'app_admin_posts_drafts', icon: 'fa-pen-nib', label: 'Editorial drafts'},
                 feeds: {route: 'app_admin_automation_feeds', icon: 'fa-rss', label: 'Feeds', count: sources|length},
                 settings: {route: 'app_admin_automation_settings', icon: 'fa-sliders-h', label: 'Settings'},
             } %}
@@ -83,7 +83,7 @@
     <article class="admin-stat-card">
         <div class="admin-stat-top">
             <span class="admin-stat-icon tone-success" aria-hidden="true"><i class="fas fa-pen-nib"></i></span>
-            <span class="badge {{ ai_enabled ? 'badge-success' : 'badge-secondary' }}">{{ ai_enabled ? 'AI' : 'Offline' }}</span>
+            <span class="badge {{ ai_enabled ? 'badge-success' : 'badge-warning' }}">{{ ai_enabled ? 'AI' : 'Key required' }}</span>
         </div>
         <div>
             <span class="admin-stat-label">Posts written</span>
@@ -101,13 +101,11 @@
             </div>
             <div class="card-body">
                 <p class="admin-panel-note mb-3">
-                    Reads every enabled feed, scores new articles against your topics, then writes the best ones as posts
-                    with a generated banner.
-                    {% if settings.publishMode == 'publish' %}
-                        They are <strong>published straight away</strong>{% if linkedin %} and shared on LinkedIn{% endif %}.
-                    {% else %}
-                        They are saved as <strong>drafts</strong> for you to review.
-                    {% endif %}
+                    Collects enabled feeds and groups two to four distinct articles around each shared topic.
+                    AI writes an original synthesis, a banner, and LinkedIn/X counterparts directly into
+                    <a href="{{ path('app_admin_posts_drafts') }}">Post drafts</a>.
+                    <strong>Nothing is published or shared without review.</strong>
+                    {% if not ai_enabled %}<br><strong>ANTHROPIC_API_KEY is missing.</strong> Reading feeds still works, but no placeholder or copied posts will be created.{% endif %}
                 </p>
                 <form method="post" action="{{ path('app_admin_automation_run') }}" class="form-inline" style="gap:.5rem">
                     <input type="hidden" name="_token" value="{{ csrf_token('automation_run') }}">
@@ -323,8 +321,7 @@
                     <div class="form-group">
                         <label for="publish_mode">New posts</label>
                         <select class="form-control" id="publish_mode" name="publish_mode">
-                            <option value="draft" {{ settings.publishMode == 'draft' ? 'selected' }}>Save as drafts for review (recommended)</option>
-                            <option value="publish" {{ settings.publishMode == 'publish' ? 'selected' }}>Publish automatically</option>
+                            <option value="draft" selected>Save multi-source drafts for editorial review</option>
                         </select>
                     </div>
                     <div class="form-group">

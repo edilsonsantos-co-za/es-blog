@@ -56,6 +56,9 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
         private readonly CategoryService $categories,
         private readonly AppVersion $appVersion,
         private readonly string $projectDir,
+        private readonly string $developersUrl,
+        private readonly string $upworkUrl,
+        private readonly string $supportUrl,
     ) {}
 
     public function getGlobals(): array
@@ -67,6 +70,9 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             'site_description' => $this->config->get('site.description', ''),
             'site_url'         => $this->config->get('site.url', ''),
             'site_portfolio_url' => $this->config->get('site.portfolio_url', ''),
+            'site_developers_url' => $this->publicUrl($this->config->get('site.developers_url', $this->developersUrl)),
+            'site_upwork_url' => $this->publicUrl($this->config->get('site.upwork_url', $this->upworkUrl)),
+            'site_support_url' => $this->publicUrl($this->config->get('site.support_url', $this->supportUrl)),
             'site_store_url'   => $this->config->get('site.store_url', self::DEFAULT_STORE_URL),
             'site_logo'        => $this->config->get('site.logo', ''),
             'site_theme'       => $this->config->get('site.theme', 'atlas'),
@@ -91,6 +97,14 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('gravatar_url', $this->gravatarUrl(...)),
             new TwigFunction('asset_version', $this->assetVersion(...)),
         ];
+    }
+
+    private function publicUrl(?string $value): string
+    {
+        $value = trim((string) $value);
+
+        return filter_var($value, FILTER_VALIDATE_URL) && in_array(parse_url($value, PHP_URL_SCHEME), ['http', 'https'], true)
+            ? $value : '';
     }
 
     /**

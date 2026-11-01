@@ -10,13 +10,12 @@ use App\Entity\Tag;
 use App\Entity\User;
 use App\Enum\PostStatus;
 use App\Enum\PostType;
-use App\Message\SyncLinkedInPostMessage;
 use App\Repository\PostRepository;
 use App\Repository\TagRepository;
+use App\Service\Newsletter\NewsletterQueue;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\Pagination\PaginationInterface;
 use Knp\Component\Pager\PaginatorInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 
 /**
  * Encapsulates all post business logic: creation, update, deletion, listing, search.
@@ -33,7 +32,7 @@ final class PostService
         private readonly SlugService $slugService,
         private readonly EntityManagerInterface $em,
         private readonly PaginatorInterface $paginator,
-        private readonly MessageBusInterface $bus,
+        private readonly NewsletterQueue $newsletters,
     ) {}
 
     // -------------------------------------------------------------------------
@@ -234,10 +233,9 @@ final class PostService
         $this->em->persist($post);
         $this->em->flush();
 
-        if ($post->getStatus() === PostStatus::Published) {
-            $this->bus->dispatch(new SyncLinkedInPostMessage($post->getId()));
+        if ($post->isPublished()) {
+            $this->newsletters->published($post);
         }
-
         return $post;
     }
 
@@ -246,13 +244,13 @@ final class PostService
      */
     public function update(Post $post, array $data): Post
     {
+        $wasPublished = $post->isPublished();
         $this->hydrate($post, $data);
         $this->em->flush();
 
-        if ($post->getStatus() === PostStatus::Published) {
-            $this->bus->dispatch(new SyncLinkedInPostMessage($post->getId()));
+        if (!$wasPublished && $post->isPublished()) {
+            $this->newsletters->published($post);
         }
-
         return $post;
     }
 
@@ -279,6 +277,11 @@ final class PostService
      */
     private function hydrate(Post $post, array $data): void
     {
+        foreach (['linkedin_text' => 3000, 'twitter_text' => 250] as $field => $limit) {
+            if (isset($data[$field]) && mb_strlen((string) $data[$field]) > $limit) {
+                throw new \InvalidArgumentException(sprintf('%s must be at most %d characters.', $field, $limit));
+            }
+        }
         if (isset($data['title'])) {
             $post->setTitle((string) $data['title']);
         }
@@ -313,6 +316,13 @@ final class PostService
         // Tags: accept Tag[] or comma-separated string
         if (isset($data['tags'])) {
             $this->syncTags($post, $data['tags']);
+        }
+        foreach (['linkedin_text' => 3000, 'twitter_text' => 250] as $field => $limit) {
+            if ($post->getCustomFieldValue($field) === null && trim((string) ($data[$field] ?? '')) === '') {
+                $post->setCustomField($field, mb_substr(trim($post->getTitle() . "\n\n" . $post->getDescription()), 0, $limit));
+            } elseif (array_key_exists($field, $data)) {
+                $post->setCustomField($field, trim((string) $data[$field]));
+            }
         }
     }
 

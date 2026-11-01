@@ -1,0 +1,11 @@
+{% extends 'blog/post/show.html.twig' %}
+
+{% block canonical %}<meta name="robots" content="noindex, nofollow, noarchive">{% endblock %}
+{% block opengraph %}{% endblock %}
+{% block content %}
+<div class="tile" role="status">
+    <strong>Private editorial preview</strong> — saved content, not a public permalink.
+    <a href="{{ path('app_admin_post_edit', {id: post.id}) }}">Return to editor</a>
+</div>
+{{ parent() }}
+{% endblock %}

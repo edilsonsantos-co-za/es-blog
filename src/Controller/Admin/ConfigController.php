@@ -33,6 +33,14 @@ class ConfigController extends AbstractController
 
             $currentConfig = $this->configService->getAll();
             $theme = $this->requestValue($request, 'site_theme', $currentConfig, 'site.theme', InstalledThemes::DEFAULT);
+            foreach (['site_developers_url', 'site_upwork_url', 'site_support_url'] as $field) {
+                $value = trim((string) $request->request->get($field, ''));
+                if ($value !== '' && (!filter_var($value, FILTER_VALIDATE_URL)
+                    || !in_array(parse_url($value, PHP_URL_SCHEME), ['https', 'http'], true))) {
+                    $this->addFlash('error', 'Public links must be valid HTTP(S) URLs.');
+                    return $this->redirectToRoute('app_admin_config');
+                }
+            }
 
             $this->configService->setBulk([
                 'site.theme'       => $this->themes->has($theme) ? $theme : InstalledThemes::DEFAULT,
@@ -41,6 +49,9 @@ class ConfigController extends AbstractController
                 'site.url'         => $this->requestValue($request, 'site_url', $currentConfig, 'site.url', ''),
                 'site.portfolio_url' => $this->requestValue($request, 'site_portfolio_url', $currentConfig, 'site.portfolio_url', ''),
                 'site.store_url'   => $this->requestValue($request, 'site_store_url', $currentConfig, 'site.store_url', BlogExtension::DEFAULT_STORE_URL),
+                'site.developers_url' => $this->requestValue($request, 'site_developers_url', $currentConfig, 'site.developers_url', ''),
+                'site.upwork_url' => $this->requestValue($request, 'site_upwork_url', $currentConfig, 'site.upwork_url', ''),
+                'site.support_url' => $this->requestValue($request, 'site_support_url', $currentConfig, 'site.support_url', ''),
                 'site.logo'        => $this->requestValue($request, 'site_logo', $currentConfig, 'site.logo', ''),
                 'site.cover'       => $this->requestValue($request, 'site_cover', $currentConfig, 'site.cover', ''),
                 'language'         => $this->requestValue($request, 'language', $currentConfig, 'language', 'en'),

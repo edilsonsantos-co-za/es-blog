@@ -134,8 +134,9 @@ final class LinkedInClient
             ],
         ]);
 
-        if ($response->getStatusCode() !== 201) {
-            throw new \RuntimeException('LinkedIn rejected the post: ' . $response->getContent(false));
+        $status = $response->getStatusCode();
+        if ($status !== 201) {
+            throw new \RuntimeException('LinkedIn rejected the post: ' . mb_substr($response->getContent(false), 0, 500), $status);
         }
 
         return $response->getHeaders()['x-restli-id'][0] ?? 'unknown';

@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>{{ subject }}</title></head><body>
+<h1>{{ subject }}</h1>
+<p>{{ body|nl2br }}</p>
+{% if confirmation %}<p><a href="{{ confirmation }}">Confirm your subscription choices</a> (expires in 24 hours)</p>{% endif %}
+<p><a href="{{ unsubscribe }}">Unsubscribe or manage preferences</a></p>
+</body></html>

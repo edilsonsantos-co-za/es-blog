@@ -10,6 +10,12 @@ parameters:
     env(LINKEDIN_CLIENT_SECRET): ''
     env(LINKEDIN_REDIRECT_URI): ''
     env(LINKEDIN_API_VERSION): '202608'
+    env(X_CLIENT_ID): ''
+    env(X_CLIENT_SECRET): ''
+    env(X_REDIRECT_URI): ''
+    env(ES_DEVELOPERS_URL): 'https://developers.edilsonsantos.co.za/'
+    env(UPWORK_URL): ''
+    env(SUPPORT_URL): ''
     # Where Admin -> Themes reads the catalogue and downloads packages from.
     env(THEME_STORE_URL): 'https://store.edilsonsantos.co.za'
     # Allow theme packages that are not signed by a key in config/theme-keys/.
@@ -27,6 +33,12 @@ services:
             string $linkedInClientSecret: '%env(LINKEDIN_CLIENT_SECRET)%'
             string $linkedInRedirectUri: '%env(LINKEDIN_REDIRECT_URI)%'
             string $linkedInApiVersion: '%env(LINKEDIN_API_VERSION)%'
+            string $xClientId: '%env(X_CLIENT_ID)%'
+            string $xClientSecret: '%env(X_CLIENT_SECRET)%'
+            string $xRedirectUri: '%env(X_REDIRECT_URI)%'
+            string $developersUrl: '%env(ES_DEVELOPERS_URL)%'
+            string $upworkUrl: '%env(UPWORK_URL)%'
+            string $supportUrl: '%env(SUPPORT_URL)%'
             string $appSecret: '%kernel.secret%'
 
     App\:

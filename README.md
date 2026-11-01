@@ -52,7 +52,8 @@ changed here rather than being invented by ES Blog.
 | Scheduled publishing | Scheduled posts published during application requests | Console publishing command and Messenger handler; worker runs the scheduler every five minutes between queue-consumer sessions |
 | Background jobs | Request-driven publishing; no Symfony Messenger worker | Separate worker for scheduled publishing, LinkedIn shares, welcome mail, thumbnails and cache cleanup; Doctrine queue with retries and failed transport |
 | Feed automation | Blog RSS/OPML output and content import tools | Feeder.co OPML subscription import, scheduled RSS/Atom fetching, topic scoring and review-first drafts; optional Claude drafting with attribution and GD-generated banners |
-| LinkedIn publishing | Configurable LinkedIn social-profile link | OAuth profile connection, encrypted tokens, expiry display and queued one-time sharing when a post becomes published |
+| Social publishing | Configurable social-profile links | Per-author LinkedIn and X OAuth connections, encrypted tokens and explicitly reviewed platform drafts/shares |
+| Newsletters | No equivalent double-opt-in workflow | Separate article/product consent, confirmation, subscriber administration, preferences/unsubscribe and guarded queued campaigns |
 | Docker and deployment | ZIP/online installer on a PHP web server | PHP 8.4/Apache image, local and production Compose stacks on shared `milkyway` services, persistent uploads/themes, startup migrations/queue setup/cache warmup and static-only uploads/assets |
 | CI and releases | Upstream source distribution and releases | GitHub Actions SSH deployment on every push to `main`, building on the VPS; `VERSION`-checked tag workflow generates GitHub Releases (tests are run separately) |
 | Automated tests | No root PHPUnit suite in the inspected upstream tree | PHPUnit service tests for theme signatures/installed-theme resolution, feed parsing, generated banners, LinkedIn token/client behavior and application versioning; Twig/container lint commands for development |
@@ -95,7 +96,9 @@ reverse proxy. See [docs/deployment.md](docs/deployment.md).
 | `SITE_NAME`, `SITE_TITLE`, `SITE_URL` | Site name, authenticator label and URL defaults; public title/URL can be edited in the admin |
 | `MAILER_DSN`, `MESSENGER_TRANSPORT_DSN` | Mail and queue transports |
 | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_REDIRECT_URI` | LinkedIn sharing. The redirect URI is `<site>/admin/linkedin/callback`. Optional `LINKEDIN_API_VERSION` (default `202608`). |
-| `ANTHROPIC_API_KEY`, `AUTOMATION_AI_MODEL` | Feed automation drafting with Claude (default `claude-opus-5-5`). Without a key, drafts are skeletons to fill in. |
+| `ANTHROPIC_API_KEY`, `AUTOMATION_AI_MODEL` | Original multi-source AI drafts (default `claude-opus-5-5`; choose a model available to your account). Without a key, sources remain pending and no skeleton/copied posts are created. |
+| `X_CLIENT_ID`, `X_CLIENT_SECRET`, `X_REDIRECT_URI` | X OAuth2 PKCE; register `<site>/admin/x/callback`. Requires a developer app with tweet-write access and the appropriate API plan. |
+| `ES_DEVELOPERS_URL`, `UPWORK_URL`, `SUPPORT_URL` | Developers and optional verified public freelance/funding links. Blank optional URLs stay hidden; also editable in General settings. |
 | `LOGTO_ENDPOINT`, `LOGTO_APP_ID`, `LOGTO_APP_SECRET` | Required for sign-in through Logto; set all three. |
 | `LOGTO_INTERNAL_ENDPOINT` | Optional server-to-server Logto URL, for example a Docker service name |
 
@@ -111,14 +114,18 @@ through the ES apps menu also invalidates the other ES app sessions on their nex
 
 1. In Feeder.co, open **Library → Import & Export → Export to OPML** and upload the file (or add feeds one by one).
    Feeder has no public API, so re-import when you follow new feeds; feeds already in the list are skipped.
-2. Set the topics, how often to run, how many posts per run, and whether new posts are drafts (the default) or
-   published straight away. Turn on **Run on a schedule**.
-3. **Run automation** reads the feeds now. Each item in the list can also be turned into a draft on its own.
+2. Configure topics, frequency and drafts per run, then optionally enable **Run on a schedule**.
+3. **Run automation** groups 2–4 distinct pending articles around configured topic keywords (up to five groups).
+   Successful drafts appear directly in **Posts → Drafts**; the old Items URL redirects there.
 
-Each run reads every enabled feed, scores new articles (a topic in the title scores 2, in the summary 1), and writes the
-best ones. Claude reads the source article and writes an original post that credits it, a meta description, tags and
-the LinkedIn text; the blog draws a 1200×630 banner with GD (fonts in `resources/fonts`, OFL). Runs are logged on the
-page. The same thing from the console:
+Claude receives bounded public feed excerpts and source metadata, not full copied articles. It produces original
+comparison/implications, a description, tags and distinct LinkedIn/X text. All sources are attributed. The blog
+creates a 1200×630 banner with GD (fonts in `resources/fonts`, OFL). Draft/source associations are saved together;
+used sources are not reused. Missing credentials or AI failures leave sources retryable.
+
+**All automation is review-only**, even on installations previously configured to auto-publish. Keyword grouping
+and the long-sentence copying check are not comprehensive semantic clustering or plagiarism verification. Check
+the actual sources, attribution, factual claims, limitations and voice before publishing.
 
 ```bash
 php bin/console app:feeds:import feeder.opml
@@ -126,14 +133,63 @@ php bin/console app:automation:run --posts=1     # --posts=0 only reads feeds
 ```
 
 The `worker` container runs `app:scheduler:tick` every five minutes (scheduled posts plus the automation when it is
-due) between `messenger:consume` sessions. Without it, scheduled posts and LinkedIn shares never happen.
+due) between `messenger:consume` sessions. Keep it running for scheduled publishing and queued deliveries.
+
+## Drafts and first publication
+
+Drafts have **Blog / LinkedIn / Twitter** tabs. Edit and save each platform's text; publishing the blog does not
+automatically share it. Use the separate reviewed Share action for each connected platform after publication.
+Private Preview opens the reader layout/banner without making a draft public or incrementing its views.
+
+```bash
+php bin/console app:post:welcome-draft
+```
+
+This idempotent command prepares an original launch article, banner and platform drafts, without overwriting an
+existing article or publishing anything. Replace its explicit author-review section, preview the saved article,
+verify Developers/signup links and publish only when approved.
 
 ## LinkedIn
 
 Create an app in the LinkedIn Developer Portal, add the **Share on LinkedIn** and **Sign In with LinkedIn using
 OpenID Connect** products (both self-serve), add the redirect URL `<site>/admin/linkedin/callback`, and set the three
 `LINKEDIN_*` variables. Then use **Connect LinkedIn** in the admin. Tokens are encrypted with a key derived from
-`APP_SECRET` and last 60 days; the page shows the expiry date. Posts are shared once, when they become published.
+`APP_SECRET`; the page shows expiry. Connect the actual post author's account and review its saved LinkedIn text
+before sharing. Publication alone never sends to LinkedIn.
+
+## X / Twitter
+
+Create your account/app in the X Developer Portal only when you are ready to maintain this channel. Configure
+OAuth2 with PKCE, the registered callback, `tweet.read`, `tweet.write`, `users.read` and `offline.access` permissions,
+then connect from **Admin → X**. API write access/billing is a provider prerequisite, not included with ES Blog.
+Tokens are encrypted; refresh, disconnect and share history are supported. Text plus the final blog URL must fit
+280 characters. Review the Twitter tab and explicitly share after the blog is live.
+
+Queued shares hash the reviewed text and cancel if it changes before processing. A unique claim is saved before
+calling either provider. Ambiguous timeouts/5xx remain pending/unknown rather than blindly reposting; review their
+status in the integration page and reconcile the record only after checking the real account. There is no
+automatic retry or unsafe “clear and resend” button for ambiguous attempts.
+
+## Newsletters
+
+Public `/newsletter` signup uses double opt-in. Article and product/release updates are separate choices; forking
+a repository never subscribes anyone. Each subscriber has a private preferences/unsubscribe URL, and every email
+includes unsubscribe headers/links. Confirmation and unsubscribe GETs do not change consent (email scanners are
+safe); confirmations need POST + CSRF, and RFC8058 one-click unsubscribe POSTs are supported.
+
+**Admin → Newsletter** lists subscribers and delivery settings. Delivery is disabled by default: configure a real
+SMTP/API transport, a verified `newsletter.from` address and HTTPS `site.url`, verify domain/DKIM/SPF and a real
+confirmation email, then enable delivery. Do not use sandbox SMTP credentials for a public launch.
+Initial live publication queues an article campaign; edits do not resend it, and scheduled posts cannot send early.
+Workers recheck confirmation, current preferences and unsubscribe status at delivery.
+
+```bash
+php bin/console app:newsletter:product --subject="Reviewed release update" --body-file=release.txt
+php bin/console app:newsletter:queue
+```
+
+Both default to dry-run. Real campaign/recovery queueing requires `--send --approve` and enabled, verified mail
+configuration. Keep subject/body reviewed and only target the independently consented product audience.
 
 ## Development
 

@@ -6,10 +6,8 @@ namespace App\MessageHandler;
 
 use App\Enum\PostStatus;
 use App\Message\PublishScheduledPostsMessage;
-use App\Message\SyncLinkedInPostMessage;
 use App\Repository\PostRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
+use App\Service\PostService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
@@ -17,8 +15,7 @@ final class PublishScheduledPostsHandler
 {
     public function __construct(
         private readonly PostRepository $postRepo,
-        private readonly EntityManagerInterface $em,
-        private readonly MessageBusInterface $bus,
+        private readonly PostService $postService,
     ) {}
 
     public function __invoke(PublishScheduledPostsMessage $message): void
@@ -34,16 +31,7 @@ final class PublishScheduledPostsHandler
             ->getResult();
 
         foreach ($posts as $post) {
-            $post->setStatus(PostStatus::Published);
-        }
-
-        if (count($posts) > 0) {
-            $this->em->flush();
-        }
-
-        // Newly live posts go to LinkedIn like posts published by hand.
-        foreach ($posts as $post) {
-            $this->bus->dispatch(new SyncLinkedInPostMessage($post->getId()));
+            $this->postService->update($post, ['status' => PostStatus::Published]);
         }
     }
 }

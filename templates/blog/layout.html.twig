@@ -54,6 +54,7 @@
         <nav class="mast-nav" aria-label="Primary navigation">
             <ul class="nav" id="menu">
                 <li><a href="{{ path('app_blog_index') }}"{% if current_route == 'app_blog_index' %} aria-current="page"{% endif %}>Latest</a></li>
+                {% if site_developers_url %}<li><a href="{{ site_developers_url }}">Developers</a></li>{% endif %}
                 {% for item in menu_items %}
                     {% set has_children = item.children is defined and item.children|length > 0 %}
                     <li{% if has_children %} class="has-sub"{% endif %}>
@@ -167,6 +168,10 @@
             <a href="{{ path('app_blog_index') }}">Latest</a>
             <a href="{{ path('app_blog_search') }}">Search</a>
             <a href="{{ path('app_blog_feed') }}">RSS</a>
+            <a href="{{ path('app_newsletter_subscribe') }}">Newsletter</a>
+            {% if site_developers_url %}<a href="{{ site_developers_url }}">Developers</a>{% endif %}
+            {% if site_upwork_url %}<a href="{{ site_upwork_url }}" rel="noopener noreferrer" target="_blank">Hire on Upwork</a>{% endif %}
+            {% if site_support_url %}<a href="{{ site_support_url }}" rel="noopener noreferrer" target="_blank">Support the work</a>{% endif %}
             {% if portfolio_url %}<a href="{{ portfolio_url }}">Portfolio ↗</a>{% endif %}
             {% if store_url %}<a href="{{ store_url }}">Store ↗</a>{% endif %}
             {% if portfolio_url %}<a href="{{ portfolio_url|trim('/', 'right') }}/#contact">Contact</a>{% endif %}

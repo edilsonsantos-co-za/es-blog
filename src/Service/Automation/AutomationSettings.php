@@ -28,10 +28,10 @@ final class AutomationSettings
 
     public function minScore(): int { return max(0, $this->config->getInt('automation.min_score', 1)); }
 
-    /** "draft" leaves posts for review; "publish" publishes them (and shares to LinkedIn when that is on). */
+    /** AI output always requires editorial review, including previously configured publish mode. */
     public function publishMode(): string
     {
-        return $this->config->get('automation.publish_mode') === self::MODE_PUBLISH ? self::MODE_PUBLISH : self::MODE_DRAFT;
+        return self::MODE_DRAFT;
     }
 
     public function categorySlug(): ?string { return $this->config->get('automation.category') ?: null; }
@@ -83,8 +83,6 @@ final class AutomationSettings
     {
         $this->config->set('automation.last_run_at', $at->format(\DateTimeInterface::ATOM));
     }
-
-    public function linkedInAutoShare(): bool { return $this->config->getBool('linkedin.auto_share', true); }
 
     /** @param array<string, string|null> $values */
     public function save(array $values): void

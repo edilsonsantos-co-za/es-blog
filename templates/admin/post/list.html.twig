@@ -18,6 +18,15 @@
 {% endblock %}
 
 {% block content %}
+{% if route == 'app_admin_posts_drafts' %}
+<ul class="nav nav-tabs mb-3" aria-label="Publishing platform">
+    {% for key, label in {blog: 'Blog', linkedin: 'LinkedIn', twitter: 'Twitter / X'} %}
+    <li class="nav-item"><a class="nav-link {{ platform == key ? 'active' : '' }}"
+        href="{{ path('app_admin_posts_drafts', {platform: key}) }}" {% if platform == key %}aria-current="page"{% endif %}>{{ label }}</a></li>
+    {% endfor %}
+</ul>
+<p class="admin-panel-note">Each blog draft has editable LinkedIn and X counterparts. Preview and review first; publish the blog before sharing its link. Sharing is never automatic.</p>
+{% endif %}
 <div class="card admin-table-card">
     <div class="card-header d-flex">
         <div>
@@ -50,6 +59,16 @@
                 <tr>
                     <td>
                         <a class="admin-title-link" href="{{ path('app_admin_post_edit', {id: post.id}) }}">{{ post.title|u.truncate(60, '…') }}</a>
+                        {% if platform|default('blog') != 'blog' %}
+                        <form method="post" action="{{ path('app_admin_post_social_save', {id: post.id, platform: platform}) }}" class="mt-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('post_social_' ~ post.id) }}">
+                            <label class="sr-only" for="social-{{ post.id }}">{{ platform == 'linkedin' ? 'LinkedIn' : 'X' }} draft for {{ post.title }}</label>
+                            <textarea id="social-{{ post.id }}" name="text" rows="5" class="form-control"
+                                maxlength="{{ platform == 'linkedin' ? 3000 : 250 }}">{{ post.customFieldValue(platform ~ '_text') ?? post.title }}</textarea>
+                            <button class="btn btn-sm btn-default mt-1" type="submit">Save platform draft</button>
+                        </form>
+                        <small>Review the saved text before using Share. The blog link is attached on publication.</small>
+                        {% endif %}
                     </td>
                     <td>
                         <span class="badge badge-info">{{ post.type.label() }}</span>
@@ -74,6 +93,18 @@
                     <td>{{ post.createdAt|date('Y-m-d') }}</td>
                     <td>
                         <div class="admin-actions">
+                        {% if is_granted('POST_EDIT', post) %}
+                        <a href="{{ path('app_admin_post_preview', {id: post.id}) }}" class="btn btn-xs btn-default" target="_blank" rel="noopener" title="Preview saved post">
+                            <i class="fa fa-eye" aria-hidden="true"></i><span class="sr-only">Preview {{ post.title }}</span>
+                        </a>
+                        {% endif %}
+                        {% if platform|default('blog') != 'blog' and post.published and is_granted('ROLE_ADMIN') %}
+                        <form method="post" action="{{ path(platform == 'linkedin' ? 'app_admin_linkedin_share' : 'app_admin_x_share', {id: post.id}) }}"
+                            onsubmit="return confirm('Share this saved, reviewed platform draft publicly?')">
+                            <input type="hidden" name="_token" value="{{ csrf_token((platform == 'linkedin' ? 'linkedin_share_' : 'x_share_') ~ post.id) }}">
+                            <button type="submit" class="btn btn-xs btn-primary">Share {{ platform == 'linkedin' ? 'LinkedIn' : 'X' }}</button>
+                        </form>
+                        {% endif %}
                         <a href="{{ path('app_admin_post_edit', {id: post.id}) }}" class="btn btn-xs btn-default" title="Edit">
                             <i class="fa fa-edit" aria-hidden="true"></i><span class="sr-only">Edit {{ post.title }}</span>
                         </a>

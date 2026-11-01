@@ -381,6 +381,19 @@ class Post
         return null;
     }
 
+    public function setCustomField(string $key, string $value): static
+    {
+        foreach ($this->customFields as $field) {
+            if ($field->getFieldKey() === $key) {
+                $field->setFieldValue($value);
+
+                return $this;
+            }
+        }
+
+        return $this->addCustomField((new CustomField())->setFieldKey($key)->setFieldValue($value));
+    }
+
     public function getSourceUrl(): ?string
     {
         return $this->sourceUrl;

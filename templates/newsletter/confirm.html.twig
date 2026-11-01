@@ -1,0 +1,11 @@
+{% extends 'blog/layout.html.twig' %}
+{% block title %}Confirm newsletter{% endblock %}
+{% block content %}
+<section class="panel"><h1>Confirm newsletter choices</h1>
+{% if confirmed %}<p role="status">Your subscription is confirmed.</p>
+{% elseif subscriber %}
+<p>You requested {% if subscriber.posts %}new blog posts{% endif %}{% if subscriber.posts and subscriber.products %} and {% endif %}{% if subscriber.products %}product/release updates{% endif %}.</p>
+<form method="post"><input type="hidden" name="_token" value="{{ csrf_token('newsletter_confirm') }}"><button type="submit">Confirm my subscription</button></form>
+{% else %}<p>This link is invalid, already used or expired. <a href="{{ path('app_newsletter_subscribe') }}">Request a new confirmation</a>.</p>{% endif %}
+</section>
+{% endblock %}

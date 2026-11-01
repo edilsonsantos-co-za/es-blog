@@ -25,15 +25,17 @@ final class SyncLinkedInPostHandler
         if ($post === null || $post->getLinkedInPostUrn() !== null) {
             return;
         }
-        if ($this->publisher->connection() === null) {
+        if ($this->publisher->connection($post->getAuthor()) === null) {
             $this->logger->info('LinkedIn not connected; skipping share', ['postId' => $message->postId]);
 
             return;
         }
 
-        // Errors propagate so Messenger retries, then parks the message on the failed transport.
-        $urn = $this->publisher->share($post);
-        if ($urn !== null) {
+        // Errors propagate so Messenger retries; the URN claim makes retries no-ops once a send was attempted.
+        $urn = $this->publisher->share($post, $message->textHash);
+        if ($urn === null) {
+            $this->logger->warning('LinkedIn share skipped: already claimed or edited after review', ['postId' => $message->postId]);
+        } else {
             $this->logger->info('Shared post on LinkedIn', ['postId' => $message->postId, 'urn' => $urn]);
         }
     }

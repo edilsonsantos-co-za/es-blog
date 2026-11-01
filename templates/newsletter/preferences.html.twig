@@ -1,0 +1,21 @@
+{% extends 'blog/layout.html.twig' %}
+{% block title %}Newsletter preferences{% endblock %}
+{% block content %}
+<section class="panel"><h1>Newsletter preferences</h1>
+{% if saved %}<p role="status">Your newsletter choices have been saved.</p>{% endif %}
+{% if subscriber %}
+{% if subscriber.unsubscribedAt %}<p>You are unsubscribed. <a href="{{ path('app_newsletter_subscribe') }}">Subscribe again with a new confirmation</a>.</p>
+{% else %}
+<form method="post">
+<input type="hidden" name="_token" value="{{ csrf_token('newsletter_preferences') }}">
+{% if subscriber.confirmedAt %}
+<p><label><input type="checkbox" name="posts" value="1" {% if subscriber.posts %}checked{% endif %}> New blog posts</label></p>
+<p><label><input type="checkbox" name="products" value="1" {% if subscriber.products %}checked{% endif %}> ES product and release updates</label></p>
+<button name="action" value="preferences">Save choices</button>
+{% endif %}
+<button name="action" value="unsubscribe">Unsubscribe from all emails</button>
+</form>
+{% endif %}
+{% else %}<p>This management link is invalid.</p>{% endif %}
+</section>
+{% endblock %}

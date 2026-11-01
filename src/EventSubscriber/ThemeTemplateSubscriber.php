@@ -33,7 +33,8 @@ final class ThemeTemplateSubscriber implements EventSubscriberInterface
     public function onKernelRequest(RequestEvent $event): void
     {
         $path = $event->getRequest()->getPathInfo();
-        if (!$event->isMainRequest() || str_starts_with($path, '/admin') || str_starts_with($path, '/login')) {
+        $preview = $event->getRequest()->attributes->get('_route') === 'app_admin_post_preview';
+        if (!$event->isMainRequest() || (str_starts_with($path, '/admin') && !$preview) || str_starts_with($path, '/login')) {
             return;
         }
 

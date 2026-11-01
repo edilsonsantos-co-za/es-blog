@@ -30,6 +30,7 @@
     const APPS = [
         { id: 'portfolio', name: 'Portfolio', url: site(''), icon: 'M4 5h16v11H4z M8 20h8 M12 16v4' },
         { id: 'blog', name: 'Blog', url: site('blog.'), icon: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5' },
+        { id: 'developers', name: 'Developers', url: site('developers.'), icon: 'M8 7l-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16' },
         { id: 'store', name: 'Store', url: site('store.'), icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
         { id: 'journal', name: 'Journal', url: site('journal.'), private: true, icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
     ];

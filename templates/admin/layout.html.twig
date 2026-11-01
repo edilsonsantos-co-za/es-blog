@@ -15,7 +15,7 @@
     'app_admin_page_edit'
 ] %}
 {% set settings_active = current_route starts with 'app_admin_config' or current_route starts with 'app_admin_themes' or current_route starts with 'app_admin_user' or current_route starts with 'app_admin_menu' %}
-{% set maint_active = current_route starts with 'app_admin_cache' or current_route starts with 'app_admin_linkedin' or current_route starts with 'app_admin_automation' %}
+{% set maint_active = current_route starts with 'app_admin_cache' or current_route starts with 'app_admin_linkedin' or current_route starts with 'app_admin_x' or current_route starts with 'app_admin_automation' %}
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
@@ -155,6 +155,11 @@
                 {# Settings expandable #}
                 {% if is_granted('ROLE_EDITOR') or is_granted('ROLE_ADMIN') %}
                 <li class="nav-header">System</li>
+                <li class="nav-item">
+                    <a href="{{ path('app_admin_newsletter') }}" class="nav-link {{ current_route starts with 'app_admin_newsletter' ? 'active' : '' }}">
+                        <i class="nav-icon fas fa-envelope"></i><p>Newsletter subscribers</p>
+                    </a>
+                </li>
                 <li class="nav-item has-treeview {{ settings_active ? 'menu-open' : '' }}">
                     <a href="#" class="nav-link {{ settings_active ? 'active' : '' }}">
                         <i class="nav-icon fas fa-cog"></i>
@@ -208,6 +213,11 @@
                         <li class="nav-item">
                             <a href="{{ path('app_admin_linkedin') }}" class="nav-link {{ current_route starts with 'app_admin_linkedin' ? 'active' : '' }}">
                                 <i class="fas fa-circle nav-icon"></i><p>LinkedIn</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ path('app_admin_x') }}" class="nav-link {{ current_route starts with 'app_admin_x' ? 'active' : '' }}">
+                                <i class="fas fa-circle nav-icon"></i><p>X</p>
                             </a>
                         </li>
                     </ul>

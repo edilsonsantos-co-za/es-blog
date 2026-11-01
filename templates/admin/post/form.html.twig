@@ -78,6 +78,17 @@
                         <textarea class="form-control" id="description" name="description" rows="3"
                                   placeholder="Short description or excerpt (optional)">{{ post ? post.description : '' }}</textarea>
                     </div>
+                    {% if not page_mode %}
+                    <div class="form-group">
+                        <label for="linkedin_text">LinkedIn draft</label>
+                        <textarea class="form-control" id="linkedin_text" name="linkedin_text" rows="5" maxlength="3000">{{ post ? post.customFieldValue('linkedin_text') : '' }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="twitter_text">Twitter / X draft</label>
+                        <textarea class="form-control" id="twitter_text" name="twitter_text" rows="3" maxlength="250">{{ post ? post.customFieldValue('twitter_text') : '' }}</textarea>
+                        <small class="form-text text-muted">250 characters; the published blog link is added when sharing.</small>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -169,6 +180,9 @@
                     </button>
                     <a href="{{ path(cancel_route) }}" class="btn btn-default btn-block mt-1">Cancel</a>
                     {% if is_edit %}
+                    {% if not page_mode %}
+                    <a href="{{ path('app_admin_post_preview', {id: post.id}) }}" class="btn btn-default btn-block mt-1" target="_blank" rel="noopener">Preview saved post and banner</a>
+                    {% endif %}
                     <button type="submit" form="post-delete-form" class="btn btn-danger btn-block btn-sm mt-2">
                         <i class="fa fa-trash"></i> Delete
                     </button>
