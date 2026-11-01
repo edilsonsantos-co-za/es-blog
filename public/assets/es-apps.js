@@ -13,6 +13,9 @@
  *          manage-url="/admin/profile">            optional "Your profile" link
  *
  * Signing out here also writes the shared `es-signout` cookie, so the other ES apps sign out too.
+ * Signed in here, it publishes who you are (display only) in the shared `es-user` cookie, so apps where
+ * you have no session of their own show your account instead of "Sign in".
+ * On *.edilsonsantos.local the launcher links the local instances.
  * </es-apps>
  */
 (() => {
@@ -20,11 +23,14 @@
         return;
     }
 
+    // Local instances (edilsonsantos.local, blog.edilsonsantos.local, …) link to each other, not to production
+    const LOCAL = /(^|\.)edilsonsantos\.local$/.test(location.hostname);
+    const site = (sub) => LOCAL ? `${location.protocol}//${sub}edilsonsantos.local/` : `https://${sub}edilsonsantos.co.za/`;
     const APPS = [
-        { id: 'portfolio', name: 'Portfolio', url: 'https://edilsonsantos.co.za/', icon: 'M4 5h16v11H4z M8 20h8 M12 16v4' },
-        { id: 'blog', name: 'Blog', url: 'https://blog.edilsonsantos.co.za/', icon: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5' },
-        { id: 'store', name: 'Store', url: 'https://store.edilsonsantos.co.za/', icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
-        { id: 'journal', name: 'Journal', url: 'https://journal.edilsonsantos.co.za/', private: true, icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
+        { id: 'portfolio', name: 'Portfolio', url: site(''), icon: 'M4 5h16v11H4z M8 20h8 M12 16v4' },
+        { id: 'blog', name: 'Blog', url: site('blog.'), icon: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5' },
+        { id: 'store', name: 'Store', url: site('store.'), icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
+        { id: 'journal', name: 'Journal', url: site('journal.'), private: true, icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
     ];
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -65,18 +71,42 @@
         @media (max-width: 480px) { .panel { position: fixed; top: 64px; left: 12px; right: 12px; min-width: 0; } }
     `;
 
-    // Single sign-out: "Sign out" in any ES app writes a fresh `es-signout` marker on the parent
-    // domain (widest one the browser accepts). Every app remembers the marker it saw when you signed
-    // in there, and ends its own session as soon as the marker changes.
-    const markSignedOut = () => {
-        const value = Math.random().toString(36).slice(2) + Date.now().toString(36);
-        const base = `es-signout=${value}; path=/; max-age=31536000; SameSite=Lax`;
+    // Write a cookie on the parent domain (the widest one the browser accepts, as theme-mode.js does),
+    // so every ES app sees it. An empty value deletes it (on every level, wherever it was written).
+    const setSharedCookie = (name, value, maxAge) => {
+        const base = `${name}=${value}; path=/; ${value ? (maxAge ? `max-age=${maxAge}; ` : '') : 'max-age=0; '}SameSite=Lax`;
         const labels = location.hostname.split('.');
         for (let i = labels.length - 2; i >= 0; i--) {
             document.cookie = `${base}; domain=${labels.slice(i).join('.')}`;
-            if (document.cookie.includes(`es-signout=${value}`)) return;
+            if (value && getCookie(name) === value) return;
         }
         document.cookie = base;
+    };
+    const getCookie = (name) => (document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`)) || [])[1] || '';
+
+    // Shared signed-in state: an app where you're signed in publishes who you are (display only: name,
+    // email, avatar; never a credential) in the `es-user` cookie, so the pages of apps where you have no
+    // session of your own (the store, the portfolio and blog pages) show your account instead of "Sign in".
+    // It lasts for the browser session and Sign out in any app clears it.
+    const USER_COOKIE = 'es-user';
+    const encodeUser = (user) => btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(user))))
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const sharedUser = () => {
+        const raw = getCookie(USER_COOKIE);
+        if (!raw) return null;
+        try {
+            const bin = atob(raw.replace(/-/g, '+').replace(/_/g, '/'));
+            const user = JSON.parse(new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0))));
+            return user && (user.n || user.e) ? user : null;
+        } catch { return null; }
+    };
+
+    // Single sign-out: "Sign out" in any ES app writes a fresh `es-signout` marker on the parent
+    // domain. Every app remembers the marker it saw when you signed in there, and ends its own
+    // session as soon as the marker changes. The shared signed-in state goes with it.
+    const markSignedOut = () => {
+        setSharedCookie('es-signout', Math.random().toString(36).slice(2) + Date.now().toString(36), 31536000);
+        setSharedCookie(USER_COOKIE, '');
     };
 
     let SHEET = null;
@@ -92,6 +122,8 @@
             if (SHEET) this.shadowRoot.adoptedStyleSheets = [SHEET];
             this.onDocClick = (e) => { if (!this.contains(e.target) && !e.composedPath().includes(this)) this.close(); };
             this.onKey = (e) => { if (e.key === 'Escape') this.close(true); };
+            // Signed in or out in another tab or app meanwhile: show it when you come back
+            this.onVisible = () => { if (document.visibilityState === 'visible' && !this.hasAttribute('signed-in')) this.render(); };
         }
 
         connectedCallback() {
@@ -101,6 +133,7 @@
             matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => this.syncTheme());
             document.addEventListener('click', this.onDocClick);
             document.addEventListener('keydown', this.onKey);
+            document.addEventListener('visibilitychange', this.onVisible);
             this.render();
         }
 
@@ -108,6 +141,7 @@
             this.themeWatch?.disconnect();
             document.removeEventListener('click', this.onDocClick);
             document.removeEventListener('keydown', this.onKey);
+            document.removeEventListener('visibilitychange', this.onVisible);
         }
 
         attributeChangedCallback() { if (this.shadowRoot.childElementCount) this.render(); }
@@ -121,19 +155,34 @@
         }
 
         avatarHtml(large) {
-            const name = this.getAttribute('user-name') || '';
-            const email = this.getAttribute('user-email') || '';
-            const src = this.getAttribute('avatar');
+            const { name, email, avatar: src } = this.who();
             const cls = large ? 'avatar lg' : 'avatar';
             const fallback = `<span class="${cls}" aria-hidden="true">${esc(initials(name, email))}</span>`;
             return src ? `<img class="${cls}" src="${esc(src)}" alt="" referrerpolicy="no-referrer" data-fallback='${esc(fallback)}'>` : fallback;
         }
 
+        // Signed in here: the attributes. Otherwise whoever is signed in to another ES app (`es-user`).
+        who() {
+            if (this.hasAttribute('signed-in')) {
+                return { name: this.getAttribute('user-name') || '', email: this.getAttribute('user-email') || '', avatar: this.getAttribute('avatar') || '', local: true };
+            }
+            const shared = sharedUser();
+            return shared ? { name: shared.n || '', email: shared.e || '', avatar: shared.a || '', local: false } : null;
+        }
+
+        publish(who) {
+            if (!who?.local || !(who.name || who.email)) return;
+            const value = encodeUser({ n: who.name, e: who.email, a: who.avatar });
+            if (getCookie(USER_COOKIE) !== value) setSharedCookie(USER_COOKIE, value);
+        }
+
         render() {
             const current = this.getAttribute('current') || '';
-            const signedIn = this.hasAttribute('signed-in');
-            const name = this.getAttribute('user-name') || '';
-            const email = this.getAttribute('user-email') || '';
+            const who = this.who();
+            this.publish(who);
+            const signedIn = !!who;
+            const name = who?.name || '';
+            const email = who?.email || '';
             // Signed in always shows the account menu (initials until the name/email arrive)
             const hasUser = signedIn;
             const label = name || email || 'Your account';
@@ -146,10 +195,11 @@
 
             const signOut = this.getAttribute('sign-out-url');
             const method = (this.getAttribute('sign-out-method') || 'get').toLowerCase();
-            const signOutItem = !signOut ? '' : method === 'post'
+            // Signed in elsewhere only: Sign out here signs you out of every ES app (the marker)
+            const signOutItem = !who?.local ? '<button type="button" data-signout>Sign out</button>' : !signOut ? '' : method === 'post'
                 ? `<form method="post" action="${esc(signOut)}"><input type="hidden" name="${esc(this.getAttribute('csrf-name') || '_token')}" value="${esc(this.getAttribute('csrf-token') || '')}"><button type="submit">Sign out</button></form>`
                 : `<a href="${esc(signOut)}" data-signout>Sign out</a>`;
-            const manage = this.getAttribute('manage-url');
+            const manage = who?.local ? this.getAttribute('manage-url') : null;
 
             const account = hasUser ? `
                 <button class="trigger" part="account" aria-label="Account: ${esc(label)}" aria-haspopup="true" aria-expanded="false" data-for="account">${this.avatarHtml(false)}</button>
@@ -166,6 +216,7 @@
 
             this.shadowRoot.querySelector('.menu form')?.addEventListener('submit', markSignedOut);
             this.shadowRoot.querySelectorAll('.menu a[data-signout]').forEach((a) => a.addEventListener('click', markSignedOut));
+            this.shadowRoot.querySelector('.menu button[data-signout]')?.addEventListener('click', () => { markSignedOut(); this.render(); });
             this.shadowRoot.querySelectorAll('img[data-fallback]').forEach((img) => img.addEventListener('error', () => { img.outerHTML = img.dataset.fallback; }, { once: true }));
             this.shadowRoot.querySelectorAll('.trigger').forEach((t) => t.addEventListener('click', (e) => {
                 e.stopPropagation();
