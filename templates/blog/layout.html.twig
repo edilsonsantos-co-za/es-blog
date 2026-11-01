@@ -18,8 +18,8 @@
     <meta property="og:type" content="website">
     {% endblock %}
 
-    <script src="{{ asset('assets/theme-mode.js') }}"></script>
-    <script src="{{ asset('assets/es-apps.js') }}" defer></script>
+    <script src="{{ asset('assets/theme-mode.js') }}?v={{ asset_version('assets/theme-mode.js') }}"></script>
+    <script src="{{ asset('assets/es-apps.js') }}?v={{ asset_version('assets/es-apps.js') }}" defer></script>
 
     {% block css %}
     <link rel="preconnect" href="https://fonts.googleapis.com">

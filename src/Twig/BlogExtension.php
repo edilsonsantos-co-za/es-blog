@@ -38,6 +38,7 @@ use Twig\TwigFunction;
  *   {{ excerpt(post.body, 300) }}
  *   {{ avatar_url(user, 160) }}  (own avatar, else Gravatar, else null)
  *   {{ gravatar_url(user, 128) }}  (Gravatar only: the ES account menu)
+ *   {{ asset_version('assets/es-apps.js') }}  (cache-busting stamp: the file's modified time)
  *
  * Filters:
  *   {{ post.body | markdown }}
@@ -54,6 +55,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
         private readonly TagService $tags,
         private readonly CategoryService $categories,
         private readonly AppVersion $appVersion,
+        private readonly string $projectDir,
     ) {}
 
     public function getGlobals(): array
@@ -87,6 +89,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('excerpt', $this->excerpt(...)),
             new TwigFunction('avatar_url', $this->avatarUrl(...)),
             new TwigFunction('gravatar_url', $this->gravatarUrl(...)),
+            new TwigFunction('asset_version', $this->assetVersion(...)),
         ];
     }
 
@@ -105,6 +108,17 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
         }
 
         return $this->gravatarUrl($user, $size);
+    }
+
+    /**
+     * Cache-busting stamp for a file under public/ (its modified time), so browsers pick up a
+     * new es-apps.js etc. after each deploy: {{ asset('assets/es-apps.js') }}?v={{ asset_version('assets/es-apps.js') }}
+     */
+    private function assetVersion(string $path): string
+    {
+        $file = $this->projectDir . '/public/' . ltrim($path, '/');
+
+        return is_file($file) ? (string) filemtime($file) : '0';
     }
 
     /**
