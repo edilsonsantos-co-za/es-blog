@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller\Auth;
 
+use App\EventSubscriber\SingleSignOutSubscriber;
 use App\Repository\UserRepository;
 use App\Security\LogtoClient;
 use App\Security\SsoAuthenticator;
@@ -81,6 +82,8 @@ class SsoController extends AbstractController
         }
 
         $security->login($user, SsoAuthenticator::class, 'main');
+        // Single sign-out across ES apps: remember the marker seen now (see SingleSignOutSubscriber)
+        $request->getSession()->set(SingleSignOutSubscriber::SESSION_KEY, (string) $request->cookies->get(SingleSignOutSubscriber::COOKIE, ''));
 
         return $this->redirectToRoute('app_admin_dashboard');
     }

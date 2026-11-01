@@ -11,6 +11,8 @@
  *          sign-out-url="/logout"                  where "Sign out" goes
  *          sign-out-method="post" csrf-name="_token" csrf-token="…"   for apps that sign out with a POST
  *          manage-url="/admin/profile">            optional "Your profile" link
+ *
+ * Signing out here also writes the shared `es-signout` cookie, so the other ES apps sign out too.
  * </es-apps>
  */
 (() => {
@@ -62,6 +64,20 @@
         form { margin: 0; }
         @media (max-width: 480px) { .panel { position: fixed; top: 64px; left: 12px; right: 12px; min-width: 0; } }
     `;
+
+    // Single sign-out: "Sign out" in any ES app writes a fresh `es-signout` marker on the parent
+    // domain (widest one the browser accepts). Every app remembers the marker it saw when you signed
+    // in there, and ends its own session as soon as the marker changes.
+    const markSignedOut = () => {
+        const value = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        const base = `es-signout=${value}; path=/; max-age=31536000; SameSite=Lax`;
+        const labels = location.hostname.split('.');
+        for (let i = labels.length - 2; i >= 0; i--) {
+            document.cookie = `${base}; domain=${labels.slice(i).join('.')}`;
+            if (document.cookie.includes(`es-signout=${value}`)) return;
+        }
+        document.cookie = base;
+    };
 
     let SHEET = null;
     try { SHEET = new CSSStyleSheet(); SHEET.replaceSync(CSS); } catch { SHEET = null; }
@@ -132,7 +148,7 @@
             const method = (this.getAttribute('sign-out-method') || 'get').toLowerCase();
             const signOutItem = !signOut ? '' : method === 'post'
                 ? `<form method="post" action="${esc(signOut)}"><input type="hidden" name="${esc(this.getAttribute('csrf-name') || '_token')}" value="${esc(this.getAttribute('csrf-token') || '')}"><button type="submit">Sign out</button></form>`
-                : `<a href="${esc(signOut)}">Sign out</a>`;
+                : `<a href="${esc(signOut)}" data-signout>Sign out</a>`;
             const manage = this.getAttribute('manage-url');
 
             const account = hasUser ? `
@@ -148,6 +164,8 @@
                 <div class="panel" id="apps" role="menu" hidden><p class="kicker">Edilson Santos apps</p><div class="grid">${appGrid}</div></div>
                 ${account}`;
 
+            this.shadowRoot.querySelector('.menu form')?.addEventListener('submit', markSignedOut);
+            this.shadowRoot.querySelectorAll('.menu a[data-signout]').forEach((a) => a.addEventListener('click', markSignedOut));
             this.shadowRoot.querySelectorAll('img[data-fallback]').forEach((img) => img.addEventListener('error', () => { img.outerHTML = img.dataset.fallback; }, { once: true }));
             this.shadowRoot.querySelectorAll('.trigger').forEach((t) => t.addEventListener('click', (e) => {
                 e.stopPropagation();
