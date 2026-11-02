@@ -41,6 +41,7 @@ h2.label { margin: 0 0 12px; }
 .mast-search input:focus { outline: none; }
 .mast-search kbd { font: 500 11px 'JetBrains Mono', monospace; padding: 1px 6px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); }
 .top-actions { display: flex; gap: 8px; align-items: center; }
+.top-actions .coffee { padding: 7px 12px; border-radius: 10px; background: #ffdd00; color: #0d0c22; border-color: #ffdd00; white-space: nowrap; }
 .icon-btn { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; display: grid; place-items: center; font-size: 16px; }
 .menu-btn { display: none; }
 .signin { padding: 8px 14px; border-radius: 10px; }
@@ -262,7 +263,7 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
     .sidebar { position: static; grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 760px) {
-    .portfolio-btn, .signin { display: none; }
+    .portfolio-btn, .signin, .coffee-text { display: none; }
     .top-actions { margin-left: auto; }
     .mast-row { gap: 0; }
     .top-actions { gap: 6px; }

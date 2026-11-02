@@ -98,6 +98,7 @@ reverse proxy. See [docs/deployment.md](docs/deployment.md).
 | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_REDIRECT_URI` | LinkedIn sharing. The redirect URI is `<site>/admin/linkedin/callback`. Optional `LINKEDIN_API_VERSION` (default `202608`). |
 | `ANTHROPIC_API_KEY`, `AUTOMATION_AI_MODEL` | Original multi-source AI drafts (default `claude-opus-5-5`; choose a model available to your account). Without a key, sources remain pending and no skeleton/copied posts are created. |
 | `X_CLIENT_ID`, `X_CLIENT_SECRET`, `X_REDIRECT_URI` | X OAuth2 PKCE; register `<site>/admin/x/callback`. Requires a developer app with tweet-write access and the appropriate API plan. |
+| `COFFEE_URL` | Buy Me a Coffee header button and footer link (default `https://buymeacoffee.com/edilsonsantos`; blank hides both). |
 | `ES_DEVELOPERS_URL`, `UPWORK_URL`, `SUPPORT_URL` | Developers and optional verified public freelance/funding links. Blank optional URLs stay hidden; also editable in General settings. |
 | `LOGTO_ENDPOINT`, `LOGTO_APP_ID`, `LOGTO_APP_SECRET` | Required for sign-in through Logto; set all three. |
 | `LOGTO_INTERNAL_ENDPOINT` | Optional server-to-server Logto URL, for example a Docker service name |

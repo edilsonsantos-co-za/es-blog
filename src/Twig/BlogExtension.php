@@ -59,6 +59,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
         private readonly string $developersUrl,
         private readonly string $upworkUrl,
         private readonly string $supportUrl,
+        private readonly string $coffeeUrl = '',
     ) {}
 
     public function getGlobals(): array
@@ -73,6 +74,7 @@ final class BlogExtension extends AbstractExtension implements GlobalsInterface
             'site_developers_url' => $this->publicUrl($this->config->get('site.developers_url', $this->developersUrl)),
             'site_upwork_url' => $this->publicUrl($this->config->get('site.upwork_url', $this->upworkUrl)),
             'site_support_url' => $this->publicUrl($this->config->get('site.support_url', $this->supportUrl)),
+            'site_coffee_url'  => $this->publicUrl($this->coffeeUrl),
             'site_store_url'   => $this->config->get('site.store_url', self::DEFAULT_STORE_URL),
             'site_logo'        => $this->config->get('site.logo', ''),
             'site_theme'       => $this->config->get('site.theme', 'atlas'),
