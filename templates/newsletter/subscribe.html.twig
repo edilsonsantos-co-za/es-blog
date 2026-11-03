@@ -1,17 +1,18 @@
-{% extends 'blog/layout.html.twig' %}
-{% block title %}Newsletter{% endblock %}
-{% block content %}
-<section class="panel">
-<h1>ES Blog newsletter</h1>
-<p>Choose only what you want. No account required. Confirm by email before receiving updates; unsubscribe in every email.</p>
-{% if not ready %}<p role="status">Email subscriptions are temporarily unavailable. No confirmation is being sent. Please try again later.</p>{% endif %}
-{% if message %}<p role="status">{{ message }}</p>{% endif %}
-<form method="post">
-<input type="hidden" name="_token" value="{{ csrf_token('newsletter_subscribe') }}">
-<p><label for="newsletter-email">Email address</label><br><input id="newsletter-email" type="email" name="email" autocomplete="email" maxlength="254" required></p>
-<p><label><input type="checkbox" name="posts" value="1"> Email me new blog posts</label></p>
-<p><label><input type="checkbox" name="products" value="1"> Email me ES product and release updates</label></p>
-<button type="submit" {% if not ready %}disabled{% endif %}>Request confirmation</button>
+{% extends 'newsletter/_layout.html.twig' %}
+{% block title %}Newsletter · {{ site_title }}{% endblock %}
+{% block heading %}New posts, straight to your inbox.{% endblock %}
+{% block lead %}<p>Notes on building software and shipping real products, from a full-time engineer's spare-time projects. Pick only what you want.</p>{% endblock %}
+{% block form %}
+<form method="post" class="contact-form">
+    <input type="hidden" name="_token" value="{{ csrf_token('newsletter_subscribe') }}">
+    <label><span class="label">Email</span><input id="newsletter-email" type="email" name="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required></label>
+    <fieldset class="choices">
+        <legend class="label">Send me</legend>
+        <label class="choice"><input type="checkbox" name="posts" value="1"><span><b>New blog posts</b><small>When a new post goes live.</small></span></label>
+        <label class="choice"><input type="checkbox" name="products" value="1"><span><b>ES product and release updates</b><small>New apps, themes and releases.</small></span></label>
+    </fieldset>
+    <div><button class="btn btn-primary primary" type="submit" {% if not ready %}disabled{% endif %}>Subscribe</button></div>
+    {% if not ready %}<p class="form-note" role="status">Subscriptions are paused right now and no emails are going out. Please try again later.</p>{% endif %}
+    {% if message %}<p class="form-note" role="status">{{ message }}</p>{% endif %}
 </form>
-</section>
 {% endblock %}

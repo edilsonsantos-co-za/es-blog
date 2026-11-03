@@ -48,7 +48,7 @@ final class NewsletterHttpTest extends WebTestCase
 
         $crawler = $client->request('GET', '/newsletter');
         self::assertResponseIsSuccessful();
-        $client->submit($crawler->selectButton('Request confirmation')->form([
+        $client->submit($crawler->selectButton('Subscribe')->form([
             'email' => $emailAddress, 'posts' => '1',
         ]));
         self::assertResponseIsSuccessful();

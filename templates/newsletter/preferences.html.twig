@@ -1,21 +1,33 @@
-{% extends 'blog/layout.html.twig' %}
-{% block title %}Newsletter preferences{% endblock %}
-{% block content %}
-<section class="panel"><h1>Newsletter preferences</h1>
-{% if saved %}<p role="status">Your newsletter choices have been saved.</p>{% endif %}
+{% extends 'newsletter/_layout.html.twig' %}
+{% block title %}Newsletter preferences · {{ site_title }}{% endblock %}
+{% block kicker %}Newsletter · preferences{% endblock %}
+{% block heading %}Your email choices.{% endblock %}
+{% block lead %}<p>Change what you get, or stop everything. No account needed: this page is your link.</p>{% endblock %}
+{% block form %}
+<div class="contact-form">
+{% if saved %}<p class="form-note" role="status">Your newsletter choices have been saved.</p>{% endif %}
 {% if subscriber %}
-{% if subscriber.unsubscribedAt %}<p>You are unsubscribed. <a href="{{ path('app_newsletter_subscribe') }}">Subscribe again with a new confirmation</a>.</p>
+    {% if subscriber.unsubscribedAt %}
+    <p>You're unsubscribed from every email.</p>
+    <div><a class="btn btn-primary primary" href="{{ path('app_newsletter_subscribe') }}">Subscribe again</a></div>
+    {% else %}
+    <form method="post" class="contact-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('newsletter_preferences') }}">
+        {% if subscriber.confirmedAt %}
+        <fieldset class="choices">
+            <legend class="label">Send me</legend>
+            <label class="choice"><input type="checkbox" name="posts" value="1" {% if subscriber.posts %}checked{% endif %}><span><b>New blog posts</b><small>When a new post goes live.</small></span></label>
+            <label class="choice"><input type="checkbox" name="products" value="1" {% if subscriber.products %}checked{% endif %}><span><b>ES product and release updates</b><small>New apps, themes and releases.</small></span></label>
+        </fieldset>
+        {% endif %}
+        <div class="actions">
+            {% if subscriber.confirmedAt %}<button class="btn btn-primary primary" name="action" value="preferences">Save choices</button>{% endif %}
+            <button class="btn" name="action" value="unsubscribe">Unsubscribe from all emails</button>
+        </div>
+    </form>
+    {% endif %}
 {% else %}
-<form method="post">
-<input type="hidden" name="_token" value="{{ csrf_token('newsletter_preferences') }}">
-{% if subscriber.confirmedAt %}
-<p><label><input type="checkbox" name="posts" value="1" {% if subscriber.posts %}checked{% endif %}> New blog posts</label></p>
-<p><label><input type="checkbox" name="products" value="1" {% if subscriber.products %}checked{% endif %}> ES product and release updates</label></p>
-<button name="action" value="preferences">Save choices</button>
+    <p>This management link is invalid.</p>
 {% endif %}
-<button name="action" value="unsubscribe">Unsubscribe from all emails</button>
-</form>
-{% endif %}
-{% else %}<p>This management link is invalid.</p>{% endif %}
-</section>
+</div>
 {% endblock %}

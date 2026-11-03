@@ -5,17 +5,34 @@
 {% block page_class %}no-sidebar{% endblock %}
 {% block sidebar_wrap %}{% endblock %}
 
-{% block content %}
-{# The landing page is the hero bento only; every post is on the Posts page (app_blog_posts). #}
-{% set portfolio_url = site_portfolio_url starts with 'http' ? site_portfolio_url : '' %}
-{% set post_total = posts is not null ? posts.totalItemCount : 0 %}
+{% macro stat(label, value, unit, foot) %}
+    <div class="tile stat-tile">
+        <span class="label">{{ label }}</span>
+        <b data-count="{{ value }}">{{ value|number_format }}{% if unit %}<small>{{ unit }}</small>{% endif %}</b>
+        <span class="label">{{ foot }}</span>
+    </div>
+{% endmacro %}
 
-{# Editorial bento: the latest post leads with its cover (or generative cover art drawn from its title), the next two
-   sit beside the masthead, and topics, counts and the feed fill the bottom row. With no posts yet, topics lead. #}
+{% block content %}
+{# The landing page is one bento in the portfolio's style; every post is on the Posts page (app_blog_posts).
+   Rows are 4 columns and always end flush:
+     1–2  masthead (2×2) · author photo (1×2) · published (count-up) · clock ring
+     3–4  only with posts: the latest post (2×2) · two side stories, or reads + reading time · currently writing (2)
+     3    without posts: currently writing (2) · reads · reading time
+     next newsletter (inline form) · ask me · who's writing (2)
+     last topics ticker, full width
+   Counts only; draft titles never show. #}
+{% set portfolio_url = site_portfolio_url starts with 'http' ? site_portfolio_url|trim('/', 'right') : '' %}
+{% set post_total = posts is not null ? posts.totalItemCount : 0 %}
 {% set recent = posts is not null ? posts|slice(0, 3) : [] %}
 {% set lead = recent|first %}
 {% set side = recent|slice(1, 2) %}
+{% set i = insights %}
+{% set in_works = i.drafts + i.scheduled %}
 {% set topic_total = tag_cloud|length %}
+
+{% import _self as cards %}
+
 <section class="hero hero-bento" aria-label="Featured">
     <div class="tile masthead-tile">
         <span class="label">Edilson Santos · Blog</span>
@@ -26,6 +43,40 @@
             {% if portfolio_url %}<a class="btn" href="{{ portfolio_url }}">About me ↗</a>{% endif %}
         </div>
     </div>
+
+    {% if portfolio_url %}
+    <a class="tile photo-tile" href="{{ portfolio_url }}" aria-label="About Edilson Santos">
+        <img src="{{ portfolio_url }}/avatar" alt="Portrait of Edilson Santos" width="300" height="400" loading="eager" onerror="this.remove()">
+        <span class="photo-chip"><span>👋 Edilson</span><span class="mono">Writes here</span></span>
+    </a>
+    {% else %}
+    <div class="tile about-tile photo-tile-fallback">
+        <span class="label">Who's writing</span>
+        <p>Edilson Santos, a full-time professional software engineer building cool projects in his spare time.</p>
+    </div>
+    {% endif %}
+
+    {{ cards.stat('Published', post_total, '', 'post' ~ (post_total == 1 ? '' : 's') ~ (topic_total ? ' · ' ~ topic_total ~ ' topic' ~ (topic_total == 1 ? '' : 's') : '')) }}
+
+    <div class="tile clock-tile">
+        <span class="label">Writing from · Johannesburg</span>
+        <div class="clock">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="28" fill="none" stroke="var(--line)" stroke-width="5"/><circle id="clock-ring" cx="32" cy="32" r="28" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="176" stroke-dashoffset="176"/></svg>
+            <b id="clock-time">--:--</b>
+        </div>
+        <span class="label">SAST · UTC+2</span>
+    </div>
+
+    {% set now_card %}
+    <div class="tile now-tile">
+        <span class="label"><span class="dot" aria-hidden="true"></span> Currently writing</span>
+        <h3>{{ in_works }} post{{ in_works == 1 ? '' : 's' }} in the works</h3>
+        <span class="mono">{% if i.next_scheduled %}Next one lands {{ i.next_scheduled|date('j M') }}{% else %}{{ i.drafts }} draft{{ i.drafts == 1 ? '' : 's' }} · {{ i.scheduled }} scheduled{% endif %}</span>
+    </div>
+    {% endset %}
+    {% set reads_card = cards.stat('Reads', i.reads, '', 'across every post') %}
+    {% set minutes_card = cards.stat('Reading time', i.read_minutes, 'min', 'to read it all') %}
+
     {% if lead %}
     {% set lead_date = lead.publishedAt ?? lead.createdAt %}
     {% set lead_kicker = lead.category ? lead.category.title : 'Article' %}
@@ -49,64 +100,79 @@
             <strong>{{ post.title }}</strong>
         </span>
     </a>
+    {% else %}
+    {{ reads_card }}{{ minutes_card }}
     {% endfor %}
+    {{ now_card }}
+    {% else %}
+    {{ now_card }}{{ reads_card }}{{ minutes_card }}
     {% endif %}
-    {% if topic_total > 0 %}
-    <nav class="tile topics-tile{{ side|length > 0 ? ' wide' : '' }}" aria-label="Topics">
-        <span class="label">Topics</span>
-        <div class="tag-cloud">
-            {% for item in tag_cloud|slice(0, 14) %}
-            <a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}" class="tag-pill">#{{ item.tag.name }} <span class="tag-count">{{ item.postCount }}</span></a>
-            {% endfor %}
-        </div>
-    </nav>
-    {% endif %}
-    <div class="tile stat-tile">
-        <span class="label">Published</span>
-        <b>{{ post_total }}</b>
-        <span class="label">post{{ post_total == 1 ? '' : 's' }}{% if topic_total %} · {{ topic_total }} topic{{ topic_total == 1 ? '' : 's' }}{% endif %}</span>
-    </div>
-    <a class="tile feed-tile{{ topic_total ? '' : ' wide' }}" href="{{ path('app_newsletter_subscribe') }}">
+
+    <div class="tile feed-tile newsletter-tile">
         <span class="label">Newsletter</span>
         <strong>New posts in your inbox.</strong>
-        <span class="label">Subscribe →</span>
+        <form class="inline-form" method="post" action="{{ path('app_newsletter_subscribe') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('newsletter_subscribe') }}">
+            <input type="hidden" name="posts" value="1">
+            <label class="sr-only" for="hero-email">Email</label>
+            <input id="hero-email" type="email" name="email" autocomplete="email" maxlength="254" placeholder="you@email.com" required>
+            <button type="submit">Join</button>
+        </form>
+    </div>
+
+    <a class="tile ask-tile" href="{{ portfolio_url ? portfolio_url ~ '/contact' : path('app_newsletter_subscribe') }}">
+        <span class="label">Topic requests</span>
+        <strong>What should I write about next?</strong>
+        <span class="mono">Suggest a topic →</span>
     </a>
-    {# More cards in the same bento, like the portfolio home. Counts only; draft titles never show. #}
-    {% set i = insights %}
-    {% set in_works = i.drafts + i.scheduled %}
-    <div class="tile now-tile">
-        <span class="label"><span class="dot" aria-hidden="true"></span> Currently writing</span>
-        <h3>{{ in_works }} post{{ in_works == 1 ? '' : 's' }} in the works</h3>
-        <span class="mono">{% if i.next_scheduled %}Next one lands {{ i.next_scheduled|date('j M') }}{% else %}{{ i.drafts }} draft{{ i.drafts == 1 ? '' : 's' }} · {{ i.scheduled }} scheduled{% endif %}</span>
-    </div>
-    <div class="tile stat-tile">
-        <span class="label">Reads</span>
-        <b>{{ i.reads >= 10000 ? (i.reads / 1000)|round(0) ~ 'k' : i.reads|number_format }}</b>
-        <span class="label">across every post</span>
-    </div>
-    <div class="tile stat-tile">
-        <span class="label">Reading time</span>
-        <b>{{ i.read_minutes }}<small>min</small></b>
-        <span class="label">to read it all</span>
-    </div>
+
     <div class="tile about-tile">
         <span class="label">Who's writing</span>
         <p>Edilson Santos, a full-time professional software engineer building cool projects in his spare time and writing up what he learns along the way.</p>
-        <span class="mono">{% if i.readers > 0 %}{{ i.readers|number_format }} newsletter reader{{ i.readers == 1 ? '' : 's' }} · {% endif %}{% if portfolio_url %}<a href="{{ portfolio_url }}">About me ↗</a>{% else %}<a href="{{ path('app_newsletter_subscribe') }}">Join the newsletter →</a>{% endif %}</span>
+        <span class="mono">{% if i.readers > 0 %}{{ i.readers|number_format }} newsletter reader{{ i.readers == 1 ? '' : 's' }}{% if i.last_published %} · {% endif %}{% endif %}{% if i.last_published %}Last post {{ i.last_published|date('j M Y') }}{% elseif not i.readers %}First post in the works{% endif %}</span>
     </div>
-    {# Two small cards only when no side stories show, so the rows always end flush #}
-    {% if side|length == 0 %}
-    <div class="tile stat-tile">
-        <span class="label">Last post</span>
-        <b class="stat-text">{{ i.last_published ? i.last_published|date('j M') : 'Soon' }}</b>
-        <span class="label">{{ i.last_published ? i.last_published|date('Y') : 'first one in the works' }}</span>
-    </div>
-    <div class="tile stat-tile">
-        <span class="label">Writing from</span>
-        <b class="stat-text" data-clock="Africa/Johannesburg">--:--</b>
-        <span class="label">Johannesburg · SAST</span>
-    </div>
+
+    {% if topic_total > 0 %}
+    <nav class="tile ticker-tile" aria-label="Topics">
+        <span class="label">Writes about</span>
+        <div class="track">
+            <div class="ticker">
+                {% for copy in 1..2 %}{% for item in tag_cloud|slice(0, 14) %}<a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}"{% if copy == 2 %} aria-hidden="true" tabindex="-1"{% endif %}>{{ item.tag.name }}</a>{% endfor %}{% endfor %}
+            </div>
+        </div>
+    </nav>
     {% endif %}
 </section>
 
+<script>
+(function () {
+    var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Clock with a seconds ring (same as the portfolio)
+    var time = document.getElementById('clock-time'), ring = document.getElementById('clock-ring');
+    var fmt = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Africa/Johannesburg' });
+    (function tick() { var n = new Date(); time.textContent = fmt.format(n).slice(0, 5); ring.setAttribute('stroke-dashoffset', String(176 - 176 * n.getSeconds() / 60)); setTimeout(tick, 1000); })();
+    // Numbers count up; the unit (<small>) stays put
+    document.querySelectorAll('.hero [data-count]').forEach(function (b) {
+        var to = +b.getAttribute('data-count'), unit = b.querySelector('small');
+        if (reduce || !to) return;
+        var t0 = performance.now();
+        (function step(t) {
+            var k = Math.min(1, (t - t0) / 1200);
+            b.firstChild.nodeValue = Math.round(to * (1 - Math.pow(1 - k, 3))).toLocaleString('en-US');
+            if (k < 1) requestAnimationFrame(step);
+        })(t0);
+    });
+    // A soft spotlight follows the cursor across the tiles
+    var hero = document.querySelector('.hero');
+    if (hero && !reduce && matchMedia('(hover: hover)').matches) {
+        hero.addEventListener('pointermove', function (e) {
+            hero.querySelectorAll('.tile').forEach(function (t) {
+                var r = t.getBoundingClientRect();
+                t.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+                t.style.setProperty('--my', (e.clientY - r.top) + 'px');
+            });
+        });
+    }
+})();
+</script>
 {% endblock %}

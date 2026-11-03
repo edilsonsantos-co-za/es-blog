@@ -16,7 +16,7 @@
  * Signing out here also writes the shared `es-signout` cookie, so the other ES apps sign out too.
  * Signed in here, it publishes who you are (display only) in the shared `es-user` cookie, so apps where
  * you have no session of their own show your account instead of "Sign in".
- * On *.edilsonsantos.local the launcher links the local instances.
+ * On *.edilsonsantos.local the launcher links the local instances and adds Labs (dev only).
  * </es-apps>
  */
 (() => {
@@ -33,6 +33,8 @@
         { id: 'developers', name: 'Developers', url: site('developers.'), icon: 'M8 7l-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16' },
         { id: 'store', name: 'Store', url: site('store.'), icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
         { id: 'journal', name: 'Journal', url: site('journal.'), private: true, icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
+        // Dev only: Labs (experiments) shows on *.edilsonsantos.local, never in production
+        { id: 'labs', name: 'Labs', url: site('labs.'), dev: true, icon: 'M9 3h6 M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3 M7.5 15h9' },
     ];
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -175,7 +177,7 @@
             // Signed in always shows the account menu (initials until the name/email arrive)
             const hasUser = signedIn;
             const label = name || email || 'Your account';
-            const apps = APPS.filter((a) => !a.private || signedIn);
+            const apps = APPS.filter((a) => (!a.private || signedIn) && (!a.dev || LOCAL));
 
             const appGrid = apps.map((a) => `
                 <a class="app" href="${a.url}" ${a.id === current ? 'aria-current="page"' : ''}>

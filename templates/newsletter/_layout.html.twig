@@ -1,0 +1,21 @@
+{# Newsletter pages: the same two tiles as the portfolio's /contact. A lead card on the left, the form card on the right. #}
+{% extends 'blog/layout.html.twig' %}
+{% block page_class %}no-sidebar{% endblock %}
+{% block sidebar_wrap %}{% endblock %}
+{% block content %}
+<section class="contact newsletter">
+    <div class="tile cta">
+        <span class="mono">{% block kicker %}Newsletter{% endblock %}</span>
+        <h1>{% block heading %}{% endblock %}</h1>
+        {% block lead %}{% endblock %}
+        <ul class="promise">
+            <li>No account needed</li>
+            <li>Nothing starts until you confirm by email</li>
+            <li>Unsubscribe from any email, in one click</li>
+        </ul>
+    </div>
+    <div class="tile form-tile">
+        {% block form %}{% endblock %}
+    </div>
+</section>
+{% endblock %}

@@ -1,11 +1,19 @@
-{% extends 'blog/layout.html.twig' %}
-{% block title %}Confirm newsletter{% endblock %}
-{% block content %}
-<section class="panel"><h1>Confirm newsletter choices</h1>
-{% if confirmed %}<p role="status">Your subscription is confirmed.</p>
+{% extends 'newsletter/_layout.html.twig' %}
+{% block title %}Confirm newsletter · {{ site_title }}{% endblock %}
+{% block kicker %}Newsletter · confirm{% endblock %}
+{% block heading %}{% if confirmed %}You're in.{% else %}One last step.{% endif %}{% endblock %}
+{% block lead %}<p>{% if confirmed %}Your subscription is confirmed. The next post lands in your inbox.{% else %}Confirm below and your choices start right away.{% endif %}</p>{% endblock %}
+{% block form %}
+<div class="contact-form">
+{% if confirmed %}
+    <p class="form-note" role="status">Subscription confirmed.</p>
+    <div><a class="btn btn-primary primary" href="{{ path('app_blog_posts') }}">Read the latest posts</a></div>
 {% elseif subscriber %}
-<p>You requested {% if subscriber.posts %}new blog posts{% endif %}{% if subscriber.posts and subscriber.products %} and {% endif %}{% if subscriber.products %}product/release updates{% endif %}.</p>
-<form method="post"><input type="hidden" name="_token" value="{{ csrf_token('newsletter_confirm') }}"><button type="submit">Confirm my subscription</button></form>
-{% else %}<p>This link is invalid, already used or expired. <a href="{{ path('app_newsletter_subscribe') }}">Request a new confirmation</a>.</p>{% endif %}
-</section>
+    <p>You asked for {% if subscriber.posts %}<b>new blog posts</b>{% endif %}{% if subscriber.posts and subscriber.products %} and {% endif %}{% if subscriber.products %}<b>product and release updates</b>{% endif %}.</p>
+    <form method="post"><input type="hidden" name="_token" value="{{ csrf_token('newsletter_confirm') }}"><button class="btn btn-primary primary" type="submit">Confirm my subscription</button></form>
+{% else %}
+    <p>This link is invalid, already used or expired.</p>
+    <div><a class="btn btn-primary primary" href="{{ path('app_newsletter_subscribe') }}">Request a new confirmation</a></div>
+{% endif %}
+</div>
 {% endblock %}
