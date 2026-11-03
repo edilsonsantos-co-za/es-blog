@@ -6,7 +6,7 @@
 {% block sidebar_wrap %}{% endblock %}
 
 {% block content %}
-{# The landing page: the hero bento, then the blog in numbers. Every post is on the Posts page (app_blog_posts). #}
+{# The landing page is the hero bento only; every post is on the Posts page (app_blog_posts). #}
 {% set portfolio_url = site_portfolio_url starts with 'http' ? site_portfolio_url : '' %}
 {% set post_total = posts is not null ? posts.totalItemCount : 0 %}
 
@@ -71,96 +71,42 @@
         <strong>New posts in your inbox.</strong>
         <span class="label">Subscribe →</span>
     </a>
+    {# More cards in the same bento, like the portfolio home. Counts only; draft titles never show. #}
+    {% set i = insights %}
+    {% set in_works = i.drafts + i.scheduled %}
+    <div class="tile now-tile">
+        <span class="label"><span class="dot" aria-hidden="true"></span> Currently writing</span>
+        <h3>{{ in_works }} post{{ in_works == 1 ? '' : 's' }} in the works</h3>
+        <span class="mono">{% if i.next_scheduled %}Next one lands {{ i.next_scheduled|date('j M') }}{% else %}{{ i.drafts }} draft{{ i.drafts == 1 ? '' : 's' }} · {{ i.scheduled }} scheduled{% endif %}</span>
+    </div>
+    <div class="tile stat-tile">
+        <span class="label">Reads</span>
+        <b>{{ i.reads >= 10000 ? (i.reads / 1000)|round(0) ~ 'k' : i.reads|number_format }}</b>
+        <span class="label">across every post</span>
+    </div>
+    <div class="tile stat-tile">
+        <span class="label">Reading time</span>
+        <b>{{ i.read_minutes }}<small>min</small></b>
+        <span class="label">to read it all</span>
+    </div>
+    <div class="tile about-tile">
+        <span class="label">Who's writing</span>
+        <p>Edilson Santos, a full-time professional software engineer building cool projects in his spare time and writing up what he learns along the way.</p>
+        <span class="mono">{% if i.readers > 0 %}{{ i.readers|number_format }} newsletter reader{{ i.readers == 1 ? '' : 's' }} · {% endif %}{% if portfolio_url %}<a href="{{ portfolio_url }}">About me ↗</a>{% else %}<a href="{{ path('app_newsletter_subscribe') }}">Join the newsletter →</a>{% endif %}</span>
+    </div>
+    {# Two small cards only when no side stories show, so the rows always end flush #}
+    {% if side|length == 0 %}
+    <div class="tile stat-tile">
+        <span class="label">Last post</span>
+        <b class="stat-text">{{ i.last_published ? i.last_published|date('j M') : 'Soon' }}</b>
+        <span class="label">{{ i.last_published ? i.last_published|date('Y') : 'first one in the works' }}</span>
+    </div>
+    <div class="tile stat-tile">
+        <span class="label">Writing from</span>
+        <b class="stat-text" data-clock="Africa/Johannesburg">--:--</b>
+        <span class="label">Johannesburg · SAST</span>
+    </div>
+    {% endif %}
 </section>
 
-{# The blog in numbers: rhythm, most read, reads, reading time, what's in the works, categories and who writes it.
-   Only public counts; draft titles never show here. #}
-{% set i = insights %}
-<section class="insights" aria-labelledby="insights-heading">
-    <div class="insights-head">
-        <h2 id="insights-heading">Behind the blog</h2>
-        <span class="mono">{% if i.last_published %}Last post {{ i.last_published|date('j M Y') }}{% else %}First post coming soon{% endif %}</span>
-    </div>
-    <div class="insights-grid">
-        {% set peak = max(1, max(i.rhythm|map(m => m.count))) %}
-        {% set year_total = i.rhythm|reduce((sum, m) => sum + m.count, 0) %}
-        <div class="tile rhythm-tile">
-            <span class="label">Publishing rhythm · last 12 months</span>
-            <strong>{{ year_total }} post{{ year_total == 1 ? '' : 's' }} in 12 months</strong>
-            <ol class="rhythm" aria-label="Posts per month">
-                {% for m in i.rhythm %}
-                <li style="--h: {{ (m.count / peak * 100)|round }}%"{% if m.count == 0 %} class="zero"{% endif %} data-tip="{{ m.month }}: {{ m.count }} post{{ m.count == 1 ? '' : 's' }}" tabindex="0">
-                    <i aria-hidden="true"></i><span class="sr-only">{{ m.month }}: {{ m.count }} post{{ m.count == 1 ? '' : 's' }}</span><b aria-hidden="true">{{ m.label|first }}</b>
-                </li>
-                {% endfor %}
-            </ol>
-        </div>
-
-        <div class="tile most-read">
-            <span class="label">Most read</span>
-            {% if i.most_read|length %}
-            <ol>
-                {% for post in i.most_read %}
-                {% set d = post.publishedAt ?? post.createdAt %}
-                <li><a href="{{ path('app_blog_post', {year: d|date('Y'), month: d|date('m'), slug: post.slug}) }}"><span class="rank mono">0{{ loop.index }}</span><strong>{{ post.title }}</strong><span class="mono">{{ post.views|number_format }} read{{ post.views == 1 ? '' : 's' }}</span></a></li>
-                {% endfor %}
-            </ol>
-            {% elseif recent_posts|length %}
-            {# No reads counted yet: show the newest instead so the tile is never empty #}
-            <ol>
-                {% for post in recent_posts|slice(0, 3) %}
-                {% set d = post.publishedAt ?? post.createdAt %}
-                <li><a href="{{ path('app_blog_post', {year: d|date('Y'), month: d|date('m'), slug: post.slug}) }}"><span class="rank mono">0{{ loop.index }}</span><strong>{{ post.title }}</strong><span class="mono">New · {{ d|date('j M Y') }}</span></a></li>
-                {% endfor %}
-            </ol>
-            {% else %}
-            <p class="muted">The most-read posts show up here once readers find them.</p>
-            {% endif %}
-        </div>
-
-        <div class="tile stat-tile">
-            <span class="label">Reads</span>
-            <b>{{ i.reads >= 10000 ? (i.reads / 1000)|round(0) ~ 'k' : i.reads|number_format }}</b>
-            <span class="label">across every post</span>
-        </div>
-
-        <div class="tile stat-tile">
-            <span class="label">Reading time</span>
-            <b>{{ i.read_minutes }}<small>min</small></b>
-            <span class="label">to read it all</span>
-        </div>
-
-        <div class="tile categories-tile">
-            <span class="label">What I write about</span>
-            {% if i.categories|length %}
-            <ul>
-                {% for c in i.categories %}
-                <li><a href="{{ path('app_blog_category', {slug: c.slug}) }}"><span>{{ c.title }}</span><span class="mono">{{ c.count }}</span></a></li>
-                {% endfor %}
-            </ul>
-            {% elseif all_categories|length %}
-            <ul>
-                {% for c in all_categories|slice(0, 5) %}
-                <li><a href="{{ path('app_blog_category', {slug: c.slug}) }}"><span>{{ c.title }}</span><span class="mono">soon</span></a></li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p class="muted">Software, technology and the lessons from shipping real products.</p>
-            {% endif %}
-        </div>
-
-        <div class="tile works-tile">
-            <span class="label">In the works</span>
-            <b>{{ i.drafts + i.scheduled }}</b>
-            <span>{{ i.drafts }} draft{{ i.drafts == 1 ? '' : 's' }} · {{ i.scheduled }} scheduled</span>
-            <span class="label">{% if i.next_scheduled %}Next on {{ i.next_scheduled|date('j M') }}{% else %}Next post when it's ready{% endif %}</span>
-        </div>
-
-        <div class="tile author-tile">
-            <span class="label">Who's writing</span>
-            <p>Edilson Santos: full-time professional software engineer, building cool projects in his spare time and writing up what he learns.</p>
-            <span class="author-meta mono">{% if i.readers > 0 %}{{ i.readers|number_format }} newsletter reader{{ i.readers == 1 ? '' : 's' }} · {% endif %}<a href="{{ path('app_newsletter_subscribe') }}">Join →</a></span>
-        </div>
-    </div>
-</section>
 {% endblock %}

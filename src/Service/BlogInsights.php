@@ -11,8 +11,8 @@ use App\Enum\PostType;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Numbers for the "my world of blogging" bento on the landing page: what's out, what's in the works,
- * what people read, how often posts ship and who reads them. Only public counts; never draft titles.
+ * Numbers for the landing page's hero cards: what's out, what's in the works, what people read and
+ * who reads them. Only public counts; never draft titles.
  */
 final class BlogInsights
 {
@@ -43,48 +43,8 @@ final class BlogInsights
             'last_published' => $lastPublished ? new \DateTimeImmutable((string) $lastPublished) : null,
             'reads'          => (int) $this->published()->select('COALESCE(SUM(p.views), 0)')->getQuery()->getSingleScalarResult(),
             'read_minutes'   => $readMinutes,
-            'most_read'      => $this->published()->select('p')->andWhere('p.views > 0')
-                ->orderBy('p.views', 'DESC')->setMaxResults(3)->getQuery()->getResult(),
-            'rhythm'         => $this->rhythm(),
-            'categories'     => $this->categories(),
             'readers'        => $this->readers(),
         ];
-    }
-
-    /** Posts per month for the last 12 months, oldest first, empty months included. @return list<array{label: string, month: string, count: int}> */
-    private function rhythm(): array
-    {
-        $since = (new \DateTimeImmutable('first day of this month midnight'))->modify('-11 months');
-        // Bucket in PHP: DQL has no YEAR()/MONTH() here, and a year of dates is tiny.
-        $dates = $this->published()->select('p.publishedAt AS d')
-            ->andWhere('p.publishedAt >= :since')->setParameter('since', $since)
-            ->getQuery()->getSingleColumnResult();
-
-        $counts = [];
-        foreach ($dates as $date) {
-            $key = ($date instanceof \DateTimeInterface ? $date : new \DateTimeImmutable((string) $date))->format('Y-m');
-            $counts[$key] = ($counts[$key] ?? 0) + 1;
-        }
-
-        $months = [];
-        for ($i = 0; $i < 12; ++$i) {
-            $month = $since->modify("+$i months");
-            $months[] = ['label' => $month->format('M'), 'month' => $month->format('F Y'), 'count' => $counts[$month->format('Y-m')] ?? 0];
-        }
-
-        return $months;
-    }
-
-    /** @return list<array{title: string, slug: string, count: int}> */
-    private function categories(): array
-    {
-        $rows = $this->published()
-            ->select('c.title AS title, c.slug AS slug, COUNT(p.id) AS n')
-            ->join('p.category', 'c')
-            ->groupBy('c.id, c.title, c.slug')->orderBy('n', 'DESC')->setMaxResults(5)
-            ->getQuery()->getArrayResult();
-
-        return array_map(static fn (array $r): array => ['title' => $r['title'], 'slug' => $r['slug'], 'count' => (int) $r['n']], $rows);
     }
 
     private function readers(): int
