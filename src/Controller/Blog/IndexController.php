@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Blog;
 
 use App\Enum\PostType;
+use App\Service\BlogInsights;
 use App\Service\PostService;
 use App\Service\SiteConfigService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,9 +18,10 @@ class IndexController extends AbstractController
     public function __construct(
         private readonly PostService $postService,
         private readonly SiteConfigService $siteConfig,
+        private readonly BlogInsights $insights,
     ) {}
 
-    /** The landing page is the hero bento only; the full list lives on /posts. */
+    /** The landing page is the hero bento plus the blog-in-numbers bento; the full list lives on /posts. */
     #[Route('/', name: 'app_blog_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
@@ -29,7 +31,8 @@ class IndexController extends AbstractController
         }
 
         return $this->render('blog/index.html.twig', [
-            'posts' => $this->postService->paginate(1, 3, PostType::Post),
+            'posts'    => $this->postService->paginate(1, 3, PostType::Post),
+            'insights' => $this->insights->summary(),
         ]);
     }
 

@@ -1,13 +1,13 @@
 {% extends 'blog/layout.html.twig' %}
 
-{% block title %}Writing · {{ site_title }}{% endblock %}
+{% block title %}Posts · {{ site_title }}{% endblock %}
 
 {% block page_class %}no-sidebar{% endblock %}
 {% block sidebar_wrap %}{% endblock %}
 
 {% block content %}
 <section class="list-head" aria-labelledby="writing-heading">
-    <h1 id="writing-heading">All writing{% if posts.currentPageNumber > 1 %} · page {{ posts.currentPageNumber }}{% endif %}</h1>
+    <h1 id="writing-heading">All posts{% if posts.currentPageNumber > 1 %} · page {{ posts.currentPageNumber }}{% endif %}</h1>
     <span class="mono">{{ posts.totalItemCount }} post{{ posts.totalItemCount == 1 ? '' : 's' }}</span>
 </section>
 

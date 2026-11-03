@@ -55,7 +55,7 @@
 
         <nav class="mast-nav" aria-label="Primary navigation">
             <ul class="nav" id="menu">
-                <li><a href="{{ path('app_blog_posts') }}"{% if current_route == 'app_blog_posts' %} aria-current="page"{% endif %}>Writing</a></li>
+                <li><a href="{{ path('app_blog_posts') }}"{% if current_route == 'app_blog_posts' %} aria-current="page"{% endif %}>Posts</a></li>
                 {% for item in menu_items %}
                     {% set has_children = item.children is defined and item.children|length > 0 %}
                     <li{% if has_children %} class="has-sub"{% endif %}>
@@ -72,7 +72,7 @@
                 {% for cat in all_categories|slice(0, 3) %}
                 <li><a href="{{ path('app_blog_category', {slug: cat.slug}) }}"{% if app.request.attributes.get('slug') == cat.slug and current_route == 'app_blog_category' %} aria-current="page"{% endif %}>{{ cat.title }}</a></li>
                 {% endfor %}
-                <li><a href="{{ path('app_blog_feed') }}" type="application/rss+xml">RSS</a></li>
+                <li><a href="{{ path('app_blog_feed') }}" type="application/rss+xml" target="_blank" rel="noopener">RSS ↗</a></li>
                 <li class="nav-mobile-only search-link"><a href="{{ path('app_blog_search') }}">Search</a></li>
             </ul>
         </nav>
@@ -174,10 +174,10 @@
             <div class="foot-col">
                 <h2>Blog</h2>
                 <ul>
-                    <li><a href="{{ path('app_blog_posts') }}">Writing</a></li>
+                    <li><a href="{{ path('app_blog_posts') }}">Posts</a></li>
                     <li><a href="{{ path('app_blog_search') }}">Search</a></li>
                     <li><a href="{{ path('app_newsletter_subscribe') }}">Newsletter</a></li>
-                    <li><a href="{{ path('app_blog_feed') }}" type="application/rss+xml">RSS</a></li>
+                    <li><a href="{{ path('app_blog_feed') }}" type="application/rss+xml" target="_blank" rel="noopener">RSS ↗</a></li>
                 </ul>
             </div>
             <div class="foot-col">
