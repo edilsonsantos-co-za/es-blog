@@ -290,3 +290,4 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
     .post-tile:hover, .post-tile:hover .cover-art img, .story:hover { transform: none; }
     html { scroll-behavior: auto; }
 }
+.list-head h1 { font-size: clamp(30px, 4vw, 44px); letter-spacing: -.03em; margin: 0; }

@@ -55,8 +55,7 @@
 
         <nav class="mast-nav" aria-label="Primary navigation">
             <ul class="nav" id="menu">
-                <li><a href="{{ path('app_blog_index') }}"{% if current_route == 'app_blog_index' %} aria-current="page"{% endif %}>Latest</a></li>
-                {% if site_developers_url %}<li><a href="{{ site_developers_url }}">Developers</a></li>{% endif %}
+                <li><a href="{{ path('app_blog_posts') }}"{% if current_route == 'app_blog_posts' %} aria-current="page"{% endif %}>Writing</a></li>
                 {% for item in menu_items %}
                     {% set has_children = item.children is defined and item.children|length > 0 %}
                     <li{% if has_children %} class="has-sub"{% endif %}>
@@ -73,6 +72,7 @@
                 {% for cat in all_categories|slice(0, 3) %}
                 <li><a href="{{ path('app_blog_category', {slug: cat.slug}) }}"{% if app.request.attributes.get('slug') == cat.slug and current_route == 'app_blog_category' %} aria-current="page"{% endif %}>{{ cat.title }}</a></li>
                 {% endfor %}
+                <li><a href="{{ path('app_blog_feed') }}" type="application/rss+xml">RSS</a></li>
                 <li class="nav-mobile-only search-link"><a href="{{ path('app_blog_search') }}">Search</a></li>
             </ul>
         </nav>
@@ -156,31 +156,52 @@
     {% endblock %}
 </div>
 
-{# Same footer as the store and the portfolio: brand, this app's links, then the sister apps. #}
+{# Same footer in every ES app: brand and one line, three short columns, then a thin bottom bar (atlas-refresh.css). #}
 <footer class="site-foot">
     <div class="wrap foot">
-        <a class="brand foot-brand" href="{{ path('app_blog_index') }}">
-            {% if site_logo %}
-                <span class="logo logo-img"><img src="{{ site_logo }}" alt=""></span>
-            {% else %}
-                <span class="logo" aria-hidden="true">{{ site_title|first|upper }}</span>
-            {% endif %}
-            <span class="brand-text"><b>{{ site_title }}</b><small class="mono">Blog</small></span>
-        </a>
-        <nav class="foot-links" aria-label="Footer">
-            <a href="{{ path('app_blog_index') }}">Latest</a>
-            <a href="{{ path('app_blog_search') }}">Search</a>
-            <a href="{{ path('app_blog_feed') }}">RSS</a>
-            <a href="{{ path('app_newsletter_subscribe') }}">Newsletter</a>
-            {% if site_developers_url %}<a href="{{ site_developers_url }}">Developers</a>{% endif %}
-            {% if site_upwork_url %}<a href="{{ site_upwork_url }}" rel="noopener noreferrer" target="_blank">Hire on Upwork</a>{% endif %}
-            {% if site_support_url %}<a href="{{ site_support_url }}" rel="noopener noreferrer" target="_blank">Support the work</a>{% endif %}
-            {% if portfolio_url %}<a href="{{ portfolio_url }}">Portfolio ↗</a>{% endif %}
-            {% if store_url %}<a href="{{ store_url }}">Store ↗</a>{% endif %}
-            {% if site_coffee_url %}<a href="{{ site_coffee_url }}" rel="noopener" target="_blank">☕ Buy me a coffee ↗</a>{% endif %}
-            {% if portfolio_url %}<a href="{{ portfolio_url|trim('/', 'right') }}/#contact">Contact</a>{% endif %}
+        <div class="foot-about">
+            <a class="brand foot-brand" href="{{ path('app_blog_index') }}">
+                {% if site_logo %}
+                    <span class="logo logo-img"><img src="{{ site_logo }}" alt=""></span>
+                {% else %}
+                    <span class="logo" aria-hidden="true">{{ site_title|first|upper }}</span>
+                {% endif %}
+                <span class="brand-text"><b>{{ site_title }}</b><small class="mono">Blog</small></span>
+            </a>
+            <p>Backend developer by day. The ES apps are my after-hours side project.</p>
+        </div>
+        <nav class="foot-cols" aria-label="Footer">
+            <div class="foot-col">
+                <h2>Blog</h2>
+                <ul>
+                    <li><a href="{{ path('app_blog_posts') }}">Writing</a></li>
+                    <li><a href="{{ path('app_blog_search') }}">Search</a></li>
+                    <li><a href="{{ path('app_newsletter_subscribe') }}">Newsletter</a></li>
+                    <li><a href="{{ path('app_blog_feed') }}" type="application/rss+xml">RSS</a></li>
+                </ul>
+            </div>
+            <div class="foot-col">
+                <h2>ES apps</h2>
+                <ul>
+                    {% if portfolio_url %}<li><a href="{{ portfolio_url }}">Portfolio</a></li>{% endif %}
+                    {% if site_developers_url %}<li><a href="{{ site_developers_url }}">Developers</a></li>{% endif %}
+                    {% if store_url %}<li><a href="{{ store_url }}">Store</a></li>{% endif %}
+                </ul>
+            </div>
+            <div class="foot-col">
+                <h2>Connect</h2>
+                <ul>
+                    {% if portfolio_url %}<li><a href="{{ portfolio_url|trim('/', 'right') }}/contact">Contact</a></li>{% endif %}
+                    {% if site_upwork_url %}<li><a href="{{ site_upwork_url }}" rel="noopener noreferrer" target="_blank">Hire on Upwork ↗</a></li>{% endif %}
+                    {% if site_support_url %}<li><a href="{{ site_support_url }}" rel="noopener noreferrer" target="_blank">Support the work ↗</a></li>{% endif %}
+                    {% if site_coffee_url %}<li><a href="{{ site_coffee_url }}" rel="noopener" target="_blank">Buy me a coffee ↗</a></li>{% endif %}
+                </ul>
+            </div>
         </nav>
-        <span class="foot-copy mono">&copy; {{ "now"|date("Y") }} {{ site_title }}{% if app_release_tag %} · {{ app_release_tag }}{% endif %}</span>
+        <div class="foot-bottom mono">
+            <span>&copy; {{ "now"|date("Y") }} {{ site_title }}{% if app_release_tag %} · {{ app_release_tag }}{% endif %}</span>
+            <span>Made in Johannesburg</span>
+        </div>
     </div>
 </footer>
 
