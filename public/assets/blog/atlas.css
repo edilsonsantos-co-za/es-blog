@@ -295,13 +295,21 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
 /* Hero cards in the portfolio's style: photo, clock ring, count-up stats, now, inline newsletter, ask me, ticker */
 .hero > .tile::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; transition: opacity .3s; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%); }
 .hero > .tile:hover::before { opacity: 1; }
-.hero > .tile:not(.story):not(.photo-tile) > * { position: relative; z-index: 1; }
-.hero > .photo-tile, .hero > .photo-tile-fallback { grid-row: span 2; }
-.photo-tile { padding: 0; background: var(--card-2); text-decoration: none; }
-.photo-tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; transition: transform .8s cubic-bezier(.2, .8, .2, 1); }
-.photo-tile:hover img { transform: scale(1.04); }
-.photo-chip { position: absolute; z-index: 1; left: 12px; right: 12px; bottom: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 12px; background: rgba(9, 11, 16, .72); backdrop-filter: blur(8px); color: #fff; font-weight: 700; font-size: 14px; }
-.photo-chip .mono { color: var(--accent-2); }
+.hero > .tile:not(.story):not(.feature) > * { position: relative; z-index: 1; }
+/* Featured posts: the store's theme-preview tile (2×2, crossfading covers, a caption bar) */
+.hero > .feature { grid-column: 3 / span 2; grid-row: 1 / span 2; padding: 0; min-height: 440px; background: var(--card-2); }
+.feature .slide { position: absolute; inset: 0; z-index: 0; display: block; color: inherit; text-decoration: none; opacity: 0; visibility: hidden; transition: opacity .8s, visibility .8s; }
+.feature .slide.on { opacity: 1; visibility: visible; z-index: 1; }
+.feature .cover-art { position: absolute; inset: 0; }
+.feature .cover-art img, .feature .cover-art canvas { transition: transform .6s; }
+.feature:hover .cover-art img, .feature:hover .cover-art canvas { transform: scale(1.02); }
+.feature-cap { position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 12px; padding: 12px 14px; border-radius: 12px; background: color-mix(in srgb, var(--card) 88%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.feature-cap b { font-size: 18px; font-weight: 800; letter-spacing: -.02em; }
+.feature-cap small { color: var(--muted); }
+.feature-cap > .mono { color: var(--accent-2); }
+.feature-dots { position: absolute !important; z-index: 2 !important; top: 14px; right: 14px; display: flex; gap: 5px; }
+.feature-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .45); transition: width .3s, background-color .3s; }
+.feature-dots i.on { width: 18px; background: #fff; }
 .clock-tile { justify-content: space-between; }
 .clock { display: flex; align-items: center; gap: 14px; }
 .clock svg { width: 56px; height: 56px; flex: none; transform: rotate(-90deg); }
@@ -314,16 +322,6 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
 .now-tile .mono { color: var(--accent-2); }
 .about-tile { justify-content: space-between; }
 .about-tile p { margin: 0; font-size: 16px; line-height: 1.55; color: color-mix(in srgb, var(--text) 88%, transparent); text-wrap: pretty; }
-.hero > .newsletter-tile { background: var(--accent); color: #fff; }
-.newsletter-tile .label { color: rgba(255, 255, 255, .78); opacity: 1; }
-.inline-form { display: flex; gap: 6px; margin-top: auto; }
-.inline-form input[type="email"] { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 12px; border: 0; background: rgba(255, 255, 255, .16); color: #fff; font: 600 14px 'Manrope', sans-serif; }
-.inline-form input::placeholder { color: rgba(255, 255, 255, .72); }
-.inline-form input:focus { outline: 2px solid #fff; outline-offset: 1px; }
-.inline-form button { flex: none; padding: 10px 14px; border-radius: 12px; border: 0; background: #fff; color: var(--accent); font: 800 14px 'Manrope', sans-serif; cursor: pointer; }
-.ask-tile { background: var(--lead); border-color: color-mix(in srgb, var(--accent) 40%, transparent); text-decoration: none; justify-content: space-between; }
-.ask-tile .label, .ask-tile .mono { color: var(--accent-2); }
-.ask-tile strong { font: 800 22px/1.15 var(--display); letter-spacing: -.03em; }
 .hero > .ticker-tile { grid-column: 1 / -1; min-height: 0; flex-direction: row; align-items: center; gap: 24px; padding: 18px 24px; }
 .ticker-tile .label { flex: none; }
 .track { flex: 1; min-width: 0; overflow: hidden; -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
@@ -333,14 +331,14 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
 .ticker a::after { content: '·'; margin-left: 28px; color: var(--muted); }
 .ticker-tile:hover .ticker { animation-play-state: paused; }
 @keyframes blog-tick { to { transform: translateX(-50%); } }
-@media (max-width: 1000px) { .hero > .photo-tile { min-height: 360px; } }
+@media (max-width: 1000px) { .hero > .feature { grid-column: 1 / -1; grid-row: auto; min-height: 380px; } }
 @media (max-width: 700px) {
-    .hero > .now-tile, .hero > .about-tile, .hero > .photo-tile, .hero > .photo-tile-fallback { grid-column: auto; grid-row: auto; }
-    .hero > .photo-tile { aspect-ratio: 4 / 5; min-height: 0; }
+    .hero > .now-tile, .hero > .about-tile, .hero > .feature { grid-column: auto; grid-row: auto; }
+    .hero > .feature { aspect-ratio: 4 / 3; min-height: 0; }
     .hero > .ticker-tile { flex-direction: column; align-items: flex-start; }
     .track { width: 100%; }
 }
-@media (prefers-reduced-motion: reduce) { .ticker { animation: none; } .hero > .tile::before, .photo-tile img { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .ticker { animation: none; } .hero > .tile::before, .feature .slide, .feature .cover-art img, .feature .cover-art canvas { transition: none; } }
 
 /* Newsletter pages: the portfolio /contact layout (lead card + form card) */
 .contact { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; padding-top: 24px; }

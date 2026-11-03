@@ -31,7 +31,7 @@ class IndexController extends AbstractController
         }
 
         return $this->render('blog/index.html.twig', [
-            'posts'    => $this->postService->paginate(1, 3, PostType::Post),
+            'posts'    => $this->postService->paginate(1, 6, PostType::Post),   // the feature tile rotates through these
             'insights' => $this->insights->summary(),
         ]);
     }

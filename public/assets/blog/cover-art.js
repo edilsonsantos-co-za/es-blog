@@ -1,4 +1,4 @@
-/* Atlas generative covers: posts without an image get cover art drawn from their title, tinted by their category. */
+/* Atlas generative covers: posts without an image get cover art drawn from their title, in shades of one blue, nudged by their category. */
 (function () {
     if (window.atlasCoverArt) return;
     window.atlasCoverArt = true;
@@ -32,7 +32,8 @@
         if (Object.keys(used.hues).length >= HUES) { used.hues = {}; }
         used.styles[style] = used.hues[step] = true;
         used.last = step;
-        return { seed: seed, style: style, hue: (hash(palette) + step * (360 / HUES)) % 360 };
+        // Shades of one blue only (the ES rule): eight steps across 200–224°, nudged by the category
+        return { seed: seed, style: style, hue: 200 + step * 3 + hash(palette) % 4 };
     }
 
     function paint(canvas, look) {
@@ -41,7 +42,7 @@
         canvas.width = w * d; canvas.height = h * d;
         var g = canvas.getContext('2d');
         g.setTransform(d, 0, 0, d, 0, 0);
-        var seed = look.seed, r = random(seed), hue = look.hue, a = 'hsl(' + hue + ' 85% 62%)', b = 'hsl(' + ((hue + 50) % 360) + ' 80% 55%)';
+        var seed = look.seed, r = random(seed), hue = look.hue, a = 'hsl(' + hue + ' 85% 62%)', b = 'hsl(' + (hue + 10) + ' 90% 78%)';
         g.fillStyle = 'hsl(' + hue + ' 45% 8%)';
         g.fillRect(0, 0, w, h);
         var grad = g.createLinearGradient(0, 0, w, h);
