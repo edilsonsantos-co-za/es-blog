@@ -1,6 +1,6 @@
 /* ES Blog admin on AdminLTE, restyled to the Atlas design shared with the portfolio admin. */
 :root {
-    --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38;
+    --bg: #090b10; --card: #121620; --card-2: #181d29; --text: #e8edf6; --muted: #a9b3c6; --line: #232a38;
     --accent: #3b82f6; --accent-ink: #ffffff; --accent-soft: #15213a;
     --success: #34d399; --success-soft: #0f2a20; --warning: #fbbf24; --warning-soft: #2b2110; --danger: #f97066; --danger-soft: #2a1414;
     --shadow: none;
@@ -205,6 +205,35 @@ a.admin-tile:hover { transform: translateY(-2px); border-color: var(--accent); c
 .admin-shell hr { border-color: var(--line); }
 
 .admin-avatar { width: 30px; height: 30px; object-fit: cover; border-radius: 50%; border: 1px solid var(--line); }
+
+/* Readable text everywhere: AdminLTE ships light-theme text colours (#212529 pre, #000 close, #6c757d
+   secondary, #dc3545 danger...) that turn black or dim grey on the dark admin. Map them all to the tokens. */
+.admin-shell pre, .admin-shell kbd, .admin-shell samp { padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card-2); color: var(--text); font-family: var(--mono); font-size: 13px; line-height: 1.6; }
+.admin-shell pre code { padding: 0; border: 0; background: transparent; color: inherit; font-size: inherit; }
+.admin-shell code { padding: 1px 6px; border-radius: 6px; background: var(--card-2); color: var(--text); font-family: var(--mono); }
+.admin-shell summary { color: var(--text); cursor: pointer; }
+.admin-shell .text-danger { color: var(--danger) !important; }
+.admin-shell .text-success { color: var(--success) !important; }
+.admin-shell .text-warning { color: var(--warning) !important; }
+.admin-shell .text-info { color: var(--accent) !important; }
+.admin-shell .text-secondary, .admin-shell .text-gray, .admin-shell .text-black-50, .admin-shell .blockquote-footer,
+.admin-shell .figure-caption, .admin-shell caption, .admin-shell .dropdown-header, .admin-shell .user-block .description { color: var(--muted) !important; }
+.admin-shell .text-body, .admin-shell .text-black, .admin-shell .form-control-plaintext, .admin-shell .dropdown-item-text,
+.admin-shell .custom-control-label, .admin-shell .form-check-label, .admin-shell .custom-file-label, .admin-shell legend,
+.admin-shell dt, .admin-shell dd, .admin-shell blockquote, .admin-shell .list-group-item-action { color: var(--text); }
+.admin-shell .custom-file-label { border-color: var(--line); background: var(--card-2); }
+.admin-shell .custom-file-label::after { border-color: var(--line); background: var(--card); color: var(--text); }
+.admin-shell .close, .admin-shell .close:hover { color: var(--text); text-shadow: none; opacity: .8; }
+.admin-shell .btn-tool { color: var(--muted); }
+.admin-shell .btn-tool:hover { color: var(--text); }
+.admin-shell .btn-link { color: var(--accent); }
+.admin-shell .nav-pills .nav-link { color: var(--muted); }
+.admin-shell .nav-pills .nav-link:not(.active):hover { color: var(--text); }
+.admin-shell .nav-pills .nav-link.active { background: var(--accent-soft); color: var(--accent); }
+.admin-shell .nav-link.disabled, .admin-shell .dropdown-item.disabled, .admin-shell .dropdown-item:disabled, .admin-shell .list-group-item.disabled,
+.admin-shell .custom-control-input:disabled ~ .custom-control-label, .admin-shell .form-check-input:disabled ~ .form-check-label { color: var(--muted); }
+.admin-shell .custom-select:disabled, .admin-shell .form-control:disabled, .admin-shell .form-control[readonly] { background-color: var(--card); color: var(--muted); }
+.admin-shell select.form-control option, .admin-shell .custom-select option { background: var(--card-2); color: var(--text); }
 
 @media (max-width: 1279.98px) {
     .admin-stat-grid.cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
