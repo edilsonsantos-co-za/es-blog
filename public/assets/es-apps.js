@@ -1,9 +1,9 @@
 /*!
- * <es-apps>: the ES app launcher and account menu, shared by every ES app (portfolio, blog, journal, store).
+ * <es-apps>: the ES app launcher and account menu, shared by every ES app (portfolio, blog, journal, store, developers).
  * Source of truth: es-marketplace/store/assets/es-apps.js. Apps ship a copy of this file (their CSP only
  * allows their own scripts); update it here and copy it over.
  *
- * <es-apps current="blog"                          which app this is (portfolio|blog|journal|store)
+ * <es-apps current="blog"                          which app this is (portfolio|blog|journal|store|developers)
  *          signed-in                               the SSO user is signed in here (shows the private apps)
  *          user-name="…" user-email="…"            the account menu (shown whenever signed-in; "Sign in" otherwise)
  *          avatar="https://…"                      profile picture (Gravatar default); initials when missing
@@ -45,7 +45,8 @@
         button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
         .trigger { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); }
         .trigger:hover, .trigger[aria-expanded="true"] { background: var(--bg-2); color: var(--text); }
-        .trigger:focus-visible, a:focus-visible, .menu button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .trigger:focus { outline: none; }
+        .panel a:focus, .menu button:focus { outline: none; background: var(--bg-2); }
         .trigger svg { width: 20px; height: 20px; fill: currentColor; }
         .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 12px; font-weight: 800; overflow: hidden; }
         .avatar.lg { width: 56px; height: 56px; font-size: 18px; }
@@ -227,4 +228,52 @@
     }
 
     customElements.define('es-apps', EsApps);
+
+    // Page loading bar: a thin ES-blue bar across the top while a page loads, and from the moment a link is
+    // clicked or a form is sent until the next page shows. Styled through the CSSOM, so app CSPs allow it.
+    const loader = (() => {
+        const bar = document.createElement('div');
+        bar.setAttribute('aria-hidden', 'true');
+        Object.assign(bar.style, {
+            position: 'fixed', top: '0', left: '0', right: '0', height: '3px', zIndex: '2147483647', pointerEvents: 'none',
+            background: '#3b82f6', boxShadow: '0 0 10px rgba(59, 130, 246, .7)',
+            transformOrigin: 'left', transform: 'scaleX(0)', opacity: '0', transition: 'transform .3s ease, opacity .3s ease',
+        });
+        let timer = 0, safety = 0, p = 0;
+        const set = (v) => { p = v; bar.style.transform = `scaleX(${v})`; };
+        const start = () => {
+            if (!bar.isConnected) document.documentElement.appendChild(bar);
+            clearInterval(timer); clearTimeout(safety);
+            bar.style.transition = 'none'; set(0.04); bar.style.opacity = '1';
+            void bar.offsetWidth; bar.style.transition = 'transform .3s ease, opacity .3s ease';
+            set(0.2);
+            // creep towards 90% so it never looks finished before it is
+            timer = setInterval(() => set(p + (0.9 - p) * 0.08), 200);
+            safety = setTimeout(done, 15000);
+        };
+        const done = () => {
+            if (bar.style.opacity === '0') return;
+            clearInterval(timer); clearTimeout(safety);
+            set(1);
+            setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => set(0), 300); }, 200);
+        };
+        return { start, done };
+    })();
+    if (document.readyState !== 'complete') {
+        loader.start();
+        addEventListener('load', loader.done, { once: true });
+    }
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest && e.target.closest('a[href]');
+        if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if ((a.target && a.target !== '_self') || a.hasAttribute('download')) return;
+        const url = new URL(a.href, location.href);
+        if (!/^https?:$/.test(url.protocol)) return;
+        if (url.origin === location.origin && url.pathname === location.pathname && url.search === location.search && url.hash) return;
+        // let the app handle the click first; client-side routers (Developers) call preventDefault
+        setTimeout(() => { if (!e.defaultPrevented) loader.start(); }, 0);
+    });
+    document.addEventListener('submit', (e) => { setTimeout(() => { if (!e.defaultPrevented) loader.start(); }, 0); });
+    addEventListener('pageshow', loader.done);
+    addEventListener('popstate', loader.done);
 })();

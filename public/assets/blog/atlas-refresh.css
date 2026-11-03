@@ -1,0 +1,96 @@
+/* Atlas 2 — a refresh layer on top of Atlas. Same bento, shades of one blue; adds a display voice,
+   tile hierarchy and arrival motion. Loaded after the Atlas stylesheet; delete the <link> to revert.
+   Fonts: add `family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800` to the page's Google Fonts URL. */
+:root {
+    --display: 'Bricolage Grotesque', 'Manrope', system-ui, sans-serif;
+    --accent-2: #93c5fd;               /* light blue: live, new, now (same as Atlas) */
+    --accent-deep: #13234a;            /* navy: the lead tiles */
+    /* One gradient, used only by lead tiles (hero, the first card of a section, contact) */
+    --lead: radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%), linear-gradient(160deg, var(--accent-deep), #0d1426);
+    --glow: color-mix(in srgb, var(--accent) 22%, transparent);
+    --hi: color-mix(in srgb, #fff 9%, transparent);
+}
+
+/* Background: one soft blue glow behind the hero, no pattern */
+body { background-image: radial-gradient(900px 520px at 18% -8%, var(--glow), transparent 70%); background-repeat: no-repeat; }
+
+/* Type: headlines get their own voice; Manrope keeps the UI */
+h1, h2, .pitch h1, .intro h1 { font-family: var(--display); font-weight: 800; letter-spacing: -.045em; font-optical-sizing: auto; }
+h1 em, h2 em { font-style: normal; color: var(--accent); }
+h3 { letter-spacing: -.025em; }
+.mono, .label { letter-spacing: .1em; }
+
+/* Tiles: three kinds, the same in every ES app.
+   Plain tiles are flat card colour. Lead tiles (hero, the first card of a section, contact) use the one --lead gradient.
+   Accent tiles (status, install, feed) are solid blue. No other colours, no other gradients. */
+.tile { box-shadow: inset 0 1px 0 var(--hi); }
+.intro, .pitch, .masthead-tile, .bento-list > :first-child, .contact .cta { background: var(--lead); color: var(--text); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.intro .mono, .pitch .mono, .masthead-tile .label, .contact .cta .mono { color: var(--accent-2) !important; opacity: 1 !important; }
+.contact .cta p, .masthead-tile p { color: #c3cde0; opacity: 1 !important; }
+.masthead-tile .btn { color: var(--text); border-color: color-mix(in srgb, var(--accent-2) 40%, transparent); }
+.masthead-tile .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.intro h1, .pitch h1 { font-size: clamp(48px, 7vw, 96px); line-height: .9; }
+.avail, .accent-tile, .feed-tile { background: var(--accent); color: #fff; border-color: var(--accent); }
+.feed-tile:hover { background: color-mix(in srgb, var(--accent) 80%, #000); color: #fff; }
+.now .mono { color: var(--accent-2); }
+
+/* Buy me a coffee: a quiet blue button like the rest, not the brand yellow */
+.top-actions .coffee, .navbar-coffee { background: var(--accent-soft, #15213a); border-color: color-mix(in srgb, var(--accent) 35%, transparent); color: var(--accent-2); }
+.top-actions .coffee:hover, .navbar-coffee:hover { background: color-mix(in srgb, var(--accent) 25%, var(--card)); border-color: var(--accent); color: #fff; filter: none; }
+
+/* Footer always sits at the bottom, even on short pages */
+body { min-height: 100dvh; display: flex; flex-direction: column; }
+body > main { flex: 1 0 auto; }
+body > footer, body > .site-foot { margin-top: auto; }
+/* the light blue marks live things */
+.dot { background: var(--accent-2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-2) 30%, transparent); }
+.avail .dot { background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .3); }
+.chip { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent-2); }
+
+/* Section heads: numbered, with a rule */
+main, .wrap { counter-reset: none; }
+section.block, .catalog, .eco-sec { counter-increment: sec; }
+section.block .head .mono::before, .catalog .catalog-head .mono::before { content: counter(sec, decimal-leading-zero) ' — '; color: var(--accent); }
+body { counter-reset: sec; }
+.head, .catalog-head { padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+
+/* Buttons: a solid primary with a soft blue shadow */
+.btn.primary { box-shadow: 0 8px 24px -8px var(--accent), inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent); }
+
+/* Nav: an underline that slides in from the left; the current page keeps it */
+.nav a { position: relative; }
+.nav a::after { content: ''; position: absolute; left: 0; right: 0; bottom: -4px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transform-origin: right; transition: transform .35s cubic-bezier(.2, .8, .2, 1); }
+.nav a:hover::after, .nav a[aria-current="page"]::after { transform: scaleX(1); transform-origin: left; }
+
+/* Covers: zoom a touch and wipe in a blue tint on hover (Codrops DoubleImageHoverEffects) */
+.work, .post-card, .card { overflow: hidden; }
+.work img, .post-card img, .card img { transition: transform .8s cubic-bezier(.2, .8, .2, 1), filter .5s; }
+.work:hover img, .post-card:hover img, .card:hover img { transform: scale(1.045); filter: saturate(1.15); }
+
+/* Motion: nothing below runs for reduced-motion users */
+@media (prefers-reduced-motion: no-preference) {
+    /* Page changes cross-fade and the header stays put (View Transitions; Codrops astro-shop-view-transitions) */
+    @view-transition { navigation: auto; }
+    .masthead, .site-header { view-transition-name: masthead; }
+    ::view-transition-old(root) { animation: atlas-out .22s ease both; }
+    ::view-transition-new(root) { animation: atlas-in .45s cubic-bezier(.2, .8, .2, 1) both; }
+    @keyframes atlas-out { to { opacity: 0; transform: translateY(-6px); } }
+
+    /* Headlines come into focus (Codrops ScrollBlurTypography) */
+    h1 { animation: atlas-focus .9s cubic-bezier(.2, .8, .2, 1) both; }
+    @keyframes atlas-focus { from { opacity: 0; filter: blur(12px); letter-spacing: -.01em; } }
+
+    /* Key words get a highlighter as they scroll into view (Codrops OnScrollTextHighlight) */
+    @supports (animation-timeline: view()) {
+        .role b, h2 em, .lede b { background: linear-gradient(color-mix(in srgb, var(--accent) 30%, transparent), color-mix(in srgb, var(--accent) 30%, transparent)) no-repeat 0 88% / 0 .32em; animation: atlas-mark linear both; animation-timeline: view(); animation-range: entry 40% cover 45%; }
+        @keyframes atlas-mark { to { background-size: 100% .32em; } }
+    }
+
+    /* Bento tiles rise in, in order */
+    .bento > .tile, .bento-list > *, .grid > .card, .grid > .tile { animation: atlas-in .7s cubic-bezier(.2, .8, .2, 1) both; }
+    .bento > .tile:nth-child(2), .bento-list > :nth-child(2), .grid > :nth-child(2) { animation-delay: .06s; }
+    .bento > .tile:nth-child(3), .bento-list > :nth-child(3), .grid > :nth-child(3) { animation-delay: .12s; }
+    .bento > .tile:nth-child(4), .bento-list > :nth-child(4), .grid > :nth-child(4) { animation-delay: .18s; }
+    .bento > .tile:nth-child(n+5), .bento-list > :nth-child(n+5), .grid > :nth-child(n+5) { animation-delay: .24s; }
+    @keyframes atlas-in { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+}

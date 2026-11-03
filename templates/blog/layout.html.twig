@@ -23,8 +23,10 @@
     {% block css %}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Manrope:wght@500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Manrope:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
     <link rel="stylesheet" href="{{ asset('assets/blog/atlas.css') }}?v={{ asset_version('assets/blog/atlas.css') }}">
+    {# Atlas 2 refresh layer (trial): remove this line to go back to plain Atlas #}
+    <link rel="stylesheet" href="{{ asset('assets/blog/atlas-refresh.css') }}">
     {% endblock %}
 
     {% set favicon = config('site.favicon') ?: site_logo %}<link rel="icon" href="{{ favicon ?: asset('assets/brand/es-mark.svg') }}">
