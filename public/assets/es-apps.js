@@ -19,6 +19,8 @@
  * Signed in here, it publishes who you are (display only) in the shared `es-user` cookie, so apps where
  * you have no session of their own show your account instead of "Sign in".
  * On *.edilsonsantos.local the launcher links the local instances and adds Labs (dev only).
+ * Only apps whose container is up show: each tile loads a small image (`probe`) from its app first, and a stopped
+ * container (the proxy answers 502) hides it. Start the container again and it shows on the next page or menu open.
  * </es-apps>
  */
 (() => {
@@ -29,14 +31,15 @@
     // Local instances (edilsonsantos.local, blog.edilsonsantos.local, …) link to each other, not to production
     const LOCAL = /(^|\.)edilsonsantos\.local$/.test(location.hostname);
     const site = (sub) => LOCAL ? `${location.protocol}//${sub}edilsonsantos.local/` : `https://${sub}edilsonsantos.co.za/`;
+    // `probe`: a small public image on that app; it loads only while the app's container is up
     const APPS = [
-        { id: 'portfolio', name: 'Portfolio', url: site(''), icon: 'M4 5h16v11H4z M8 20h8 M12 16v4' },
-        { id: 'blog', name: 'Blog', url: site('blog.'), icon: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5' },
-        { id: 'developers', name: 'Developers', url: site('developers.'), icon: 'M8 7l-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16' },
-        { id: 'store', name: 'Store', url: site('store.'), icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
-        { id: 'journal', name: 'Journal', url: site('journal.'), private: true, icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
+        { id: 'portfolio', name: 'Portfolio', url: site(''), probe: '/assets/brand/es-mark.svg', icon: 'M4 5h16v11H4z M8 20h8 M12 16v4' },
+        { id: 'blog', name: 'Blog', url: site('blog.'), probe: '/assets/brand/es-mark.svg', icon: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5' },
+        { id: 'developers', name: 'Developers', url: site('developers.'), probe: '/img/favicon.svg', icon: 'M8 7l-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16' },
+        { id: 'store', name: 'Store', url: site('store.'), probe: '/assets/es-mark.svg', icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
+        { id: 'journal', name: 'Journal', url: site('journal.'), private: true, probe: '/theme/es-journal/brand/es-mark.svg', icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
         // Dev only: Labs (experiments) shows on *.edilsonsantos.local, never in production
-        { id: 'labs', name: 'Labs', url: site('labs.'), dev: true, icon: 'M9 3h6 M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3 M7.5 15h9' },
+        { id: 'labs', name: 'Labs', url: site('labs.'), dev: true, probe: '/es-mark.svg', icon: 'M9 3h6 M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3 M7.5 15h9' },
     ];
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -115,6 +118,44 @@
         setSharedCookie(USER_COOKIE, '');
     };
 
+    // App status: is each app's container up? Probed with an <img> (no CORS needed, and every app's CSP
+    // allows images from the other ES subdomains): it loads while the app runs; with the container stopped the
+    // proxy answers 502 (an HTML page), so it fails. Results last a page view; the last one is kept for the
+    // browser session (sessionStorage), so a stopped app stays hidden from the first paint of the next page.
+    const STATUS_KEY = 'es-apps-status';
+    const PROBE_TIMEOUT = 8000;
+    const PROBE_MAX_AGE = 30000;
+    const status = (() => { try { return JSON.parse(sessionStorage.getItem(STATUS_KEY)) || {}; } catch { return {}; } })();
+    const probing = {};
+    const listeners = new Set();
+    const saveStatus = () => { try { sessionStorage.setItem(STATUS_KEY, JSON.stringify(status)); } catch { /* private mode */ } };
+    const probe = (app) => {
+        if (!app.probe || probing[app.id] || (status[app.id] && Date.now() - status[app.id].t < PROBE_MAX_AGE && status[app.id].fresh)) return;
+        probing[app.id] = true;
+        const img = new Image();
+        let settled = false;
+        const finish = (up) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            img.onload = img.onerror = null;
+            delete probing[app.id];
+            const changed = status[app.id]?.up !== up;
+            status[app.id] = { up, t: Date.now(), fresh: true };
+            saveStatus();
+            if (changed) listeners.forEach((fn) => fn());
+        };
+        const timer = setTimeout(() => finish(false), PROBE_TIMEOUT);
+        img.onload = () => finish(true);
+        img.onerror = () => finish(false);
+        img.referrerPolicy = 'no-referrer';
+        img.src = `${new URL(app.probe, app.url).href}?es-up=${Date.now().toString(36)}`;
+    };
+    // Kept from an earlier page: use it for the first paint, but probe again
+    Object.values(status).forEach((s) => { if (s) s.fresh = false; });
+    // Unknown counts as up (shown), so a slow probe never hides a running app
+    const isUp = (app) => status[app.id]?.up !== false;
+
     let SHEET = null;
     try { SHEET = new CSSStyleSheet(); SHEET.replaceSync(CSS); } catch { SHEET = null; }
 
@@ -129,20 +170,40 @@
             this.onDocClick = (e) => { if (!this.contains(e.target) && !e.composedPath().includes(this)) this.close(); };
             this.onKey = (e) => { if (e.key === 'Escape') this.close(true); };
             // Signed in or out in another tab or app meanwhile: show it when you come back
-            this.onVisible = () => { if (document.visibilityState === 'visible' && !this.hasAttribute('signed-in')) this.render(); };
+            this.onVisible = () => {
+                if (document.visibilityState !== 'visible') return;
+                this.probeApps();
+                if (!this.hasAttribute('signed-in')) this.render();
+            };
+            // An app came up or went down: redraw, keeping an open menu open
+            this.onStatus = () => {
+                if (!this.shadowRoot.childElementCount) return;
+                const open = this.shadowRoot.querySelector('.trigger[aria-expanded="true"]')?.dataset.for;
+                this.render();
+                if (open) this.toggle(open, false);
+            };
         }
 
         connectedCallback() {
             document.addEventListener('click', this.onDocClick);
             document.addEventListener('keydown', this.onKey);
             document.addEventListener('visibilitychange', this.onVisible);
+            listeners.add(this.onStatus);
             this.render();
+            this.probeApps();
+        }
+
+        // Probe every app this launcher can list (never the app you are on: it is running)
+        probeApps() {
+            const current = this.getAttribute('current') || '';
+            APPS.filter((a) => a.id !== current && (!a.dev || LOCAL)).forEach(probe);
         }
 
         disconnectedCallback() {
             document.removeEventListener('click', this.onDocClick);
             document.removeEventListener('keydown', this.onKey);
             document.removeEventListener('visibilitychange', this.onVisible);
+            listeners.delete(this.onStatus);
         }
 
         attributeChangedCallback() { if (this.shadowRoot.childElementCount) this.render(); }
@@ -180,7 +241,8 @@
             const hasUser = signedIn;
             const label = name || email || 'Your account';
             // Private apps (Journal) only for the owner: a store customer is signed in too, but never sees them
-            const apps = APPS.filter((a) => (!a.private || who?.owner) && (!a.dev || LOCAL));
+            // Stopped apps (container down) are left out; the app you are on always shows
+            const apps = APPS.filter((a) => (!a.private || who?.owner) && (!a.dev || LOCAL) && (a.id === current || isUp(a)));
 
             const appGrid = apps.map((a) => `
                 <a class="app" href="${a.url}" ${a.id === current ? 'aria-current="page"' : ''}>
@@ -215,13 +277,21 @@
             this.shadowRoot.querySelectorAll('img[data-fallback]').forEach((img) => img.addEventListener('error', () => { img.outerHTML = img.dataset.fallback; }, { once: true }));
             this.shadowRoot.querySelectorAll('.trigger').forEach((t) => t.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const panel = this.shadowRoot.getElementById(t.dataset.for);
-                const open = panel.hidden;
-                this.close();
-                panel.hidden = !open;
-                t.setAttribute('aria-expanded', String(open));
-                if (open) panel.querySelector('a, button')?.focus();
+                // Opening the apps menu re-checks apps last probed over 30s ago (started or stopped since)
+                if (t.dataset.for === 'apps') this.probeApps();
+                this.toggle(t.dataset.for, true);
             }));
+        }
+
+        toggle(id, focus) {
+            const panel = this.shadowRoot.getElementById(id);
+            const t = this.shadowRoot.querySelector(`.trigger[data-for="${id}"]`);
+            if (!panel || !t) return;
+            const open = panel.hidden;
+            this.close();
+            panel.hidden = !open;
+            t.setAttribute('aria-expanded', String(open));
+            if (open && focus) panel.querySelector('a, button')?.focus();
         }
 
         close(refocus) {
