@@ -78,7 +78,7 @@ Requirements: Docker with Compose.
 ```bash
 cp .env.example .env.local        # set APP_SECRET, DATABASE_URL and LOGTO_* for your environment
 docker compose up -d --build     # the entrypoint runs migrations and warms the cache
-docker exec -it edfolio-v2-php php bin/console app:user:create admin you@example.com --role=admin
+docker exec -it es-blog php bin/console app:user:create admin you@example.com --role=admin
 ```
 
 `app:user:create` asks for the password when `--password` is left out. Sign in at `/login`, which redirects
@@ -271,9 +271,9 @@ It refuses the sandbox and null transports. Once the message lands in the inbox 
 ## Development
 
 ```bash
-docker exec edfolio-v2-php php vendor/bin/phpunit
-docker exec edfolio-v2-php php bin/console lint:twig templates
-docker exec edfolio-v2-php php bin/console lint:container
+docker exec es-blog php vendor/bin/phpunit
+docker exec es-blog php bin/console lint:twig templates
+docker exec es-blog php bin/console lint:container
 ```
 
 Versioning is described in [docs/versioning.md](docs/versioning.md).

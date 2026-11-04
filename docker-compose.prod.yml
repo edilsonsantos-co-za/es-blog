@@ -3,22 +3,28 @@
 #   cp .env.example .env && nano .env
 #   docker compose -f docker-compose.prod.yml up -d --build
 #
-# Nginx Proxy Manager should reach this container on edfolio-v2-php:80 via
+# Nginx Proxy Manager should reach this container on es-blog:80 via
 # the external milkyway network. No host ports are published from this stack.
+
+name: es-blog
 
 services:
   php:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    image: edfolio-blog-v2:prod
-    container_name: edfolio-v2-php
+    image: es-blog:prod
+    container_name: es-blog
     env_file: .env
     volumes:
       - uploads:/var/www/html/public/uploads
       - themes:/var/www/html/var/themes
     networks:
-      - milkyway
+      milkyway:
+        # Nginx Proxy Manager still forwards blog.edilsonsantos.co.za to the old container name; drop this
+        # alias once the proxy host points at es-blog:80.
+        aliases:
+          - edfolio-v2-php
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "php", "bin/console", "about", "--env=prod"]
@@ -28,8 +34,8 @@ services:
       start_period: 30s
 
   worker:
-    image: edfolio-blog-v2:prod
-    container_name: edfolio-v2-worker
+    image: es-blog:prod
+    container_name: es-blog-worker
     user: www-data
     env_file: .env
     volumes:
@@ -52,11 +58,15 @@ services:
       - milkyway
     restart: unless-stopped
 
+# The data volumes keep the names the first deploys created (compose project "edfolio-blog-v2"), so
+# renaming the project and containers never starts from empty volumes.
 volumes:
   # Post images and generated banners; survives rebuilds and redeploys.
   uploads:
+    name: edfolio-blog-v2_uploads
   # Themes installed from Admin -> Themes; survives rebuilds and redeploys.
   themes:
+    name: edfolio-blog-v2_themes
 
 networks:
   milkyway:

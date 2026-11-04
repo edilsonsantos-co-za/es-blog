@@ -57,7 +57,7 @@ if [ "$fresh" = 1 ] || get_env "$ENV_FILE" DATABASE_URL | grep -q "USER:PASSWORD
   pw="$(sed -n "/username: *$DB_USER/,/password:/p" "$DB_YML" 2>/dev/null | sed -n 's/^ *password: *//p' | tr -d "\"'" | head -1 || true)"
   if ! db_login_ok "$pw"; then
     exists="$(mysql_root -e "SELECT COUNT(*) FROM mysql.user WHERE user='$DB_USER'")"
-    if [ "$exists" != "0" ] && docker ps --format '{{.Names}}' | grep -qx edfolio-v2-php; then
+    if [ "$exists" != "0" ] && docker ps --format '{{.Names}}' | grep -qxE 'es-blog|edfolio-v2-php'; then
       echo "::error::$DB_USER exists and a blog container is running, but its password isn't known here. Put DATABASE_URL in $PWD/$ENV_FILE by hand."
       exit 1
     fi

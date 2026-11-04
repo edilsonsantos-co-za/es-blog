@@ -41,7 +41,7 @@ final class FeedFetcher
                 'timeout' => 20,
                 'max_redirects' => 5,
                 'headers' => [
-                    'User-Agent' => 'EdFolioBlog/2 (+https://blog.edilsonsantos.co.za) feed reader',
+                    'User-Agent' => 'ESBlog/2 (+https://blog.edilsonsantos.co.za) feed reader',
                     'Accept' => 'application/rss+xml, application/atom+xml, application/xml;q=0.9, */*;q=0.5',
                 ],
             ]);

@@ -70,7 +70,13 @@ final class ThemePackageVerifierTest extends TestCase
     public function testRejectsAnotherAppsPackage(): void
     {
         $this->expectExceptionMessage('not ES Blog');
-        $this->verifier()->verify($this->package(manifest: ['app' => 'edfolio-portfolio']));
+        $this->verifier()->verify($this->package(manifest: ['app' => 'es-portfolio']));
+    }
+
+    public function testAcceptsAPackageSignedBeforeTheRename(): void
+    {
+        $result = $this->verifier()->verify($this->package(manifest: ['app' => ThemePackageVerifier::LEGACY_APPS[0]]));
+        self::assertSame('casper', $result['manifest']['id']);
     }
 
     public function testRejectsAnIncompatibleAppVersion(): void
@@ -112,7 +118,7 @@ final class ThemePackageVerifierTest extends TestCase
     {
         $files += ['templates/blog/layout.html.twig' => '{% block content %}{% endblock %}', 'assets/theme.css' => 'body{}'];
         $json = json_encode($manifest + [
-            'schema' => 1, 'id' => 'casper', 'name' => 'Casper', 'version' => '2.1.0', 'app' => 'edfolio-blog',
+            'schema' => 1, 'id' => 'casper', 'name' => 'Casper', 'version' => '2.1.0', 'app' => 'es-blog',
             'requires' => '>=0.1.0 <1.0.0', 'files' => array_map(fn ($d) => 'sha256:' . hash('sha256', $d), $files),
         ]);
 
