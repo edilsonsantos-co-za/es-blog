@@ -25,7 +25,7 @@
         href="{{ path('app_admin_posts_drafts', {platform: key}) }}" {% if platform == key %}aria-current="page"{% endif %}>{{ label }}</a></li>
     {% endfor %}
 </ul>
-<p class="admin-panel-note">Each blog draft has editable LinkedIn and X counterparts. Preview and review first; publish the blog before sharing its link. Sharing is never automatic.</p>
+<p class="admin-panel-note">Each blog draft has editable LinkedIn and X counterparts. Preview and review first; publish the blog before sharing its link (it is attached on publication). Sharing is never automatic.</p>
 {% endif %}
 <div class="card admin-table-card">
     <div class="card-header d-flex">
@@ -60,15 +60,23 @@
                     <td>
                         <a class="admin-title-link" href="{{ path('app_admin_post_edit', {id: post.id}) }}">{{ post.title|u.truncate(60, '…') }}</a>
                         {% if platform|default('blog') != 'blog' %}
-                        <form method="post" action="{{ path('app_admin_post_social_save', {id: post.id, platform: platform}) }}" class="mt-2">
-                            <input type="hidden" name="_token" value="{{ csrf_token('post_social_' ~ post.id) }}">
-                            <label class="sr-only" for="social-{{ post.id }}">{{ platform == 'linkedin' ? 'LinkedIn' : 'X' }} draft for {{ post.title }}</label>
-                            <textarea id="social-{{ post.id }}" name="text" rows="5" class="form-control"
-                                maxlength="{{ platform == 'linkedin' ? 3000 : 250 }}">{{ post.customFieldValue(platform ~ '_text') ?? post.title }}</textarea>
-                            <button class="btn btn-sm btn-default mt-1" type="submit">Save platform draft</button>
-                        </form>
-                        {% if post.image %}<img class="admin-share-thumb" src="{{ post.image }}" alt="Thumbnail shared with {{ post.title }}">{% else %}<small class="d-block text-warning">No thumbnail: generate a banner in the editor.</small>{% endif %}
-                        <small>Review the saved text before using Share. The blog link is attached on publication.</small>
+                        {% set platform_label = platform == 'linkedin' ? 'LinkedIn' : 'X' %}
+                        {% set social_text = post.customFieldValue(platform ~ '_text') %}
+                        <div class="admin-social-excerpt">
+                            {% if social_text %}{{ social_text|u.truncate(90, '…') }}{% else %}<em>No {{ platform_label }} text yet</em>{% endif %}
+                        </div>
+                        <details class="admin-social-editor">
+                            <summary>Edit {{ platform_label }} text</summary>
+                            <form method="post" action="{{ path('app_admin_post_social_save', {id: post.id, platform: platform}) }}" class="mt-2">
+                                <input type="hidden" name="_token" value="{{ csrf_token('post_social_' ~ post.id) }}">
+                                <label class="sr-only" for="social-{{ post.id }}">{{ platform_label }} draft for {{ post.title }}</label>
+                                <textarea id="social-{{ post.id }}" name="text" rows="5" class="form-control"
+                                    maxlength="{{ platform == 'linkedin' ? 3000 : 250 }}">{{ social_text ?? post.title }}</textarea>
+                                <button class="btn btn-sm btn-default mt-1" type="submit">Save platform draft</button>
+                            </form>
+                            {% if post.image %}<img class="admin-share-thumb" src="{{ post.image }}" alt="Thumbnail shared with {{ post.title }}">{% endif %}
+                        </details>
+                        {% if not post.image %}<small class="d-block text-warning">No thumbnail: generate a banner in the editor.</small>{% endif %}
                         {% endif %}
                     </td>
                     <td>

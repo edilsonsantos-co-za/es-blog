@@ -139,6 +139,10 @@ a.admin-tile:hover { transform: translateY(-2px); border-color: var(--accent); c
 .admin-shell .table-hover tbody tr:hover { background: var(--card-2); color: var(--text); }
 .admin-title-link { color: var(--text) !important; font-weight: 700; }
 .admin-title-link:hover { color: var(--accent) !important; }
+.admin-social-excerpt { margin-top: 4px; max-width: 46ch; color: var(--muted); font-size: 13px; line-height: 1.4; }
+.admin-social-editor { margin-top: 4px; }
+.admin-social-editor summary { cursor: pointer; color: var(--accent); font-size: 13px; font-weight: 600; }
+.admin-social-editor[open] textarea { min-width: 320px; }
 .admin-actions { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
 .admin-actions form { display: inline-flex; margin: 0; }
 .admin-empty-state { padding: 48px 20px; text-align: center; color: var(--muted); }
