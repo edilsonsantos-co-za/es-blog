@@ -75,7 +75,7 @@ class AutomationController extends AbstractController
         $r = $request->request;
         $this->settings->save([
             'automation.enabled' => $r->getBoolean('enabled') ? '1' : '0',
-            'automation.interval_hours' => (string) max(1, min(168, $r->getInt('interval_hours', 24))),
+            'automation.digest' => $r->get('digest') === AutomationSettings::DIGEST_WEEKLY ? AutomationSettings::DIGEST_WEEKLY : AutomationSettings::DIGEST_DAILY,
             'automation.posts_per_run' => (string) max(0, min(5, $r->getInt('posts_per_run', 1))),
             'automation.max_age_days' => (string) max(1, min(30, $r->getInt('max_age_days', 7))),
             'automation.min_score' => (string) max(0, min(20, $r->getInt('min_score', 1))),

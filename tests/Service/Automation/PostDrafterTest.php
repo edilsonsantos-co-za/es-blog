@@ -96,4 +96,29 @@ final class PostDrafterTest extends TestCase
         $this->expectExceptionMessage('repeats source wording');
         $this->drafter($http)->draft($sources, 'php');
     }
+
+    public function testPlanGroupsThePeriodIntoAtMostTheRequestedTopicsOfTwoOrMoreArticles(): void
+    {
+        $items = $this->sources();
+        $items[] = (new FeedItem(new FeedSource('Ops weekly', 'https://ops.example/feed'), 'https://ops.example/docker', 'Docker changes'))->setSummary('Docker images.');
+        $http = new MockHttpClient(function (string $method, string $url, array $options): MockResponse {
+            $request = json_decode($options['body'], true);
+            $input = json_decode($request['messages'][0]['content'], true);
+            self::assertCount(3, $input['articles']);
+            self::assertStringContainsString('at most 2 clusters', $request['system']);
+
+            return new MockResponse(json_encode([
+                'stop_reason' => 'end_turn',
+                'content' => [['type' => 'text', 'text' => json_encode(['clusters' => [
+                    ['topic' => 'PHP runtime upgrades', 'angle' => 'Upgrade safely.', 'item_ids' => [1, 2, 99]],
+                    ['topic' => 'Single source', 'angle' => 'Not enough.', 'item_ids' => [3]],
+                    ['topic' => 'Reused', 'angle' => 'Already used.', 'item_ids' => [1, 2]],
+                ]], JSON_THROW_ON_ERROR)]],
+            ], JSON_THROW_ON_ERROR));
+        });
+        $clusters = $this->drafter($http)->plan($items, 2, 'daily');
+        self::assertCount(1, $clusters);
+        self::assertSame('PHP runtime upgrades', $clusters[0]['topic']);
+        self::assertSame([$items[0], $items[1]], $clusters[0]['items']);
+    }
 }

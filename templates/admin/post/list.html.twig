@@ -67,6 +67,7 @@
                                 maxlength="{{ platform == 'linkedin' ? 3000 : 250 }}">{{ post.customFieldValue(platform ~ '_text') ?? post.title }}</textarea>
                             <button class="btn btn-sm btn-default mt-1" type="submit">Save platform draft</button>
                         </form>
+                        {% if post.image %}<img class="admin-share-thumb" src="{{ post.image }}" alt="Thumbnail shared with {{ post.title }}">{% else %}<small class="d-block text-warning">No thumbnail: generate a banner in the editor.</small>{% endif %}
                         <small>Review the saved text before using Share. The blog link is attached on publication.</small>
                         {% endif %}
                     </td>

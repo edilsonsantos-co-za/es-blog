@@ -94,11 +94,11 @@ reverse proxy. See [docs/deployment.md](docs/deployment.md).
 |---|---|
 | `APP_SECRET`, `DATABASE_URL` | Symfony secret and MySQL connection |
 | `SITE_NAME`, `SITE_TITLE`, `SITE_URL` | Site name, authenticator label and URL defaults; public title/URL can be edited in the admin |
-| `MAILER_DSN`, `MESSENGER_TRANSPORT_DSN` | Mail and queue transports |
+| `MAILER_DSN`, `MAILER_FROM`, `MESSENGER_TRANSPORT_DSN` | Mail transport and sender, and the queue. In production the deploy writes the mail settings from the `SMTP_*` GitHub secrets (see Email). |
 | `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_REDIRECT_URI` | LinkedIn sharing. The redirect URI is `<site>/admin/linkedin/callback`. Optional `LINKEDIN_API_VERSION` (default `202608`). |
-| `ANTHROPIC_API_KEY`, `AUTOMATION_AI_MODEL` | Original multi-source AI drafts (default `claude-opus-5-5`; choose a model available to your account). Without a key, sources remain pending and no skeleton/copied posts are created. |
+| `ANTHROPIC_API_KEY`, `AUTOMATION_AI_MODEL` | Claude for the feed digest (default model `claude-opus-5-5`). An API key from the Claude Console, billed separately from Claude Pro/Max subscriptions (see Claude below). Without a key, articles stay pending and no skeleton or copied posts are created. |
 | `X_CLIENT_ID`, `X_CLIENT_SECRET`, `X_REDIRECT_URI` | X OAuth2 PKCE; register `<site>/admin/x/callback`. Requires a developer app with tweet-write access and the appropriate API plan. |
-| `COFFEE_URL` | Buy Me a Coffee header button and footer link (default `https://buymeacoffee.com/edilsonsantos`; blank hides both). |
+| `COFFEE_URL` | Buy Me a Coffee: header button, footer link, a support box at the end of every post and a line in newsletter emails (default `https://buymeacoffee.com/edilsonsantos`; blank hides them all). |
 | `ES_DEVELOPERS_URL`, `UPWORK_URL`, `SUPPORT_URL` | Developers and optional verified public freelance/funding links. Blank optional URLs stay hidden; also editable in General settings. |
 | `LOGTO_ENDPOINT`, `LOGTO_APP_ID`, `LOGTO_APP_SECRET` | Required for sign-in through Logto; set all three. |
 | `LOGTO_INTERNAL_ENDPOINT` | Optional server-to-server Logto URL, for example a Docker service name |
@@ -109,60 +109,115 @@ and the post sign-out redirect URI `<site>/` (also allow `<site>/login` for fail
 verified email must match their account. Production uses the shared DataSparkLab Logto service; signing out
 through the ES apps menu also invalidates the other ES app sessions on their next request.
 
+### Using your own Logto
+
+Sign-in goes through [Logto](https://logto.io/), an open-source identity service. You need your own Logto instance:
+either [Logto Cloud](https://cloud.logto.io/) (hosted, free tier available) or self-hosted Logto (open source, runs
+in Docker). The [Logto documentation](https://docs.logto.io/) covers both. Then, in the Logto console:
+
+1. **Applications → Create application → Traditional web.** Add the redirect URI `<site>/login/sso/callback` and the post
+   sign-out redirect URI `<site>/`.
+2. Copy the endpoint, app ID and app secret into `.env.local` (`LOGTO_ENDPOINT`, `LOGTO_APP_ID`, `LOGTO_APP_SECRET`).
+   `LOGTO_INTERNAL_ENDPOINT` is optional, for when the app reaches Logto over a Docker network.
+3. **Authorization → Roles → Create role** named `es-owner`, and assign it to your user. ES Blog asks for the
+   `roles` scope and only lets in users who hold that role.
+4. Create the matching blog user with `app:user:create` (see Quick start). The verified Logto email must match it.
+
+Running several ES apps against the same Logto gives you single sign-on across them. Signing out in one app signs you
+out of the others on their next request.
+
 ## Feed automation
 
 **Admin → Maintenance → Feed Automation**
 
 1. In Feeder.co, open **Library → Import & Export → Export to OPML** and upload the file (or add feeds one by one).
    Feeder has no public API, so re-import when you follow new feeds; feeds already in the list are skipped.
-2. Configure topics, frequency and drafts per run, then optionally enable **Run on a schedule**.
-3. **Run automation** groups 2–4 distinct pending articles around configured topic keywords (up to five groups).
-   Successful drafts appear directly in **Posts → Drafts**; the old Items URL redirects there.
+2. Under **Settings**, choose a **daily** or **weekly** digest and how many drafts it may write (up to five), set
+   your topics (reader interests) and voice, then optionally enable **Run on a schedule**.
+3. **Run automation** reads every feed, then writes the digest in two steps:
+   - **Plan:** Claude sees every article collected since the last digest (title, publisher and a short excerpt) and groups
+     the ones worth writing about by shared topic or concern: at most five topics, each with two or more articles.
+   - **Write:** one draft per topic, consolidating all of its articles (up to 12) into one original post.
 
-Claude receives bounded public feed excerpts and source metadata, not full copied articles. It produces original
-comparison/implications, a description, tags and distinct LinkedIn/X text. All sources are attributed. The blog
-creates a 1200×630 banner with GD (fonts in `resources/fonts`, OFL). Draft/source associations are saved together;
-used sources are not reused. Missing credentials or AI failures leave sources retryable.
+   Drafts appear in **Posts → Drafts**. Articles the digest left out are marked skipped, so the next digest starts
+   fresh. If a topic fails, its articles stay pending for the next run.
 
-**All automation is review-only**, even on installations previously configured to auto-publish. Keyword grouping
-and the long-sentence copying check are not comprehensive semantic clustering or plagiarism verification. Check
-the actual sources, attribution, factual claims, limitations and voice before publishing.
+Claude receives bounded excerpts and source metadata, never full copied articles. Each draft has an original
+comparison of the sources, a description, tags, LinkedIn and X text, a 1200×630 banner drawn with GD (fonts in
+`resources/fonts`, OFL) and a Sources list crediting every article. Used articles are never reused.
+
+**All automation is review-only**: nothing is published or shared without you. The long-sentence copying check is
+not plagiarism verification. Check the sources, attribution, factual claims and voice before publishing.
 
 ```bash
 php bin/console app:feeds:import feeder.opml
-php bin/console app:automation:run --posts=1     # --posts=0 only reads feeds
+php bin/console app:automation:run              # the digest, with the "drafts per digest" setting
+php bin/console app:automation:run --posts=0    # only read feeds
 ```
 
-The `worker` container runs `app:scheduler:tick` every five minutes (scheduled posts plus the automation when it is
-due) between `messenger:consume` sessions. Keep it running for scheduled publishing and queued deliveries.
+The `worker` container runs `app:scheduler:tick` every five minutes (scheduled posts, plus the digest once a day or
+once a week) between `messenger:consume` sessions. Keep it running for scheduled publishing and queued deliveries.
+
+### Claude
+
+The digest calls the Claude API with `ANTHROPIC_API_KEY`. **A Claude Pro or Max subscription does not include API
+usage**, and Anthropic's terms don't allow routing a subscription login through an app like this one. The API is billed
+separately, as prepaid credits:
+
+1. Sign in at [platform.claude.com](https://platform.claude.com/) (the Claude Console) with your Claude account.
+2. Under **Billing**, buy a small amount of credit and set a monthly spend limit.
+3. Under **API keys**, create a key and set it as `ANTHROPIC_API_KEY` in the server's `.env`, then redeploy.
+
+A daily digest makes one small planning call plus one call per draft. To spend less, set `AUTOMATION_AI_MODEL` to a
+smaller model: Sonnet or Haiku instead of Opus. Each draft is reviewed before publishing anyway.
 
 ## Drafts and first publication
 
 Drafts have **Blog / LinkedIn / Twitter** tabs. Edit and save each platform's text; publishing the blog does not
 automatically share it. Use the separate reviewed Share action for each connected platform after publication.
-Private Preview opens the reader layout/banner without making a draft public or incrementing its views.
+
+**Preview on blog, LinkedIn and X** opens the reader layout without making a draft public or counting a view. At the
+top it shows how the post will look on each platform: the blog card, the LinkedIn post with its link card and the X
+post with its card, all with the post's thumbnail. **Generate new banner** draws a fresh 1200×630 thumbnail from the
+saved title (the category or first tag becomes its label). Each new banner gets a new file name, so platforms that
+cached the old image pick up the new one. Published posts carry absolute `og:image` and `twitter:card` tags, so
+LinkedIn, X and other link previews show the thumbnail.
 
 ```bash
 php bin/console app:post:welcome-draft
 ```
 
-This idempotent command prepares an original launch article, banner and platform drafts, without overwriting an
-existing article or publishing anything. Replace its explicit author-review section, preview the saved article,
-verify Developers/signup links and publish only when approved.
+This prepares the launch article, which credits the open-source projects behind the ES apps and points to the
+newsletter and the upcoming store. It also creates its banner and LinkedIn/X drafts. It always saves a **draft**:
+it never publishes anything and never overwrites an existing article. The production deploy runs it, so the draft
+appears under **Posts → Drafts** by itself. Publish it once email works, the repositories are public and you have
+reviewed it.
 
 ## LinkedIn
 
-Create an app in the LinkedIn Developer Portal, add the **Share on LinkedIn** and **Sign In with LinkedIn using
-OpenID Connect** products (both self-serve), add the redirect URL `<site>/admin/linkedin/callback`, and set the three
-`LINKEDIN_*` variables. Then use **Connect LinkedIn** in the admin. Tokens are encrypted with a key derived from
+1. At [linkedin.com/developers/apps](https://www.linkedin.com/developers/apps), **Create app**. LinkedIn requires a
+   company page to associate the app with: create a simple one first if you don't have one.
+2. **Products:** request **Share on LinkedIn** and **Sign In with LinkedIn using OpenID Connect** (both self-serve).
+3. **Auth:** add the redirect URL `<site>/admin/linkedin/callback`, then copy the client ID and primary client secret.
+4. Set `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET` and `LINKEDIN_REDIRECT_URI` in the server's `.env` and redeploy.
+5. In the admin, use **Connect LinkedIn** and approve with your own LinkedIn account.
+
+Shares post as a link card with the post's banner uploaded as its thumbnail. Tokens are encrypted with a key derived from
 `APP_SECRET`; the page shows expiry. Connect the actual post author's account and review its saved LinkedIn text
 before sharing. Publication alone never sends to LinkedIn.
 
 ## X / Twitter
 
-Create your account/app in the X Developer Portal only when you are ready to maintain this channel. Configure
-OAuth2 with PKCE, the registered callback, `tweet.read`, `tweet.write`, `users.read` and `offline.access` permissions,
-then connect from **Admin → X**. API write access/billing is a provider prerequisite, not included with ES Blog.
+1. At [developer.x.com](https://developer.x.com/), sign up with the X account you'll post from and create a project
+   and app. Posting through the API needs write access: check the portal's current plans and pricing, which X sets and
+   changes, not ES Blog.
+2. **User authentication settings:** type **Web App**, permissions **Read and write**, callback URI
+   `<site>/admin/x/callback`, website `<site>`. Copy the **OAuth 2.0** client ID and client secret (not the API key).
+3. Set `X_CLIENT_ID`, `X_CLIENT_SECRET` and `X_REDIRECT_URI` in the server's `.env` and redeploy.
+4. In the admin, use **Admin → X → Connect** (it asks for `tweet.read`, `tweet.write`, `users.read` and
+   `offline.access`).
+
+X builds the link card from the post's `twitter:` tags, so shared posts show the banner.
 Tokens are encrypted; refresh, disconnect and share history are supported. Text plus the final blog URL must fit
 280 characters. Review the Twitter tab and explicitly share after the blog is live.
 
@@ -178,9 +233,8 @@ a repository never subscribes anyone. Each subscriber has a private preferences/
 includes unsubscribe headers/links. Confirmation and unsubscribe GETs do not change consent (email scanners are
 safe); confirmations need POST + CSRF, and RFC8058 one-click unsubscribe POSTs are supported.
 
-**Admin → Newsletter** lists subscribers and delivery settings. Delivery is disabled by default: configure a real
-SMTP/API transport, a verified `newsletter.from` address and HTTPS `site.url`, verify domain/DKIM/SPF and a real
-confirmation email, then enable delivery. Do not use sandbox SMTP credentials for a public launch.
+**Admin → Newsletter** lists subscribers and delivery settings. Delivery is disabled by default and refuses null
+transports and the Mailtrap sandbox. Set up real email first (below), then enable delivery.
 Initial live publication queues an article campaign; edits do not resend it, and scheduled posts cannot send early.
 Workers recheck confirmation, current preferences and unsubscribe status at delivery.
 
@@ -191,6 +245,28 @@ php bin/console app:newsletter:queue
 
 Both default to dry-run. Real campaign/recovery queueing requires `--send --approve` and enabled, verified mail
 configuration. Keep subject/body reviewed and only target the independently consented product audience.
+
+## Email
+
+Production mail comes from GitHub secrets on the repository (or the organisation). The deploy writes them into the
+server's `.env`, and changing a secret and redeploying updates them:
+
+| Secret | Example |
+|---|---|
+| `SMTP_HOST`, `SMTP_PORT` | `live.smtp.mailtrap.io`, `587` (Mailtrap Email Sending; any SMTP provider works) |
+| `SMTP_USERNAME`, `SMTP_PASSWORD` | the provider's SMTP login (for Mailtrap Sending: `api` and an API token) |
+| `MAIL_FROM_ADDRESS` | `hello@edilsonsantos.co.za`, an address on the domain you verified with the provider |
+
+The same secrets serve ES Portfolio and ES Journal. Without them, the deploy falls back to the Mailtrap **sandbox**
+(`MAILTRAP_USERNAME` and `MAILTRAP_PASSWORD`). The sandbox catches mail in a test inbox and delivers nothing, and it
+never replaces real settings. With the provider, verify the sending domain (SPF, DKIM and DMARC DNS records), then
+check delivery:
+
+```bash
+php bin/console app:mail:test you@example.com
+```
+
+It refuses the sandbox and null transports. Once the message lands in the inbox (not spam), enable the newsletter.
 
 ## Development
 

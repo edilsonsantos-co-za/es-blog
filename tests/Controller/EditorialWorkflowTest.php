@@ -135,8 +135,17 @@ final class EditorialWorkflowTest extends WebTestCase
         }
         $em->flush();
         $calls = 0;
-        $http = new MockHttpClient(function () use (&$calls): MockResponse {
+        $http = new MockHttpClient(function (string $method, string $url, array $options) use (&$calls): MockResponse {
             ++$calls;
+            // First call plans the topics, the second writes the draft
+            if (str_contains(json_decode($options['body'], true)['system'], 'Group them by shared topic')) {
+                return new MockResponse(json_encode([
+                    'stop_reason' => 'end_turn',
+                    'content' => [['type' => 'text', 'text' => json_encode(['clusters' => [
+                        ['topic' => 'PHP deployments', 'angle' => 'What to check before changing PHP runtimes.', 'item_ids' => [1, 2]],
+                    ]], JSON_THROW_ON_ERROR)]],
+                ], JSON_THROW_ON_ERROR));
+            }
             return new MockResponse(json_encode([
                 'stop_reason' => 'end_turn',
                 'content' => [['type' => 'text', 'text' => json_encode([
@@ -164,7 +173,7 @@ final class EditorialWorkflowTest extends WebTestCase
             self::assertSame(FeedItem::STATUS_DRAFTED, $second->getStatus());
             self::assertSame($post->getId(), $second->getPost()->getId());
             self::assertSame($post->getId(), $runner->createPost($first, $author)->getId());
-            self::assertSame(1, $calls, 'Consumed sources must not call AI or create another post.');
+            self::assertSame(2, $calls, 'Consumed sources must not call AI or create another post.');
             $client->loginUser($author);
             $client->request('GET', '/admin/post/' . $post->getId() . '/preview');
             self::assertResponseIsSuccessful();

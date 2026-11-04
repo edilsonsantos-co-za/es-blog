@@ -11,6 +11,7 @@ use App\Enum\PostType;
 use App\Repository\PostRepository;
 use App\Security\Voter\PostVoter;
 use App\Service\CategoryService;
+use App\Service\Automation\BannerGenerator;
 use App\Service\PostService;
 use App\Service\TagService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -212,6 +213,26 @@ class PostController extends AbstractController
         $response->headers->set('X-Robots-Tag', 'noindex, nofollow, noarchive');
 
         return $response;
+    }
+
+    /**
+     * A new 1200×630 banner from the saved title: the thumbnail the blog, LinkedIn and X previews use.
+     * A fresh file name each time, so platforms that cached the old image pick up the new one.
+     */
+    #[Route('/admin/post/{id}/banner', name: 'app_admin_post_banner', methods: ['POST'])]
+    public function banner(Post $post, Request $request, BannerGenerator $banners): Response
+    {
+        $this->denyAccessUnlessGranted(PostVoter::EDIT, $post);
+        if (!$this->isCsrfTokenValid('post_banner_' . $post->getId(), (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
+        $tags = $post->getTags()->toArray();
+        $kicker = $post->getCategory()?->getTitle() ?? ($tags !== [] ? $tags[0]->getName() : 'ES Blog');
+        $image = $banners->generate($post->getTitle(), $kicker, $post->getSlug() . '-' . base_convert((string) time(), 10, 36));
+        $this->postService->update($post, ['image' => $image]);
+        $this->addFlash('success', 'New banner saved. It is the thumbnail on the blog, LinkedIn and X.');
+
+        return $this->redirectToRoute('app_admin_post_edit', ['id' => $post->getId()]);
     }
 
     #[Route('/admin/post/{id}/social/{platform}', name: 'app_admin_post_social_save', methods: ['POST'], requirements: ['platform' => 'linkedin|twitter'])]

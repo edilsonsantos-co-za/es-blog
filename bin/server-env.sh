@@ -8,7 +8,7 @@
 #     core-database-config/schemas/mysql/edfolio_blog.yml when it works; otherwise the user is
 #     created, or reset while no blog container is running
 #   - LOGTO_* once the SSO deploy has registered edfolio-blog-webapp
-#   - MAILER_DSN to the Mailtrap sandbox when MAILTRAP_USERNAME / MAILTRAP_PASSWORD are passed in
+#   - MAILER_DSN (+ MAILER_FROM) from the SMTP_* secrets; the Mailtrap sandbox only while no mail is configured
 set -euo pipefail
 
 ENV_FILE=.env
@@ -23,7 +23,8 @@ SSO_APP_ID=edfolio-blog-webapp
 get_env() { grep -E "^$2=" "$1" 2>/dev/null | tail -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' || true; }
 set_env() {
   local tmp; tmp="$(mktemp)"
-  awk -v k="$1" -v v="$2" 'BEGIN{d=0} index($0, k"=")==1 {print k"="v; d=1; next} {print} END{if(!d) print k"="v}' "$ENV_FILE" > "$tmp"
+  # The value goes through the environment: awk -v would interpret backslashes in it
+  SET_ENV_VALUE="$2" awk -v k="$1" 'BEGIN{d=0; v=ENVIRON["SET_ENV_VALUE"]} index($0, k"=")==1 {print k"="v; d=1; next} {print} END{if(!d) print k"="v}' "$ENV_FILE" > "$tmp"
   cat "$tmp" > "$ENV_FILE"; rm -f "$tmp"
 }
 mysql_root() { docker exec -i -e MYSQL_PWD="$(docker exec "$MYSQL" printenv MYSQL_ROOT_PASSWORD)" "$MYSQL" mysql -uroot -N "$@"; }
@@ -84,9 +85,26 @@ if [ -n "$secret" ] && [ -z "$(get_env "$ENV_FILE" LOGTO_APP_SECRET)" ]; then
   echo "  linked to SSO as $SSO_APP_ID"
 fi
 
-if [ -n "${MAILTRAP_USERNAME:-}" ] && [ -n "${MAILTRAP_PASSWORD:-}" ] && ! get_env "$ENV_FILE" MAILER_DSN | grep -q mailtrap; then
+# Real mail (GitHub secrets SMTP_HOST, SMTP_PORT, SMTP_USERNAME, SMTP_PASSWORD, MAIL_FROM_ADDRESS), passed in as
+# one base64 blob (SMTP_B64) so any character in a password survives the trip
+if [ -n "${SMTP_B64:-}" ]; then
+  while IFS= read -r line; do
+    [ -n "$line" ] && export "${line%%=*}=${line#*=}"
+  done < <(printf '%s' "$SMTP_B64" | base64 -d)
+fi
+urlenc() { local s="$1" out="" c i; for ((i = 0; i < ${#s}; i++)); do c="${s:i:1}"; case "$c" in [a-zA-Z0-9._~-]) out+="$c" ;; *) out+="$(printf '%%%02X' "'$c")" ;; esac; done; printf '%s' "$out"; }
+current_dsn="$(get_env "$ENV_FILE" MAILER_DSN)"
+if [ -n "${SMTP_HOST:-}" ]; then
+  # Real delivery: rewritten when the secrets change, so rotating a password is just updating the secret
+  dsn="smtp://$(urlenc "${SMTP_USERNAME:-}"):$(urlenc "${SMTP_PASSWORD:-}")@$SMTP_HOST:${SMTP_PORT:-587}"
+  if [ "$current_dsn" != "$dsn" ]; then set_env MAILER_DSN "\"$dsn\""; echo "  mail goes out through $SMTP_HOST"; fi
+  if [ -n "${MAIL_FROM_ADDRESS:-}" ] && [ "$(get_env "$ENV_FILE" MAILER_FROM)" != "$MAIL_FROM_ADDRESS" ]; then set_env MAILER_FROM "$MAIL_FROM_ADDRESS"; fi
+elif [ -n "${MAILTRAP_USERNAME:-}" ] && [ -n "${MAILTRAP_PASSWORD:-}" ] && { [ -z "$current_dsn" ] || [ "$current_dsn" = "null://null" ]; }; then
+  # Sandbox only while nothing else is configured: it never replaces real mail settings
   set_env MAILER_DSN "\"smtp://$MAILTRAP_USERNAME:$MAILTRAP_PASSWORD@sandbox.smtp.mailtrap.io:2525\""
-  echo "  mail goes to the Mailtrap sandbox"
+  echo "  mail goes to the Mailtrap sandbox (set the SMTP_* secrets for real delivery)"
+elif printf '%s' "$current_dsn" | grep -q sandbox.smtp.mailtrap.io; then
+  echo "::warning::Mail still goes to the Mailtrap sandbox; set the SMTP_* GitHub secrets for real delivery."
 fi
 
 echo "$ENV_FILE ready"

@@ -14,8 +14,9 @@ services:
       APP_ENV: dev
       APP_DEBUG: "1"
       APP_SECRET: ${APP_SECRET:-8f07e8904c675e1a885a7f20225ab8cc}
-      # Containers resolve DB via milkyway network hostname
-      DATABASE_URL: "mysql://edfolio_blog_user:Edf0l!0Bl0g_2025@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
+      # From .env next to this file (never committed), e.g.
+      # DATABASE_URL="mysql://edfolio_blog_user:<password>@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env; see .env.example}
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
       MAILER_DSN: "null://null"
       # The store container on milkyway; store.edilsonsantos.local only resolves on the host.
@@ -35,7 +36,7 @@ services:
       APP_ENV: dev
       APP_DEBUG: "1"
       APP_SECRET: ${APP_SECRET:-8f07e8904c675e1a885a7f20225ab8cc}
-      DATABASE_URL: "mysql://edfolio_blog_user:Edf0l!0Bl0g_2025@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
+      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env; see .env.example}
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
       MAILER_DSN: "null://null"
     depends_on:

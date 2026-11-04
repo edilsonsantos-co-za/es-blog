@@ -76,12 +76,22 @@ jobs:
         env:
           MAILTRAP_USERNAME: ${{ secrets.MAILTRAP_USERNAME }}
           MAILTRAP_PASSWORD: ${{ secrets.MAILTRAP_PASSWORD }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_FROM_ADDRESS: ${{ secrets.MAIL_FROM_ADDRESS }}
         run: |
           # Everything git tracks except env files (examples excepted): the server keeps its own .env*.
           # Each part ends in || true: the step runs with bash -e, and a grep that matches nothing would end the list early.
           { git ls-files | grep -vE '(^|/)\.env' || true ; git ls-files | grep -E '(^|/)\.env[^/]*\.example$' || true ; } | sort -u > .deploy-manifest.new
           tar -czf - -T .deploy-manifest.new .deploy-manifest.new | ssh vps "set -e; $REMOTE_SUDO mkdir -p '$APP_DIR'; $REMOTE_SUDO tar -xzf - -C '$APP_DIR'"
-          ssh vps "$REMOTE_SUDO env APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' MAILTRAP_USERNAME='$MAILTRAP_USERNAME' MAILTRAP_PASSWORD='$MAILTRAP_PASSWORD' bash -s" <<'REMOTE'
+          # Real mail settings travel as one base64 value (nothing printed; quotes in a password can't break the command)
+          SMTP_B64=""
+          if [ -n "$SMTP_HOST" ]; then
+            SMTP_B64="$(printf 'SMTP_HOST=%s\nSMTP_PORT=%s\nSMTP_USERNAME=%s\nSMTP_PASSWORD=%s\nMAIL_FROM_ADDRESS=%s\n' "$SMTP_HOST" "${SMTP_PORT:-587}" "$SMTP_USERNAME" "$SMTP_PASSWORD" "$MAIL_FROM_ADDRESS" | base64 -w0)"
+          fi
+          ssh vps "$REMOTE_SUDO env APP_DIR='$APP_DIR' RELEASE='${GITHUB_SHA::12} ${GITHUB_REF_NAME}' REQUIRED_ENV_FILES='$REQUIRED_ENV_FILES' MAILTRAP_USERNAME='$MAILTRAP_USERNAME' MAILTRAP_PASSWORD='$MAILTRAP_PASSWORD' SMTP_B64='$SMTP_B64' bash -s" <<'REMOTE'
           set -euo pipefail
           cd "$APP_DIR"
           # Files an earlier deploy shipped that are gone in this one
@@ -90,7 +100,7 @@ jobs:
           fi
           mv .deploy-manifest.new .deploy-manifest
           echo "$RELEASE $(date -u +%FT%TZ)" > .deploy-release
-          # Create or complete the server-only env file (database, SSO link, Mailtrap); nothing printed.
+          # Create or complete the server-only env file (database, SSO link, mail); nothing printed.
           # </dev/null: the script runs docker exec -i, which would otherwise eat the rest of this heredoc.
           bash bin/server-env.sh < /dev/null
           missing=""
@@ -123,4 +133,6 @@ jobs:
               echo "blog admin for the SSO email already exists"
             fi
           fi
+          # The launch article (open-source credits): created once, as a draft only. Never published or overwritten.
+          docker compose -f "$COMPOSE_FILE" exec -T php php bin/console app:post:welcome-draft --no-interaction < /dev/null || echo "::warning::Could not prepare the launch draft"
           REMOTE

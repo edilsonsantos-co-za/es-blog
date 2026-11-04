@@ -20,7 +20,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Reads feeds and writes review-only topic syntheses from multiple articles.
+ * Reads feeds, then writes the daily or weekly digest: Claude groups every article collected in the period by shared
+ * topic or concern and writes one review-only draft per topic (up to five), each consolidating several articles.
+ * Articles a digest leaves out are marked skipped, so the next digest starts from fresh articles.
  */
 final class AutomationRunner
 {
@@ -30,7 +32,6 @@ final class AutomationRunner
         private readonly FeedItemRepository $items,
         private readonly FeedFetcher $fetcher,
         private readonly PostDrafter $drafter,
-        private readonly TopicGrouper $grouper,
         private readonly BannerGenerator $banners,
         private readonly PostService $posts,
         private readonly SlugService $slugs,
@@ -73,31 +74,7 @@ final class AutomationRunner
         if ($limit > 0 && !$this->drafter->isAiEnabled()) {
             $run->addLog('ANTHROPIC_API_KEY is missing. Sources were collected but no placeholder or copied drafts were created.', true);
         } elseif ($limit > 0) {
-            $since = new \DateTimeImmutable('-' . $this->settings->maxAgeDays() . ' days');
-            $groups = $this->grouper->group(
-                $this->items->findCandidates($since, $this->settings->minScore(), 100),
-                $this->settings->topics(),
-                $limit,
-            );
-            if ($groups === []) {
-                $run->addLog('Waiting for at least two distinct articles on a shared configured topic. No single-source posts were created.');
-            }
-            foreach ($groups as $topic => $items) {
-                try {
-                    $post = $this->createSynthesis($items, $topic, $author);
-                    $run->addPostCreated();
-                    $run->addLog(sprintf('Draft #%d from %d %s sources: %s', $post->getId(), count($items), $topic, $post->getTitle()));
-                } catch (\Throwable $e) {
-                    if (!$this->em->isOpen()) {
-                        throw $e;
-                    }
-                    foreach ($items as $item) {
-                        $item->setError('Draft generation failed; this source will be retried.');
-                    }
-                    $run->addLog(sprintf('Topic "%s" failed; sources remain pending for retry.', $topic), true);
-                    $this->logger->error('Automation could not draft a synthesis', ['topic' => $topic, 'exception' => $e]);
-                }
-            }
+            $this->digest($run, $limit, $author);
         }
 
         $run->finish();
@@ -107,8 +84,74 @@ final class AutomationRunner
         return $run;
     }
 
+    private function digest(AutomationRun $run, int $limit, ?User $author): void
+    {
+        $items = $this->periodItems();
+        $period = $this->settings->digest();
+        $run->addLog(sprintf('%s digest: %d articles collected since the last digest.', ucfirst($period), count($items)));
+        if (count($items) < 2) {
+            $run->addLog('Waiting for at least two articles in the period. No single-source posts were created.');
+
+            return;
+        }
+        try {
+            $clusters = $this->drafter->plan($items, $limit, $period);
+        } catch (\Throwable $e) {
+            $run->addLog('Claude could not plan the digest; articles remain pending for the next run.', true);
+            $this->logger->error('Automation could not plan a digest', ['exception' => $e]);
+
+            return;
+        }
+        if ($clusters === []) {
+            $run->addLog('No topic had two or more related articles. Articles remain pending.');
+
+            return;
+        }
+        $failed = false;
+        foreach ($clusters as $cluster) {
+            try {
+                $post = $this->createSynthesis($cluster['items'], $cluster['topic'], $author, $cluster['angle']);
+                $run->addPostCreated();
+                $run->addLog(sprintf('Draft #%d from %d sources (%s): %s', $post->getId(), count($cluster['items']), $cluster['topic'], $post->getTitle()));
+            } catch (\Throwable $e) {
+                if (!$this->em->isOpen()) {
+                    throw $e;
+                }
+                $failed = true;
+                foreach ($cluster['items'] as $item) {
+                    $item->setError('Draft generation failed; this source will be retried.');
+                }
+                $run->addLog(sprintf('Topic "%s" failed; its sources remain pending for retry.', $cluster['topic']), true);
+                $this->logger->error('Automation could not draft a synthesis', ['topic' => $cluster['topic'], 'exception' => $e]);
+            }
+        }
+        // The digest covered the period: articles it left out don't roll into the next one (failed topics stay pending)
+        if (!$failed) {
+            $skipped = 0;
+            foreach ($items as $item) {
+                if ($item->getStatus() === FeedItem::STATUS_NEW) {
+                    $item->setStatus(FeedItem::STATUS_SKIPPED);
+                    ++$skipped;
+                }
+            }
+            $run->addLog(sprintf('%d articles were not part of any topic and were marked skipped.', $skipped));
+        }
+    }
+
     /**
-     * Legacy source action: include related sources, never draft or publish an individual article.
+     * Every article still pending: each digest marks what it left out as skipped, so these are the articles collected
+     * since the last digest (by fetch, not by the feed's own date, which is often late). Never older than the
+     * "ignore older than" setting.
+     *
+     * @return list<FeedItem>
+     */
+    private function periodItems(): array
+    {
+        return array_values($this->items->findCandidates(new \DateTimeImmutable('-' . $this->settings->maxAgeDays() . ' days'), $this->settings->minScore(), 150));
+    }
+
+    /**
+     * Source action from the drafts list: draft the topic this article belongs to, with its related pending articles.
      */
     public function createPost(FeedItem $item, ?User $author = null, ?bool $publish = null): Post
     {
@@ -119,14 +162,15 @@ final class AutomationRunner
                 return $item->getPost();
             }
             $since = new \DateTimeImmutable('-' . $this->settings->maxAgeDays() . ' days');
-            $groups = $this->grouper->group(
-                array_merge([$item], $this->items->findCandidates($since, $this->settings->minScore(), 100)),
-                $this->settings->topics(),
-                5,
-            );
-            foreach ($groups as $topic => $items) {
-                if (in_array($item, $items, true)) {
-                    return $this->createSynthesis($items, $topic, $author);
+            $candidates = [$item];
+            foreach ($this->items->findCandidates($since, $this->settings->minScore(), 150) as $candidate) {
+                if ($candidate->getFingerprint() !== $item->getFingerprint()) {
+                    $candidates[] = $candidate;
+                }
+            }
+            foreach ($this->drafter->plan($candidates, 5, 'on-demand') as $cluster) {
+                if (in_array($item, $cluster['items'], true)) {
+                    return $this->createSynthesis($cluster['items'], $cluster['topic'], $author, $cluster['angle']);
                 }
             }
             throw new \RuntimeException('No related source is available yet. A draft requires at least two distinct articles on a shared topic.');
@@ -136,12 +180,12 @@ final class AutomationRunner
     }
 
     /** @param list<FeedItem> $items */
-    private function createSynthesis(array $items, string $topic, ?User $author): Post
+    private function createSynthesis(array $items, string $topic, ?User $author, string $angle = ''): Post
     {
         $author ??= $this->users->findOneBy(['role' => UserRole::Admin], ['id' => 'ASC'])
             ?? throw new \RuntimeException('No admin user to author automated posts.');
 
-        $draft = $this->drafter->draft($items, $topic);
+        $draft = $this->drafter->draft($items, $topic, $angle);
         $slug = $this->slugs->makeUnique(
             mb_substr($this->slugs->generate($draft->title), 0, 120),
             fn (string $candidate): bool => $this->posts->findBySlug($candidate) !== null,

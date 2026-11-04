@@ -7,5 +7,40 @@
     <strong>Private editorial preview</strong> — saved content, not a public permalink.
     <a href="{{ path('app_admin_post_edit', {id: post.id}) }}">Return to editor</a>
 </div>
+
+{# How the post will look on each platform, with the thumbnail every platform uses (the post image) #}
+{% set host = app.request.host %}
+{% set summary = post.description ?? excerpt(post.body, 160) %}
+<section class="share-previews" aria-label="Platform previews">
+    <h2 class="label">Platform previews</h2>
+    {% if not post.image %}
+    <p class="share-warning">No thumbnail yet: links will share without an image. Use <strong>Generate new banner</strong> in the editor.</p>
+    {% endif %}
+    <div class="share-grid">
+        <figure class="share-card">
+            <figcaption>Blog</figcaption>
+            <div class="share-link">
+                {% if post.image %}<img src="{{ post.image }}" alt="">{% endif %}
+                <div class="share-link-text"><span>{{ host }}</span><strong>{{ post.title }}</strong><p>{{ summary }}</p></div>
+            </div>
+        </figure>
+        <figure class="share-card">
+            <figcaption>LinkedIn</figcaption>
+            <p class="share-text">{{ post.customFieldValue('linkedin_text') ?: 'No LinkedIn draft saved yet.' }}</p>
+            <div class="share-link">
+                {% if post.image %}<img src="{{ post.image }}" alt="">{% endif %}
+                <div class="share-link-text"><strong>{{ post.title }}</strong><span>{{ host }}</span></div>
+            </div>
+        </figure>
+        <figure class="share-card">
+            <figcaption>X</figcaption>
+            <p class="share-text">{{ post.customFieldValue('twitter_text') ?: 'No X draft saved yet.' }}</p>
+            <div class="share-link share-link-x">
+                {% if post.image %}<img src="{{ post.image }}" alt="">{% endif %}
+                <div class="share-link-text"><span>From {{ host }}</span><strong>{{ post.title }}</strong></div>
+            </div>
+        </figure>
+    </div>
+</section>
 {{ parent() }}
 {% endblock %}

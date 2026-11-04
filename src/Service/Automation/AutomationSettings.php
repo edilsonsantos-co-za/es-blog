@@ -20,13 +20,25 @@ final class AutomationSettings
 
     public function isEnabled(): bool { return $this->config->getBool('automation.enabled'); }
 
-    public function intervalHours(): int { return max(1, $this->config->getInt('automation.interval_hours', 24)); }
+    public const DIGEST_DAILY = 'daily';
+    public const DIGEST_WEEKLY = 'weekly';
 
-    public function postsPerRun(): int { return min(5, max(0, $this->config->getInt('automation.posts_per_run', 1))); }
+    /** Each run is a digest of the articles collected over the last day or week */
+    public function digest(): string
+    {
+        return $this->config->get('automation.digest') === self::DIGEST_WEEKLY ? self::DIGEST_WEEKLY : self::DIGEST_DAILY;
+    }
+
+    public function periodDays(): int { return $this->digest() === self::DIGEST_WEEKLY ? 7 : 1; }
+
+    public function intervalHours(): int { return $this->periodDays() * 24; }
+
+    /** Most drafts one digest writes (Claude may write fewer when the period is quiet) */
+    public function postsPerRun(): int { return min(5, max(0, $this->config->getInt('automation.posts_per_run', 5))); }
 
     public function maxAgeDays(): int { return max(1, $this->config->getInt('automation.max_age_days', 7)); }
 
-    public function minScore(): int { return max(0, $this->config->getInt('automation.min_score', 1)); }
+    public function minScore(): int { return max(0, $this->config->getInt('automation.min_score', 0)); }
 
     /** AI output always requires editorial review, including previously configured publish mode. */
     public function publishMode(): string

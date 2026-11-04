@@ -25,8 +25,20 @@
     slug: post.slug
 }) }}">
 {% if post.image %}
-<meta property="og:image" content="{{ post.image }}">
+{# Absolute URLs: LinkedIn, X and other link previews ignore relative images #}
+{% set share_image = post.image starts with '/' ? absolute_url(post.image) : post.image %}
+<meta property="og:image" content="{{ share_image }}">
+<meta property="og:image:alt" content="{{ post.title }}">
+{% if post.image starts with '/uploads/banners/' %}<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{ share_image }}">
+<meta name="twitter:image:alt" content="{{ post.title }}">
+{% else %}
+<meta name="twitter:card" content="summary">
 {% endif %}
+<meta name="twitter:title" content="{{ post.title }}">
+<meta name="twitter:description" content="{{ post.description ?? excerpt(post.body, 160) }}">
 <meta property="article:published_time" content="{{ (post.publishedAt ?? post.createdAt)|date('c') }}">
 <meta property="article:author" content="{{ post.author.username }}">
 {% endblock %}
@@ -73,6 +85,16 @@
         <a href="{{ path('app_blog_tag', {slug: tag.slug}) }}" class="tag-pill">{{ tag.name }}</a>
         {% endfor %}
     </div>
+    {% endif %}
+
+    {% if site_coffee_url %}
+    <aside class="post-support" aria-label="Support this writing">
+        <div>
+            <strong>Found this useful?</strong>
+            <span>Posts here are written in spare time. A coffee keeps them coming.</span>
+        </div>
+        <a class="btn coffee" href="{{ site_coffee_url }}" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+    </aside>
     {% endif %}
 
     <div class="author-box">

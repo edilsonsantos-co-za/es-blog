@@ -181,7 +181,11 @@
                     <a href="{{ path(cancel_route) }}" class="btn btn-default btn-block mt-1">Cancel</a>
                     {% if is_edit %}
                     {% if not page_mode %}
-                    <a href="{{ path('app_admin_post_preview', {id: post.id}) }}" class="btn btn-default btn-block mt-1" target="_blank" rel="noopener">Preview saved post and banner</a>
+                    <a href="{{ path('app_admin_post_preview', {id: post.id}) }}" class="btn btn-default btn-block mt-1" target="_blank" rel="noopener">Preview on blog, LinkedIn and X</a>
+                    <button type="submit" form="post-banner-form" class="btn btn-default btn-block mt-1"
+                        title="Draws a new 1200×630 thumbnail from the saved title (save your changes first)">
+                        <i class="fa fa-image"></i> Generate new banner
+                    </button>
                     {% endif %}
                     <button type="submit" form="post-delete-form" class="btn btn-danger btn-block btn-sm mt-2">
                         <i class="fa fa-trash"></i> Delete
@@ -231,6 +235,12 @@
     </div>
 </form>
 {% if is_edit %}
+{% if not page_mode %}
+<form method="post" action="{{ path('app_admin_post_banner', {id: post.id}) }}" id="post-banner-form"
+      onsubmit="return confirm('Replace the post image with a new banner drawn from the saved title?')">
+    <input type="hidden" name="_token" value="{{ csrf_token('post_banner_' ~ post.id) }}">
+</form>
+{% endif %}
 <form method="post" action="{{ page_mode ? path('app_admin_page_delete', {id: post.id}) : path('app_admin_post_delete', {id: post.id}) }}"
       id="post-delete-form" onsubmit="return confirm('Permanently delete this {{ page_mode ? 'page' : 'post' }}?')">
     <input type="hidden" name="_token" value="{{ csrf_token('post_delete_' ~ post.id) }}">

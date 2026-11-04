@@ -21,13 +21,20 @@ final class NewsletterMailer
         private readonly Environment $twig,
         #[Autowire('%env(MAILER_DSN)%')] private readonly string $mailerDsn,
         private readonly string $appSecret,
+        #[Autowire('%env(default::MAILER_FROM)%')] private readonly ?string $mailerFrom = null,
     ) {}
+
+    /** Sender: Admin → Newsletter's "from" address, else MAILER_FROM (set on deploy from the MAIL_FROM_ADDRESS secret) */
+    public function from(): string
+    {
+        return trim((string) ($this->config->get('newsletter.from', '') ?: $this->mailerFrom));
+    }
 
     public function ready(): bool
     {
         $base = (string) $this->config->get('site.url', '');
         return self::deliverableDsn($this->mailerDsn)
-            && filter_var($this->config->get('newsletter.from', ''), FILTER_VALIDATE_EMAIL) !== false
+            && filter_var($this->from(), FILTER_VALIDATE_EMAIL) !== false
             && filter_var($base, FILTER_VALIDATE_URL) !== false
             && parse_url($base, PHP_URL_SCHEME) === 'https'
             && parse_url($base, PHP_URL_USER) === null
@@ -36,8 +43,10 @@ final class NewsletterMailer
 
     public static function deliverableDsn(string $dsn): bool
     {
-        // Fail closed for null/native transports, including mixed failover configurations.
+        // Fail closed for null/native transports, including mixed failover configurations, and for sandboxes
+        // that accept mail but never deliver it (Mailtrap testing inboxes)
         return !preg_match('~(?:null|native|sendmail)://~i', $dsn)
+            && !preg_match('~sandbox\.smtp\.mailtrap\.io~i', $dsn)
             && preg_match('~^(?:smtps?://|[a-z0-9_-]+\+(?:api|smtp)://)~i', $dsn) === 1;
     }
 
@@ -60,7 +69,7 @@ final class NewsletterMailer
         $confirm = $confirmation === null ? null : $this->url('app_newsletter_confirm', ['token' => $confirmation]);
         $text = $body . ($confirm === null ? '' : "\n\nConfirm your choices (expires in 24 hours): " . $confirm)
             . "\n\nUnsubscribe or manage preferences: " . $unsubscribe;
-        $email = (new Email())->from((string) $this->config->get('newsletter.from'))
+        $email = (new Email())->from($this->from())
             ->to($subscriber->email)->subject($subject)->text($text)
             ->html($this->twig->render('newsletter/email.html.twig', [
                 'subject' => $subject, 'body' => $body, 'confirmation' => $confirm, 'unsubscribe' => $unsubscribe,

@@ -3,5 +3,6 @@
 <h1>{{ subject }}</h1>
 <p>{{ body|nl2br }}</p>
 {% if confirmation %}<p><a href="{{ confirmation }}">Confirm your subscription choices</a> (expires in 24 hours)</p>{% endif %}
+{% if not confirmation and site_coffee_url|default(null) %}<p>Enjoying these? You can <a href="{{ site_coffee_url }}">buy me a coffee</a>.</p>{% endif %}
 <p><a href="{{ unsubscribe }}">Unsubscribe or manage preferences</a></p>
 </body></html>
