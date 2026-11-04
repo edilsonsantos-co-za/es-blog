@@ -15,6 +15,8 @@
  *          manage-url="/admin/profile"             optional "Your profile" link
  *          dashboard-url="/admin">                 optional "Dashboard" link (opens in a new tab)
  *
+ * Menu links that open in a new tab carry a small "opens in a new tab" arrow (and say so to screen readers).
+ *
  * Signing out here also writes the shared `es-signout` cookie, so the other ES apps sign out too.
  * Signed in here, it publishes who you are (display only) in the shared `es-user` cookie, so apps where
  * you have no session of their own show your account instead of "Sign in".
@@ -45,6 +47,9 @@
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     const initials = (name, email) => (name || email || '?').trim().split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
     const icon = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"/></svg>`;
+    // A menu link that opens in a new tab: label + the "opens in a new tab" arrow
+    const newTab = (href, label) => `<a href="${esc(href)}" target="_blank" rel="noopener">${esc(label)}<span class="sr">(opens in a new tab)</span>`
+        + `<svg class="ext" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>`;
 
     const CSS = `
         :host { --bg: #121620; --bg-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --shadow: 0 18px 48px rgba(0, 0, 0, .5);
@@ -75,8 +80,12 @@
         .sso::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #0ca30c; }
         .menu a, .menu button { display: flex; width: 100%; padding: 10px 12px; border-radius: 12px; text-decoration: none; color: var(--text); text-align: left; box-sizing: border-box; }
         .menu a:hover, .menu button:hover { background: var(--bg-2); }
+        .menu a[target="_blank"] { align-items: center; justify-content: space-between; gap: 10px; }
+        .ext { width: 14px; height: 14px; flex: none; fill: none; stroke: var(--muted); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        .menu a[target="_blank"]:hover .ext, .menu a[target="_blank"]:focus .ext { stroke: var(--text); }
         .signin { padding: 8px 14px; border-radius: 12px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 700; white-space: nowrap; }
         form { margin: 0; }
+        .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         @media (max-width: 480px) { .panel { position: fixed; top: 64px; left: 12px; right: 12px; min-width: 0; } }
     `;
 
@@ -262,7 +271,7 @@
                 <button class="trigger" part="account" aria-label="Account: ${esc(label)}" aria-haspopup="true" aria-expanded="false" data-for="account">${this.avatarHtml(false)}</button>
                 <div class="panel" id="account" role="menu" hidden>
                     <div class="who">${this.avatarHtml(true)}<strong>${esc(label)}</strong>${name && email ? `<span>${esc(email)}</span>` : ''}<span class="sso">Signed in with DataSparkLab SSO</span></div>
-                    <div class="menu">${dashboard ? `<a href="${esc(dashboard)}" target="_blank" rel="noopener">Dashboard</a>` : ''}${manage ? `<a href="${esc(manage)}">Your profile</a>` : ''}${signOutItem}</div>
+                    <div class="menu">${dashboard ? newTab(dashboard, 'Dashboard') : ''}${manage ? `<a href="${esc(manage)}">Your profile</a>` : ''}${signOutItem}</div>
                 </div>`
                 : (this.getAttribute('sign-in-url') ? `<a class="signin" href="${esc(this.getAttribute('sign-in-url'))}">Sign in</a>` : '');
 
