@@ -114,8 +114,8 @@ body { counter-reset: sec; }
 .post-support { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 28px; padding: 18px 22px; border-radius: 20px; background: var(--card); border: 1px solid var(--line); }
 .post-support strong { display: block; font-weight: 800; }
 .post-support span { color: var(--muted); font-size: 15px; }
-.post-support .coffee { display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; border-radius: 12px; background: #ffdd00; color: #0d0c22; font-weight: 800; text-decoration: none; white-space: nowrap; }
-.post-support .coffee:hover { filter: brightness(.95); }
+.post-support .coffee { padding: 10px 16px; border-radius: 12px; background: var(--accent-soft, #15213a); border-color: color-mix(in srgb, var(--accent) 35%, transparent); color: var(--accent-2); white-space: nowrap; }
+.post-support .coffee:hover { background: color-mix(in srgb, var(--accent) 25%, var(--card)); border-color: var(--accent); color: #fff; }
 
 /* Draft preview: how the post looks on the blog, LinkedIn and X */
 .share-previews { margin: 18px 0 28px; }
@@ -130,3 +130,6 @@ body { counter-reset: sec; }
 .share-link-text span { color: var(--muted); font-size: 12px; }
 .share-link-text p { margin: 0; color: var(--muted); font-size: 13px; }
 .share-link-x { border-radius: 16px; }
+
+/* Buy me a coffee: a flat line icon in the button's text colour (no emoji) */
+.coffee-icon { flex: none; display: block; }

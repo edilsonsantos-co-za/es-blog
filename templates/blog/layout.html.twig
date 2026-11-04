@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Manrope:wght@500;600;700;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap">
     <link rel="stylesheet" href="{{ asset('assets/blog/atlas.css') }}?v={{ asset_version('assets/blog/atlas.css') }}">
     {# Atlas 2 refresh layer (trial): remove this line to go back to plain Atlas #}
-    <link rel="stylesheet" href="{{ asset('assets/blog/atlas-refresh.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/blog/atlas-refresh.css') }}?v={{ asset_version('assets/blog/atlas-refresh.css') }}">
     {% endblock %}
 
     {% set favicon = config('site.favicon') ?: site_logo %}<link rel="icon" href="{{ favicon ?: asset('assets/brand/es-mark.svg') }}">
@@ -87,7 +87,7 @@
 
         <div class="top-actions">
             {# The ES app launcher and account menu, shared by every ES app (public/assets/es-apps.js) #}
-            {% if site_coffee_url %}<a class="btn coffee" href="{{ site_coffee_url }}" target="_blank" rel="noopener" aria-label="Buy me a coffee">☕<span class="coffee-text">Buy me a coffee</span></a>{% endif %}
+            {% if site_coffee_url %}<a class="btn coffee" href="{{ site_coffee_url }}" target="_blank" rel="noopener" aria-label="Buy me a coffee"><svg class="coffee-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3v3M12 3v3"/></svg><span class="coffee-text">Buy me a coffee</span></a>{% endif %}
             <es-apps current="blog" dashboard-url="{{ path('app_admin_dashboard') }}" {% if app.user %}signed-in owner user-name="{{ app.user.username }}" user-email="{{ app.user.email }}" avatar="{{ gravatar_url(app.user, 128) }}" manage-url="{{ path('app_admin_profile') }}" sign-out-url="{{ path('app_logout') }}"{% else %}sign-in-url="{{ path('app_login') }}"{% endif %}></es-apps>
             <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu">☰</button>
         </div>
