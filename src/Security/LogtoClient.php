@@ -28,6 +28,18 @@ final class LogtoClient
         private readonly ?string $appSecret,
     ) {}
 
+    /**
+     * Logto role that marks the ES apps owner. Store customers share this Logto tenant, so the private apps
+     * (portfolio and blog admin, journal) need it on top of a matching local account. Comes from the `roles` scope.
+     */
+    public const OWNER_ROLE = 'es-owner';
+
+    /** @param array<string, mixed> $claims */
+    public static function isOwner(array $claims): bool
+    {
+        return in_array(self::OWNER_ROLE, (array) ($claims['roles'] ?? []), true);
+    }
+
     public function isEnabled(): bool
     {
         return (string) $this->endpoint !== '' && (string) $this->appId !== '' && (string) $this->appSecret !== '';
@@ -45,7 +57,7 @@ final class LogtoClient
             'client_id' => $this->appId,
             'redirect_uri' => $redirectUri,
             'response_type' => 'code',
-            'scope' => 'openid email profile',
+            'scope' => 'openid email profile roles',
             'state' => $state,
             'nonce' => $nonce,
             'code_challenge' => $challenge,

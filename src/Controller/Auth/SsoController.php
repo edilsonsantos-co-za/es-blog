@@ -77,7 +77,7 @@ class SsoController extends AbstractController
             ? $this->users->findOneBy(['email' => $email])
             : null;
 
-        if ($user === null) {
+        if ($user === null || !LogtoClient::isOwner($claims)) {
             return $this->fail('That account does not have access to this blog.');
         }
 

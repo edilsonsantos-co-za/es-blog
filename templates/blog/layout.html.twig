@@ -88,7 +88,7 @@
         <div class="top-actions">
             {# The ES app launcher and account menu, shared by every ES app (public/assets/es-apps.js) #}
             {% if site_coffee_url %}<a class="btn coffee" href="{{ site_coffee_url }}" target="_blank" rel="noopener" aria-label="Buy me a coffee">☕<span class="coffee-text">Buy me a coffee</span></a>{% endif %}
-            <es-apps current="blog" dashboard-url="{{ path('app_admin_dashboard') }}" {% if app.user %}signed-in user-name="{{ app.user.username }}" user-email="{{ app.user.email }}" avatar="{{ gravatar_url(app.user, 128) }}" manage-url="{{ path('app_admin_profile') }}" sign-out-url="{{ path('app_logout') }}"{% else %}sign-in-url="{{ path('app_login') }}"{% endif %}></es-apps>
+            <es-apps current="blog" dashboard-url="{{ path('app_admin_dashboard') }}" {% if app.user %}signed-in owner user-name="{{ app.user.username }}" user-email="{{ app.user.email }}" avatar="{{ gravatar_url(app.user, 128) }}" manage-url="{{ path('app_admin_profile') }}" sign-out-url="{{ path('app_logout') }}"{% else %}sign-in-url="{{ path('app_login') }}"{% endif %}></es-apps>
             <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu">☰</button>
         </div>
     </div>

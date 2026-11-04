@@ -4,7 +4,9 @@
  * allows their own scripts); update it here and copy it over.
  *
  * <es-apps current="blog"                          which app this is (portfolio|blog|journal|store|developers)
- *          signed-in                               the SSO user is signed in here (shows the private apps)
+ *          signed-in                               the SSO user is signed in here
+ *          owner                                   that user holds the Logto `es-owner` role (shows the private apps, e.g. Journal).
+ *                                                  Never set for store customers. Display only: each private app checks the role itself.
  *          user-name="…" user-email="…"            the account menu (shown whenever signed-in; "Sign in" otherwise)
  *          avatar="https://…"                      profile picture (Gravatar default); initials when missing
  *          sign-in-url="/login"                    where "Sign in" goes
@@ -117,7 +119,7 @@
     try { SHEET = new CSSStyleSheet(); SHEET.replaceSync(CSS); } catch { SHEET = null; }
 
     class EsApps extends HTMLElement {
-        static get observedAttributes() { return ['current', 'signed-in', 'user-name', 'user-email', 'avatar', 'dashboard-url']; }
+        static get observedAttributes() { return ['current', 'signed-in', 'owner', 'user-name', 'user-email', 'avatar', 'dashboard-url']; }
 
         constructor() {
             super();
@@ -155,15 +157,15 @@
         // Signed in here: the attributes. Otherwise whoever is signed in to another ES app (`es-user`).
         who() {
             if (this.hasAttribute('signed-in')) {
-                return { name: this.getAttribute('user-name') || '', email: this.getAttribute('user-email') || '', avatar: this.getAttribute('avatar') || '', local: true };
+                return { name: this.getAttribute('user-name') || '', email: this.getAttribute('user-email') || '', avatar: this.getAttribute('avatar') || '', owner: this.hasAttribute('owner'), local: true };
             }
             const shared = sharedUser();
-            return shared ? { name: shared.n || '', email: shared.e || '', avatar: shared.a || '', local: false } : null;
+            return shared ? { name: shared.n || '', email: shared.e || '', avatar: shared.a || '', owner: shared.o === 1, local: false } : null;
         }
 
         publish(who) {
             if (!who?.local || !(who.name || who.email)) return;
-            const value = encodeUser({ n: who.name, e: who.email, a: who.avatar });
+            const value = encodeUser({ n: who.name, e: who.email, a: who.avatar, o: who.owner ? 1 : 0 });
             if (getCookie(USER_COOKIE) !== value) setSharedCookie(USER_COOKIE, value);
         }
 
@@ -177,7 +179,8 @@
             // Signed in always shows the account menu (initials until the name/email arrive)
             const hasUser = signedIn;
             const label = name || email || 'Your account';
-            const apps = APPS.filter((a) => (!a.private || signedIn) && (!a.dev || LOCAL));
+            // Private apps (Journal) only for the owner: a store customer is signed in too, but never sees them
+            const apps = APPS.filter((a) => (!a.private || who?.owner) && (!a.dev || LOCAL));
 
             const appGrid = apps.map((a) => `
                 <a class="app" href="${a.url}" ${a.id === current ? 'aria-current="page"' : ''}>

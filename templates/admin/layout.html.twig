@@ -62,7 +62,7 @@
     <ul class="navbar-nav ml-auto">
         <li class="nav-item d-flex align-items-center">
             {# The ES app launcher and account menu, shared by every ES app (public/assets/es-apps.js) #}
-            <es-apps current="blog" {% if app.user %}signed-in user-name="{{ app.user.username }}" user-email="{{ app.user.email }}" avatar="{{ gravatar_url(app.user, 128) }}"{% endif %}
+            <es-apps current="blog" {% if app.user %}signed-in owner user-name="{{ app.user.username }}" user-email="{{ app.user.email }}" avatar="{{ gravatar_url(app.user, 128) }}"{% endif %}
                      manage-url="{{ path('app_admin_profile') }}" sign-out-url="{{ path('app_logout') }}"></es-apps>
         </li>
     </ul>
