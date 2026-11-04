@@ -7,7 +7,7 @@
 #   - DATABASE_URL for edfolio_blog on the shared core-database-config MySQL: the password from
 #     core-database-config/schemas/mysql/edfolio_blog.yml when it works; otherwise the user is
 #     created, or reset while no blog container is running
-#   - LOGTO_* once the SSO deploy has registered edfolio-blog-webapp
+#   - LOGTO_* once the SSO deploy has registered es-blog-webapp
 #   - MAILER_DSN (+ MAILER_FROM) from the SMTP_* secrets; the Mailtrap sandbox only while no mail is configured
 set -euo pipefail
 
@@ -18,7 +18,7 @@ DB_USER=edfolio_blog_user
 MYSQL=core-database-config-mysql
 DB_YML=/workspace/datasparklab/core-database-config/schemas/mysql/edfolio_blog.yml
 SSO_ENV=/workspace/datasparklab/core-sso-webapp/.env.production
-SSO_APP_ID=edfolio-blog-webapp
+SSO_APP_ID=es-blog-webapp
 
 get_env() { grep -E "^$2=" "$1" 2>/dev/null | tail -1 | cut -d= -f2- | sed -e 's/^"//' -e 's/"$//' || true; }
 set_env() {
@@ -77,7 +77,8 @@ fi
 
 var="SSO_APP_SECRET_$(printf '%s' "$SSO_APP_ID" | tr '[:lower:]-' '[:upper:]_')"
 secret="$( [ -r "$SSO_ENV" ] && get_env "$SSO_ENV" "$var" || true)"
-if [ -n "$secret" ] && [ -z "$(get_env "$ENV_FILE" LOGTO_APP_SECRET)" ]; then
+# Also switches an env file still linked to another client (the app was renamed in Logto)
+if [ -n "$secret" ] && { [ -z "$(get_env "$ENV_FILE" LOGTO_APP_SECRET)" ] || [ "$(get_env "$ENV_FILE" LOGTO_APP_ID)" != "$SSO_APP_ID" ]; }; then
   set_env LOGTO_ENDPOINT https://sso.datasparklab.com
   set_env LOGTO_INTERNAL_ENDPOINT http://dsl-sso:3001
   set_env LOGTO_APP_ID "$SSO_APP_ID"
