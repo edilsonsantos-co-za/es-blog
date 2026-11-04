@@ -22,10 +22,7 @@ services:
       # The store container on milkyway; store.edilsonsantos.local only resolves on the host.
       THEME_STORE_URL: http://es-marketplace-store
     networks:
-      milkyway:
-        # The local proxy host still forwards blog.edilsonsantos.local to the old name; drop once it points at es-blog
-        aliases:
-          - edfolio-v2-php
+      - milkyway
     restart: unless-stopped
 
   worker:
