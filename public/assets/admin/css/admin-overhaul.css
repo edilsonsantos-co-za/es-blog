@@ -51,8 +51,7 @@ body.admin-shell { margin: 0; background: var(--bg); color: var(--text); font-fa
 .admin-shell .nav-sidebar .nav-link .right { top: auto; }
 .admin-shell .nav-sidebar .nav-icon { width: 1.4rem; margin-right: 8px; font-size: 14px; text-align: center; color: inherit; }
 .admin-shell .nav-sidebar .nav-link:hover, .admin-shell .nav-sidebar .menu-open > .nav-link { background: var(--card-2) !important; color: var(--text) !important; }
-.admin-shell .nav-sidebar .nav-link.active, .admin-shell .nav-sidebar > .nav-item > .nav-link.active,
-.admin-shell .es-grp .nav-treeview .nav-link.active { background: var(--accent-soft) !important; color: var(--accent) !important; box-shadow: none; }
+.admin-shell .nav-sidebar .nav-link.active, .admin-shell .nav-sidebar > .nav-item > .nav-link.active { background: var(--accent-soft) !important; color: var(--accent) !important; box-shadow: none; }
 .admin-shell .nav-treeview { padding-left: 18px; }
 .admin-shell .nav-treeview .nav-link { min-height: 34px; padding: 6px 12px !important; border-radius: 10px; font-size: 14px; }
 .admin-shell .nav-treeview .nav-icon { width: .7rem; font-size: .4rem !important; }
@@ -255,45 +254,3 @@ a.admin-tile:hover { transform: translateY(-2px); border-color: var(--accent); c
 
 /* Platform draft tabs: the thumbnail LinkedIn and X will show */
 .admin-share-thumb { display: block; width: 240px; max-width: 100%; aspect-ratio: 1200 / 630; object-fit: cover; border-radius: 10px; margin: 8px 0 4px; border: 1px solid rgba(148, 163, 184, .25); }
-
-/* ── ES nav: Island top bar + Bento side nav (picked in es-labs/es-nav, top bar C + side nav C) ── */
-:root {
-    --accent-2: #93c5fd; --hi: rgba(255, 255, 255, .07);
-    --lead: radial-gradient(120% 120% at 100% 0%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%), linear-gradient(160deg, #13234a, #0d1426);
-}
-/* Island: the bar floats off the edges as rounded glass */
-.admin-shell .main-header { position: sticky; top: 0; z-index: 1034; min-height: 0; padding: 14px 20px 0; border: 0 !important; background: transparent !important; backdrop-filter: none; }
-.admin-shell .main-header .es-island { flex: 1; display: flex; align-items: center; min-height: 54px; padding: 6px 8px 6px 10px; border-radius: 20px; border: 1px solid color-mix(in srgb, var(--accent-2) 14%, var(--line)); background: color-mix(in srgb, var(--card) 72%, transparent); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); box-shadow: 0 20px 40px -24px rgba(0, 0, 0, .9), inset 0 1px 0 var(--hi); }
-.admin-shell .main-header .es-island .admin-topbar-title { font: 800 17px/1 var(--font); letter-spacing: -.02em; text-transform: none; color: var(--text); }
-.admin-shell .content-wrapper > .content-header { padding-top: 22px; }
-
-/* Bento: a soft panel holding each section as its own card */
-.admin-shell .main-sidebar { background: color-mix(in srgb, var(--bg) 60%, var(--card)) !important; }
-.admin-shell .main-sidebar .sidebar { display: flex; flex-direction: column; gap: 10px; padding: 12px 12px 16px; }
-.admin-shell .es-bento-nav { display: flex; flex-direction: column; gap: 10px; margin: 0 !important; }
-.admin-shell .es-grp { margin: 0; padding: 4px 6px 6px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: inset 0 1px 0 var(--hi); }
-.admin-shell .es-grp .nav-header { padding: 8px 10px 6px; }
-.admin-shell .es-grp > .nav-item { margin: 1px 0; }
-.admin-shell .es-grp .nav-link { width: auto !important; }
-.admin-shell .es-grp .nav-link > p > .right { right: 10px; }
-.admin-shell .nav-sidebar > .nav-item > .nav-link.active,
-.admin-shell .es-grp .nav-treeview .nav-link.active { color: #fff !important; background: radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--accent-2) 40%, transparent), transparent 60%), var(--accent) !important; box-shadow: 0 10px 24px -12px var(--accent), inset 0 1px 0 rgba(255, 255, 255, .3) !important; }
-/* A section that is open keeps its children readable; only the current child lights up */
-.admin-shell .nav-sidebar > .nav-item.has-treeview > .nav-link.active { background: var(--card-2) !important; color: var(--text) !important; box-shadow: inset 2px 0 0 var(--accent) !important; }
-.admin-shell .es-grp .nav-treeview .nav-link.active .nav-icon { color: #fff; }
-/* The lead card at the foot of the panel */
-.admin-shell .es-grp-lead { display: grid; gap: 6px; padding: 14px; background: var(--lead); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); color: var(--text) !important; text-decoration: none; transition: border-color .2s; }
-.admin-shell .es-grp-lead:hover { border-color: var(--accent); }
-.admin-shell .es-grp-lead .es-k { font: 500 10px/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent-2); }
-.admin-shell .es-grp-lead b { font: 800 16px/1.2 var(--font); letter-spacing: -.02em; }
-.admin-shell .es-bars { display: flex; align-items: flex-end; gap: 4px; height: 30px; margin-top: 4px; }
-.admin-shell .es-bars i { flex: 1; border-radius: 3px; background: color-mix(in srgb, var(--accent-2) 30%, transparent); }
-.admin-shell .es-bars i:last-child { background: var(--accent); }
-/* Folded to icons: cards shrink to the rail, the lead card steps aside */
-.admin-shell.sidebar-collapse .main-sidebar:not(:hover) .es-grp { padding: 4px; border-radius: 14px; }
-.admin-shell.sidebar-collapse .main-sidebar:not(:hover) .es-grp-lead { display: none; }
-.admin-shell.sidebar-collapse .main-sidebar .sidebar { padding-inline: 8px; }
-.admin-shell.sidebar-collapse .main-sidebar:not(:hover) .nav-treeview { padding-left: 0; }
-@media (max-width: 575.98px) {
-    .admin-shell .main-header { padding: 10px 12px 0; }
-}
