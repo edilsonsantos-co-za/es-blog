@@ -20,7 +20,7 @@
  * Signing out here also writes the shared `es-signout` cookie, so the other ES apps sign out too.
  * Signed in here, it publishes who you are (display only) in the shared `es-user` cookie, so apps where
  * you have no session of their own show your account instead of "Sign in".
- * On *.edilsonsantos.local the launcher links the local instances and adds Labs (dev only).
+ * On *.edilsonsantos.local the launcher links the local instances and adds Labs (dev only, and only for the owner).
  * Only apps whose container is up show: each tile loads a small image (`probe`) from its app first, and a stopped
  * container (the proxy answers 502) hides it. Start the container again and it shows on the next page or menu open.
  * </es-apps>
@@ -40,8 +40,8 @@
         { id: 'developers', name: 'Developers', url: site('developers.'), probe: '/img/favicon.svg', icon: 'M8 7l-5 5 5 5 M16 7l5 5-5 5 M14 4l-4 16' },
         { id: 'store', name: 'Store', url: site('store.'), probe: '/assets/es-mark.svg', icon: 'M4 7h16l-1.5 12h-13z M8 7a4 4 0 0 1 8 0' },
         { id: 'journal', name: 'Journal', url: site('journal.'), private: true, probe: '/theme/es-journal/brand/es-mark.svg', icon: 'M6 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6z M9 3v18 M12 8h4 M12 12h4' },
-        // Dev only: Labs (experiments) shows on *.edilsonsantos.local, never in production
-        { id: 'labs', name: 'Labs', url: site('labs.'), dev: true, probe: '/es-mark.svg', icon: 'M9 3h6 M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3 M7.5 15h9' },
+        // Dev only and owner only: Labs (experiments) shows on *.edilsonsantos.local to the owner, never in production or to anyone else
+        { id: 'labs', name: 'Labs', url: site('labs.'), dev: true, private: true, probe: '/es-mark.svg', icon: 'M9 3h6 M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3 M7.5 15h9' },
     ];
 
     const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -249,7 +249,7 @@
             // Signed in always shows the account menu (initials until the name/email arrive)
             const hasUser = signedIn;
             const label = name || email || 'Your account';
-            // Private apps (Journal) only for the owner: a store customer is signed in too, but never sees them
+            // Private apps (Journal, Labs) only for the owner: a store customer is signed in too, but never sees them
             // Stopped apps (container down) are left out; the app you are on always shows
             const apps = APPS.filter((a) => (!a.private || who?.owner) && (!a.dev || LOCAL) && (a.id === current || isUp(a)));
 
