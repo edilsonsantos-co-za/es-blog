@@ -51,6 +51,8 @@
 
 {# ── Navbar ── #}
 <nav class="main-header navbar navbar-expand navbar-white navbar-light" id="main-navbar">
+  {# Island top bar: a floating glass bar off the edges (es-labs/es-nav, top bar C) #}
+  <div class="es-island">
     <ul class="navbar-nav">
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" href="#" role="button" aria-label="Toggle navigation"><i class="fas fa-bars"></i></a>
@@ -66,6 +68,7 @@
                      manage-url="{{ path('app_admin_profile') }}" sign-out-url="{{ path('app_logout') }}"></es-apps>
         </li>
     </ul>
+  </div>
 </nav>
 
 {# ── Sidebar ── #}
@@ -78,8 +81,9 @@
         </span>
     </a>
     <div class="sidebar">
-        <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" role="menu">
+        {# Bento side nav: each section is its own card, the active item a lit tile (es-labs/es-nav, side nav C) #}
+        <nav class="mt-2 es-bento-nav">
+            <ul class="nav nav-pills nav-sidebar flex-column es-grp" role="menu">
 
                 <li class="nav-header">Overview</li>
 
@@ -91,7 +95,6 @@
                     </a>
                 </li>
 
-                <li class="nav-header">Create</li>
 
                 {# Add Content #}
                 <li class="nav-item">
@@ -101,6 +104,8 @@
                     </a>
                 </li>
 
+            </ul>
+            <ul class="nav nav-pills nav-sidebar flex-column es-grp" role="menu">
                 <li class="nav-header">Manage</li>
 
                 {# Posts expandable #}
@@ -152,8 +157,10 @@
                     </ul>
                 </li>
 
-                {# Settings expandable #}
-                {% if is_granted('ROLE_EDITOR') or is_granted('ROLE_ADMIN') %}
+            </ul>
+            {# Settings expandable #}
+            {% if is_granted('ROLE_EDITOR') or is_granted('ROLE_ADMIN') %}
+            <ul class="nav nav-pills nav-sidebar flex-column es-grp" role="menu">
                 <li class="nav-header">System</li>
                 <li class="nav-item">
                     <a href="{{ path('app_admin_newsletter') }}" class="nav-link {{ current_route starts with 'app_admin_newsletter' ? 'active' : '' }}">
@@ -190,7 +197,6 @@
                         </li>
                     </ul>
                 </li>
-                {% endif %}
 
                 {# Maintenance expandable #}
                 {% if is_granted('ROLE_ADMIN') %}
@@ -223,9 +229,14 @@
                     </ul>
                 </li>
                 {% endif %}
-
             </ul>
+            {% endif %}
         </nav>
+        <a class="es-grp es-grp-lead" href="{{ path('app_blog_index') }}" target="_blank" rel="noopener">
+            <span class="es-k">Public blog</span>
+            <b>View the blog ↗</b>
+            <span class="es-bars" aria-hidden="true"><i style="height:32%"></i><i style="height:56%"></i><i style="height:40%"></i><i style="height:72%"></i><i style="height:48%"></i><i style="height:88%"></i><i style="height:64%"></i></span>
+        </a>
     </div>
 </aside>
 
