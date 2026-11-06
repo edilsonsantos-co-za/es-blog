@@ -191,11 +191,13 @@
             </div>
             <div class="foot-col">
                 <h2>Connect</h2>
-                <ul>
-                    {% if portfolio_url %}<li><a href="{{ portfolio_url|trim('/', 'right') }}/contact">Contact</a></li>{% endif %}
-                    {% if site_upwork_url %}<li><a href="{{ site_upwork_url }}" rel="noopener noreferrer" target="_blank">Hire on Upwork ↗</a></li>{% endif %}
-                    {% if site_support_url %}<li><a href="{{ site_support_url }}" rel="noopener noreferrer" target="_blank">Support the work ↗</a></li>{% endif %}
-                    {% if site_coffee_url %}<li><a href="{{ site_coffee_url }}" rel="noopener" target="_blank">Buy me a coffee ↗</a></li>{% endif %}
+                {# Icons, not words: the name is in aria-label and the hover title #}
+                {% import '_connect_icons.html.twig' as connect %}
+                <ul class="connect">
+                    {% if portfolio_url %}<li><a href="{{ portfolio_url|trim('/', 'right') }}/contact" aria-label="Contact" title="Contact">{{ connect.icon('contact') }}</a></li>{% endif %}
+                    {% if site_upwork_url %}<li><a href="{{ site_upwork_url }}" rel="noopener noreferrer" target="_blank" aria-label="Hire on Upwork (opens in a new tab)" title="Hire on Upwork">{{ connect.icon('upwork') }}</a></li>{% endif %}
+                    {% if site_support_url %}<li><a href="{{ site_support_url }}" rel="noopener noreferrer" target="_blank" aria-label="Support the work (opens in a new tab)" title="Support the work">{{ connect.icon('support') }}</a></li>{% endif %}
+                    {% if site_coffee_url %}<li><a href="{{ site_coffee_url }}" rel="noopener" target="_blank" aria-label="Buy me a coffee (opens in a new tab)" title="Buy me a coffee">{{ connect.icon('coffee') }}</a></li>{% endif %}
                 </ul>
             </div>
         </nav>
