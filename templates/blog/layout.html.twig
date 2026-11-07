@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {# es-boot.css: the splash shown while a page is still arriving; first, so it applies before anything paints #}
+    <link rel="stylesheet" href="{{ asset('assets/es-boot.css') }}?v={{ asset_version('assets/es-boot.css') }}">
     <title>{% block title %}{{ site_title }}{% endblock %}</title>
 
     {% block meta_description %}

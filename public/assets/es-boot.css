@@ -1,0 +1,45 @@
+/*!
+ * es-boot.css: what every ES app shows while a page is still arriving (slow connection, pending assets).
+ * Source of truth: es-marketplace/store/assets/es-boot.css; apps ship a copy next to es-apps.js and link it
+ * FIRST in <head> (render-blocking, ~1 KB), so it applies before anything else paints.
+ *
+ * 1. A full-page splash (ES-blue spinner on the Atlas background) covers the half-built page until es-apps.js
+ *    marks <html class="es-ready">: the page is parsed and the fonts are in (or 1.5 s passed).
+ *    No markup, no inline script: it lives on html::before/::after, so every CSP allows it.
+ * 2. A failsafe: even if es-apps.js never arrives, the splash fades away on its own after 8 s.
+ * 3. Until the ES components are defined, their raw contents never show (tab bar links, launcher).
+ */
+html:not(.es-ready)::before,
+html:not(.es-ready)::after {
+    content: '';
+    position: fixed;
+    z-index: 2147483646;
+    pointer-events: none;
+    /* on the Atlas background colour, so a fast load barely notices it */
+    animation: es-boot-out .3s ease 8s forwards;
+}
+html:not(.es-ready)::before {
+    inset: 0;
+    background: #090b10;
+}
+html:not(.es-ready)::after {
+    top: 50%;
+    left: 50%;
+    width: 36px;
+    height: 36px;
+    margin: -18px 0 0 -18px;
+    border-radius: 50%;
+    border: 3px solid rgba(59, 130, 246, .22);
+    border-top-color: #3b82f6;
+    animation: es-boot-spin .8s linear infinite, es-boot-out .3s ease 8s forwards;
+}
+@keyframes es-boot-spin { to { transform: rotate(360deg); } }
+@keyframes es-boot-out { to { opacity: 0; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+    html:not(.es-ready)::after { animation: es-boot-out .3s ease 8s forwards; }
+}
+
+/* Until es-apps.js defines them: no raw tab bar links; the launcher keeps its place so nothing jumps */
+es-tabbar:not(:defined) { display: none; }
+es-apps:not(:defined) { display: inline-block; min-width: 38px; min-height: 38px; }
+es-apps:not(:defined) > * { display: none; }

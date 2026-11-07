@@ -642,6 +642,11 @@
         setTimeout(() => { if (!e.defaultPrevented) loader.start(); }, 0);
     });
     document.addEventListener('submit', (e) => { setTimeout(() => { if (!e.defaultPrevented) loader.start(); }, 0); });
+    // es-boot.css: the splash over a half-built page lifts once the page is parsed and its fonts are in
+    // (deferred scripts run right after parsing; never wait more than 1.5 s on fonts)
+    const ready = () => Promise.race([document.fonts ? document.fonts.ready : null, new Promise((r) => setTimeout(r, 1500))])
+        .then(() => document.documentElement.classList.add('es-ready'));
+    document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', ready, { once: true }) : ready();
     addEventListener('pageshow', loader.done);
     addEventListener('popstate', loader.done);
 })();
