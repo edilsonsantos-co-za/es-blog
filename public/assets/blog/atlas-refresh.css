@@ -137,5 +137,5 @@ body { counter-reset: sec; }
 .share-link-text p { margin: 0; color: var(--muted); font-size: 13px; }
 .share-link-x { border-radius: 16px; }
 
-/* Buy me a coffee: a flat line icon in the button's text colour (no emoji) */
+/* Buy me a coffee: the Buy Me a Coffee mark (same as the footer) in the button text colour */
 .coffee-icon { flex: none; display: block; }
