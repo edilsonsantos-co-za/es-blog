@@ -364,3 +364,6 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
 .contact-form .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .contact-form .btn[disabled] { opacity: .5; cursor: not-allowed; }
 @media (max-width: 800px) { .contact { grid-template-columns: 1fr; } .contact .cta { min-height: 0; } }
+
+/* Phones and tablets: the nav and search move to the bottom tab bar (<es-tabbar>), so the actions keep to the right */
+@media (max-width: 1024px) { .top-actions { margin-left: auto; } }
