@@ -4,3 +4,8 @@ framework:
             policy: sliding_window
             limit: 5
             interval: '1 hour'
+        # Topic suggestions from the search page
+        topic_suggest:
+            policy: sliding_window
+            limit: 5
+            interval: '1 hour'

@@ -1,0 +1,26 @@
+{% extends 'admin/layout.html.twig' %}
+{% block title %}Topic suggestions{% endblock %}
+{% block page_title %}Topic suggestions{% endblock %}
+{% block content %}
+<div class="card"><div class="card-body">
+<p>Topics readers suggested from the blog's <a href="{{ path('app_blog_search', {_fragment: 'suggest'}) }}" target="_blank" rel="noopener">search page</a>. {{ open }} open, {{ total }} in total. An email is only there to tell that reader when the post is out; never add it to the newsletter.</p>
+<div class="table-responsive"><table class="table">
+<thead><tr><th>Topic</th><th>Details</th><th>Email</th><th>Sent</th><th>Status</th><th>Action</th></tr></thead>
+<tbody>{% for s in suggestions %}<tr{% if s.handledAt %} class="text-muted"{% endif %}>
+<td><strong>{{ s.topic }}</strong></td>
+<td style="white-space: pre-line; max-width: 36ch">{{ s.details ?? '—' }}</td>
+<td>{% if s.email %}<a href="mailto:{{ s.email }}">{{ s.email }}</a>{% else %}—{% endif %}</td>
+<td>{{ s.createdAt|date('Y-m-d H:i') }}</td>
+<td>{{ s.handledAt ? 'Done ' ~ s.handledAt|date('Y-m-d') : 'Open' }}</td>
+<td style="white-space: nowrap">
+<form action="{{ path('app_admin_suggestions_toggle', {id: s.id}) }}" method="post" style="display:inline">
+<input type="hidden" name="_token" value="{{ csrf_token('suggestion_toggle_' ~ s.id) }}"><button class="btn btn-sm btn-outline-primary">{{ s.handledAt ? 'Reopen' : 'Mark done' }}</button></form>
+<form action="{{ path('app_admin_suggestions_delete', {id: s.id}) }}" method="post" style="display:inline">
+<input type="hidden" name="_token" value="{{ csrf_token('suggestion_delete_' ~ s.id) }}"><button class="btn btn-sm btn-outline-danger">Delete</button></form>
+</td>
+</tr>{% else %}<tr><td colspan="6">No suggestions yet.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% if page > 1 %}<a href="{{ path('app_admin_suggestions', {page: page - 1}) }}">Previous</a>{% endif %}
+{% if page * 50 < total %}<a href="{{ path('app_admin_suggestions', {page: page + 1}) }}">Next</a>{% endif %}
+</div></div>
+{% endblock %}

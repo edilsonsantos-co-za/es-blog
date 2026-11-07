@@ -80,12 +80,15 @@
             </ul>
         </nav>
 
+        {# The search page has its own big field; one search per page #}
+        {% if current_route != 'app_blog_search' %}
         <form class="mast-search" action="{{ path('app_blog_search') }}" method="get" role="search">
             <label class="sr-only" for="mast-search-input">Search posts</label>
             <span aria-hidden="true">⌕</span>
             <input id="mast-search-input" type="search" name="q" placeholder="Search posts" value="{{ app.request.query.get('q') }}">
             <kbd aria-hidden="true">/</kbd>
         </form>
+        {% endif %}
 
         <div class="top-actions">
             {# The ES app launcher and account menu, shared by every ES app (public/assets/es-apps.js) #}
@@ -139,11 +142,12 @@
         </div>
         {% endif %}
 
-        {% if tag_cloud|length > 0 %}
+        {% set live_tags = tag_cloud|filter(t => t.postCount > 0) %}
+        {% if live_tags|length > 0 %}
         <div class="tile widget widget-tags">
             <h2 class="label">Tags</h2>
             <div class="tag-cloud">
-                {% for item in tag_cloud %}
+                {% for item in live_tags %}
                 <a href="{{ path('app_blog_tag', {slug: item.tag.slug}) }}" class="tag-pill">
                     {{ item.tag.name }} <span class="tag-count">{{ item.postCount }}</span>
                 </a>

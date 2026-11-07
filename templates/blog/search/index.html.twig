@@ -1,39 +1,83 @@
 {% extends 'blog/layout.html.twig' %}
 
 {% block title %}Search{% if q %}: {{ q }}{% endif %} — {{ site_title }}{% endblock %}
+{% block page_class %}search-page{% endblock %}
+{# One search on this page: the big field below (the header search and the sidebar widget step aside) #}
+{% block sidebar_wrap %}{% endblock %}
 
 {% block content %}
-<header class="archive-header search-header">
-    <p class="archive-eyebrow">Search</p>
-    <h1>Find useful writing faster</h1>
-    <p class="archive-description">Search posts by topic, project, release note, or implementation detail.</p>
-</header>
+{% set topics = tag_cloud|filter(t => t.postCount > 0)|slice(0, 10) %}
+{% set found = posts and posts.totalItemCount > 0 %}
 
-<form action="{{ path('app_blog_search') }}" method="get" class="search-form search-form-large">
-    <label class="sr-only" for="search-query">Search posts</label>
-    <input id="search-query" type="text" name="q" value="{{ q }}" placeholder="Try Symfony, release workflow, Docker…" class="search-input" autofocus>
-    <button type="submit" class="search-btn">Search</button>
-</form>
-
-{% if q %}
-    {% if posts and posts.totalItemCount > 0 %}
-    <p class="search-results-count">Found {{ posts.totalItemCount }} result{{ posts.totalItemCount != 1 ? 's' : '' }} for “<strong>{{ q }}</strong>”.</p>
-    {% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_search', route_params: {q: q}} %}
-    {% else %}
-    <div class="empty-state">
-        <p class="empty-state-eyebrow">No matches</p>
-        <h2>No results for “{{ q }}”</h2>
-        <p>Try a shorter phrase, use different keywords, or browse the latest posts instead.</p>
-        <div class="empty-state-actions">
-            <a class="btn btn-primary" href="{{ path('app_blog_index') }}">Browse latest posts</a>
-        </div>
+<section class="tile search-hero" aria-labelledby="search-title">
+    <p class="label">Search</p>
+    <h1 id="search-title">{% if q %}{{ found ? 'Results for' : 'Nothing on' }} <span class="search-q">“{{ q }}”</span>{% if not found %} yet{% endif %}{% else %}Find something to read{% endif %}</h1>
+    <form action="{{ path('app_blog_search') }}" method="get" class="search-field" role="search">
+        <label class="sr-only" for="search-query">Search posts</label>
+        <svg class="search-field-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z M16 16l5 5"/></svg>
+        <input id="search-query" type="search" name="q" value="{{ q }}" placeholder="Symfony, Docker, release workflow…" autocomplete="off" enterkeyhint="search"{% if not q and not suggest.error %} autofocus{% endif %}>
+        <button type="submit" class="btn primary">Search</button>
+    </form>
+    {% if topics|length > 0 %}
+    <div class="search-topics">
+        <span class="label">Popular</span>
+        {% for item in topics %}<a class="tag-pill" href="{{ path('app_blog_search', {q: item.tag.name}) }}">{{ item.tag.name }}</a>{% endfor %}
     </div>
     {% endif %}
-{% else %}
-    <div class="empty-state quiet">
-        <p class="empty-state-eyebrow">Ready when you are</p>
-        <h2>Enter a search term to begin</h2>
-        <p>Use the field above to search published posts while keeping the experience fast and server-rendered.</p>
-    </div>
+</section>
+
+{% if found %}
+<p class="search-count mono">{{ posts.totalItemCount }} result{{ posts.totalItemCount != 1 ? 's' : '' }}</p>
+{% include 'blog/_post_list.html.twig' with {posts: posts, route: 'app_blog_search', route_params: {q: q}} %}
 {% endif %}
+
+<div class="search-bento{{ found ? ' after-results' : '' }}">
+    {% if not found %}
+    <section class="tile search-help">
+        {% if q %}
+        <p class="label">No matches</p>
+        <h2>Try a shorter phrase</h2>
+        <p>Fewer or different words usually help. Or browse everything that's been written so far.</p>
+        {% else %}
+        <p class="label">Browse instead</p>
+        <h2>Every post, newest first</h2>
+        <p>Not sure what to look for? Start with the latest writing, or follow the newsletter to hear when something new goes up.</p>
+        {% endif %}
+        <div class="search-help-actions">
+            <a class="btn primary" href="{{ path('app_blog_posts') }}">All posts</a>
+            <a class="btn" href="{{ path('app_newsletter_subscribe') }}">Newsletter</a>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="tile suggest-tile" id="suggest" aria-labelledby="suggest-title">
+        <p class="label">Suggest a topic</p>
+        {% if suggest.sent %}
+        <h2 id="suggest-title">Thanks, it's on the list</h2>
+        <p class="suggest-done" role="status">Your suggestion has been received. If you left an email, you'll hear when the post is out.</p>
+        <a class="btn" href="{{ path('app_blog_search', {_fragment: 'suggest'}) }}">Suggest another</a>
+        {% else %}
+        <h2 id="suggest-title">{% if q and not found %}Want to read about “{{ q }}”?{% else %}What should I write about next?{% endif %}</h2>
+        <form action="{{ path('app_blog_suggest') }}" method="post" class="suggest-form" novalidate>
+            <input type="hidden" name="_token" value="{{ csrf_token('topic_suggest') }}">
+            {# Honeypot: hidden from people, filled by bots #}
+            <div class="suggest-hp" aria-hidden="true"><label for="suggest-website">Website</label><input id="suggest-website" type="text" name="website" tabindex="-1" autocomplete="off"></div>
+            <label class="suggest-field"><span>Topic</span>
+                <input type="text" name="topic" value="{{ suggest.topic }}" maxlength="160" required placeholder="e.g. Running Symfony behind Nginx Proxy Manager"{% if suggest.error %} aria-invalid="true" aria-describedby="suggest-error" autofocus{% endif %}>
+            </label>
+            <label class="suggest-field"><span>Details <small>optional</small></span>
+                <textarea name="details" rows="3" maxlength="2000" placeholder="What would you like to know, or what are you stuck on?">{{ suggest.details }}</textarea>
+            </label>
+            <label class="suggest-field"><span>Email <small>optional, to hear when it's written</small></span>
+                <input type="email" name="email" value="{{ suggest.email }}" maxlength="254" autocomplete="email" inputmode="email" placeholder="you@example.com">
+            </label>
+            {% if suggest.error %}<p class="suggest-error" id="suggest-error" role="alert">{{ suggest.error }}</p>{% endif %}
+            <div class="suggest-actions">
+                <button type="submit" class="btn primary">Send suggestion</button>
+                <span class="form-note">No account needed. Your email is never shared or added to the newsletter.</span>
+            </div>
+        </form>
+        {% endif %}
+    </section>
+</div>
 {% endblock %}
