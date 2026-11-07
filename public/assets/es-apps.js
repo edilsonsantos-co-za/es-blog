@@ -595,40 +595,40 @@
 
     customElements.define('es-tabbar', EsTabbar);
 
-    // Page loading bar: a thin ES-blue bar across the top while a page loads, and from the moment a link is
-    // clicked or a form is sent until the next page shows. Styled through the CSSOM, so app CSPs allow it.
+    // The one ES loader: a full-page splash with the ES-blue spinner, the same as es-boot.css shows while a page
+    // arrives. A link click or form send that hasn't left the page after .25 s shows it, and the next page's own
+    // es-boot splash takes over seamlessly, so a slow page change reads as one spinner. Styled through the
+    // CSSOM and the Web Animations API, so app CSPs allow it.
     const loader = (() => {
-        const bar = document.createElement('div');
-        bar.setAttribute('aria-hidden', 'true');
-        Object.assign(bar.style, {
-            position: 'fixed', top: '0', left: '0', right: '0', height: '3px', zIndex: '2147483647', pointerEvents: 'none',
-            background: '#3b82f6', boxShadow: '0 0 10px rgba(59, 130, 246, .7)',
-            transformOrigin: 'left', transform: 'scaleX(0)', opacity: '0', transition: 'transform .3s ease, opacity .3s ease',
+        const veil = document.createElement('div');
+        veil.setAttribute('aria-hidden', 'true');
+        Object.assign(veil.style, {
+            position: 'fixed', inset: '0', zIndex: '2147483646', background: '#090b10', display: 'grid', placeItems: 'center',
+            opacity: '0', visibility: 'hidden', transition: 'opacity .2s ease, visibility .2s ease',
         });
-        let timer = 0, safety = 0, p = 0;
-        const set = (v) => { p = v; bar.style.transform = `scaleX(${v})`; };
+        const ring = document.createElement('div');
+        Object.assign(ring.style, {
+            width: '36px', height: '36px', boxSizing: 'border-box', borderRadius: '50%',
+            border: '3px solid rgba(59, 130, 246, .22)', borderTopColor: '#3b82f6',
+        });
+        veil.appendChild(ring);
+        let delay = 0, safety = 0, spin = null;
+        const show = () => {
+            if (!veil.isConnected) document.documentElement.appendChild(veil);
+            spin = spin || ring.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }], { duration: 800, iterations: Infinity });
+            Object.assign(veil.style, { opacity: '1', visibility: 'visible' });
+        };
         const start = () => {
-            if (!bar.isConnected) document.documentElement.appendChild(bar);
-            clearInterval(timer); clearTimeout(safety);
-            bar.style.transition = 'none'; set(0.04); bar.style.opacity = '1';
-            void bar.offsetWidth; bar.style.transition = 'transform .3s ease, opacity .3s ease';
-            set(0.2);
-            // creep towards 90% so it never looks finished before it is
-            timer = setInterval(() => set(p + (0.9 - p) * 0.08), 200);
+            clearTimeout(delay); clearTimeout(safety);
+            delay = setTimeout(show, 250);
             safety = setTimeout(done, 15000);
         };
         const done = () => {
-            if (bar.style.opacity === '0') return;
-            clearInterval(timer); clearTimeout(safety);
-            set(1);
-            setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => set(0), 300); }, 200);
+            clearTimeout(delay); clearTimeout(safety);
+            Object.assign(veil.style, { opacity: '0', visibility: 'hidden' });
         };
         return { start, done };
     })();
-    if (document.readyState !== 'complete') {
-        loader.start();
-        addEventListener('load', loader.done, { once: true });
-    }
     document.addEventListener('click', (e) => {
         // composedPath: links inside <es-tabbar>'s shadow root count too
         const t = e.composedPath ? e.composedPath()[0] : e.target;
