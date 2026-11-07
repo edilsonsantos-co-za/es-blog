@@ -1,5 +1,5 @@
 /*!
- * <es-apps>: the ES app launcher and account menu, shared by every ES app (portfolio, blog, journal, store, developers).
+ * <es-apps>: the ES app launcher and account menu, and <es-tabbar>: the phone/tablet bottom tab bar (further down), shared by every ES app (portfolio, blog, journal, store, developers).
  * Source of truth: es-marketplace/store/assets/es-apps.js. Apps ship a copy of this file (their CSP only
  * allows their own scripts); update it here and copy it over.
  *
@@ -314,6 +314,287 @@
 
     customElements.define('es-apps', EsApps);
 
+    /*
+     * <es-tabbar>: the app-style bottom tab bar every ES app shows on phones and tablets (≤ 1024px), like an
+     * installed app. Phones get a docked bar; tablets a floating island. The top bar keeps the brand, Buy me a coffee
+     * and <es-apps>; the app's own hamburger menu hides (`hide`).
+     *
+     * <es-tabbar hide=".menu-btn, #menu"          CSS selectors of the app's own phone/tablet menu, hidden while the bar shows
+     *            source="#menu"                   optional: also take the links of this nav (deduplicated); they go under More
+     *            more-button=".navbar__toggle">   optional: More opens the app's own menu (Developers' docs sidebar) instead of the sheet
+     *     <a href="/" data-icon="home">Home</a>   the tabs, in order; aria-current="page" marks the current one (else the URL decides)
+     *     <a href="/apps/x" data-match="/apps/">Apps</a>   data-match: current for every path that starts with it
+     * </es-tabbar>
+     *
+     * Up to five tabs; with more links, the first four plus More (a bottom sheet with the rest).
+     * Put the tag anywhere: it moves itself to the end of <body>, where it also reserves the space the bar covers.
+     * Icons come from data-icon (see TAB_ICONS), else from the label; the bar hides while the keyboard is up.
+     */
+    const TAB_ICONS = {
+        home: 'M3 11l9-7 9 7 M5 9.5V20h5v-6h4v6h5V9.5',
+        experience: 'M3 8h18v12H3z M9 8V5h6v3 M3 13h18',
+        education: 'M2 9l10-5 10 5-10 5z M6 11v5c3 2.5 9 2.5 12 0v-5 M22 9v6',
+        projects: 'M4 4h7v7H4z M13 4h7v7h-7z M4 13h7v7H4z M13 13h7v7h-7z',
+        services: 'M12 3l9 5-9 5-9-5z M3 12.5l9 5 9-5 M3 17l9 5 9-5',
+        contact: 'M3 6h18v12H3z M3 7l9 6 9-6',
+        posts: 'M5 4h10l4 4v12H5z M14 4v5h5 M8 13h8 M8 17h5',
+        search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14z M16 16l5 5',
+        newsletter: 'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z M10 21h4',
+        rss: 'M5 5a14 14 0 0 1 14 14 M5 11a8 8 0 0 1 8 8 M6 18h.01',
+        tag: 'M3 3h8l10 10-8 8L3 11z M7.5 7.5h.01',
+        themes: 'M12 3a9 9 0 1 0 0 18c1 0 1.5-.8 1.5-1.5 0-1-1-1.3-1-2.3 0-.8.7-1.2 1.5-1.2H17a4 4 0 0 0 4-4c0-5-4-9-9-9z M7.5 11h.01 M10 7h.01 M15 7.5h.01',
+        packs: 'M12 3l8 4.5v9L12 21l-8-4.5v-9z M4 7.5l8 4.5 8-4.5 M12 12v9',
+        install: 'M12 4v11 M7 10l5 5 5-5 M5 20h14',
+        docs: 'M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 M4 19a2 2 0 0 0 2 2h13 M8 7h7',
+        apps: 'M4 4h6v6H4z M14 4h6v6h-6z M4 14h6v6H4z M14 14h6v6h-6z',
+        guides: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M15.5 8.5l-2 5-5 2 2-5z',
+        roadmap: 'M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z M9 4v14 M15 6v14',
+        checkin: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M8 12l3 3 5-6',
+        insights: 'M5 20v-9 M12 20V5 M19 20v-6 M3 20h18',
+        prayer: 'M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z',
+        shelves: 'M4 3v18 M20 3v18 M4 9h16 M4 15h16',
+        books: 'M4 4h4v16H4z M10 4h4v16h-4z M15.5 5.2l3.4-.9 3.1 15.5-3.4.9z',
+        settings: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z M12 2v3 M12 19v3 M4.9 4.9L7 7 M17 17l2.1 2.1 M2 12h3 M19 12h3 M4.9 19.1L7 17 M17 7l2.1-2.1',
+        users: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M2 21a7 7 0 0 1 14 0 M16 3.5a4 4 0 0 1 0 7.5 M22 21a7 7 0 0 0-4-6.3',
+        login: 'M14 4h5v16h-5 M10 8l4 4-4 4 M14 12H3',
+        cart: 'M3 4h2l2.5 11h11L21 7H6.2 M9 20h.01 M18 20h.01',
+        link: 'M9 3L7 21 M17 3l-2 18 M4 8h17 M3 16h17',
+        more: 'M5 12h.01 M12 12h.01 M19 12h.01',
+    };
+    // No data-icon: guess from the label
+    const ICON_WORDS = [
+        [/^(home|overview|journal|dashboard)$/i, 'home'], [/experience|work|career/i, 'experience'], [/education|study/i, 'education'],
+        [/project/i, 'projects'], [/service/i, 'services'], [/contact|hire/i, 'contact'], [/post|writing|article/i, 'posts'],
+        [/search/i, 'search'], [/newsletter|subscribe/i, 'newsletter'], [/rss|feed/i, 'rss'], [/pack/i, 'packs'], [/theme/i, 'themes'],
+        [/install|download/i, 'install'], [/doc/i, 'docs'], [/apps?$/i, 'apps'], [/guide/i, 'guides'], [/roadmap/i, 'roadmap'],
+        [/check.?in/i, 'checkin'], [/insight|stats/i, 'insights'], [/prayer/i, 'prayer'], [/shel/i, 'shelves'], [/book/i, 'books'],
+        [/setting/i, 'settings'], [/user/i, 'users'], [/log ?in|sign ?in/i, 'login'], [/cart|basket/i, 'cart'],
+    ];
+    const tabIcon = (name, label) => {
+        const key = TAB_ICONS[name] ? name : (ICON_WORDS.find(([re]) => re.test(label)) || [, 'link'])[1];
+        return `<svg viewBox="0 0 24 24" aria-hidden="true"${key === 'more' ? ' class="dots"' : ''}><path d="${TAB_ICONS[key]}"/></svg>`;
+    };
+
+    const TAB_CSS = `
+        :host { --bg: #121620; --bg-2: #181d29; --text: #e8edf6; --muted: #8f9ab0; --line: #232a38; --accent: #3b82f6; --accent-2: #93c5fd;
+                display: none; height: calc(72px + env(safe-area-inset-bottom)); font: 700 11px/1.2 Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif;
+                -webkit-tap-highlight-color: transparent; }
+        @media (max-width: 1024px) { :host { display: block; } }
+        @media (min-width: 640px) and (max-width: 1024px) { :host { height: calc(92px + env(safe-area-inset-bottom)); } }
+        * { box-sizing: border-box; }
+        .bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147482600; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+               gap: 2px; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); background: rgba(18, 22, 32, .88); border-top: 1px solid var(--line);
+               -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); transition: transform .25s ease; }
+        :host(.kb) .bar { transform: translateY(110%); }
+        .tab { display: grid; justify-items: center; align-content: center; gap: 4px; min-height: 54px; padding: 4px 2px; border-radius: 14px; color: var(--muted);
+               text-decoration: none; font: inherit; background: none; border: 0; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+        .ic { width: 56px; max-width: 100%; height: 30px; border-radius: 999px; display: grid; place-items: center; transition: background .2s, transform .15s; }
+        .tab svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .tab svg.dots { stroke-width: 3.2; }
+        .lb { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: .01em; }
+        .tab[aria-current], .tab[aria-expanded="true"] { color: var(--text); }
+        .tab[aria-current] .ic, .tab[aria-expanded="true"] .ic { background: rgba(59, 130, 246, .2); color: var(--accent-2); }
+        .more[data-current] { color: var(--text); }
+        .more[data-current] .ic { background: rgba(59, 130, 246, .2); color: var(--accent-2); }
+        .tab:active .ic { transform: scale(.9); }
+        .tab:focus { outline: none; }
+        .tab:focus-visible .ic { outline: 2px solid var(--accent); outline-offset: 2px; }
+        @media (hover: hover) { .tab:hover { color: var(--text); } }
+        .scrim { position: fixed; inset: 0; z-index: 2147482400; background: rgba(5, 7, 12, .55); opacity: 0; visibility: hidden; transition: opacity .25s, visibility .25s; }
+        .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 2147482500; max-height: min(72vh, 560px); overflow: auto; overscroll-behavior: contain;
+                 padding: 10px 14px calc(84px + env(safe-area-inset-bottom)); background: var(--bg); border: 1px solid var(--line); border-bottom: 0;
+                 border-radius: 24px 24px 0 0; box-shadow: 0 -18px 48px rgba(0, 0, 0, .45); transform: translateY(100%); visibility: hidden;
+                 transition: transform .3s cubic-bezier(.2, .8, .2, 1), visibility .3s; }
+        :host(.open) .scrim { opacity: 1; visibility: visible; }
+        :host(.open) .sheet { transform: none; visibility: visible; }
+        .grab { display: block; width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 12px; }
+        .kicker { font: 500 11px/1.4 'JetBrains Mono', ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 4px 10px; }
+        .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+        .item { display: grid; justify-items: center; gap: 8px; padding: 14px 6px; border-radius: 16px; color: var(--text); text-decoration: none; font-size: 13px; text-align: center; }
+        .item .tile { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: var(--bg-2); border: 1px solid var(--line); color: var(--accent-2); }
+        .item svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+        .item[aria-current] .tile { background: #2563eb; border-color: #2563eb; color: #fff; }
+        .item:active { background: var(--bg-2); }
+        .item:focus { outline: none; }
+        .item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+        .item span:last-child { max-width: 100%; overflow-wrap: anywhere; }
+        .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+        /* Tablets: a floating island instead of a docked bar */
+        @media (min-width: 640px) and (max-width: 1024px) {
+            .bar { left: 50%; right: auto; bottom: calc(14px + env(safe-area-inset-bottom)); width: min(560px, calc(100% - 32px)); transform: translateX(-50%);
+                   padding: 6px; border: 1px solid var(--line); border-radius: 24px; box-shadow: 0 18px 48px rgba(0, 0, 0, .45); }
+            :host(.kb) .bar { transform: translate(-50%, calc(100% + 40px)); }
+            .sheet { left: 50%; right: auto; width: min(560px, calc(100% - 32px)); bottom: calc(14px + env(safe-area-inset-bottom)); border-bottom: 1px solid var(--line);
+                     border-radius: 24px; padding-bottom: 90px; transform: translate(-50%, calc(100% + 40px)); }
+            :host(.open) .sheet { transform: translateX(-50%); }
+            .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        @media (prefers-reduced-motion: reduce) { .bar, .sheet, .scrim, .ic { transition: none; } }
+    `;
+    let TAB_SHEET = null;
+    try { TAB_SHEET = new CSSStyleSheet(); TAB_SHEET.replaceSync(TAB_CSS); } catch { TAB_SHEET = null; }
+
+    // Single-page apps (Developers) change the URL without a page load: tell the tab bar
+    if (!history.__esTabbar) {
+        history.__esTabbar = true;
+        for (const fn of ['pushState', 'replaceState']) {
+            const orig = history[fn];
+            history[fn] = function (...args) { const r = orig.apply(this, args); dispatchEvent(new Event('es-locationchange')); return r; };
+        }
+    }
+
+    class EsTabbar extends HTMLElement {
+        connectedCallback() {
+            // Live at the end of <body>: never inside a header the app hides on small screens, and the host reserves the bar's space
+            if (this.parentNode !== document.body || this.nextElementSibling) {
+                const move = () => { if (this.isConnected) document.body.appendChild(this); };
+                document.body ? queueMicrotask(move) : addEventListener('DOMContentLoaded', move, { once: true });
+                return;
+            }
+            // One bar per page (Developers renders the tag twice: navbar and mobile sidebar)
+            if ([...document.querySelectorAll('es-tabbar')].some((el) => el !== this && el.__ready)) { this.remove(); return; }
+            if (this.__ready) return;
+            this.__ready = true;
+            this.setup();
+        }
+
+        setup() {
+            this.attachShadow({ mode: 'open' });
+            if (TAB_SHEET) this.shadowRoot.adoptedStyleSheets = [TAB_SHEET];
+
+            // Page-level rules: hide the app's own small-screen menu; the browser chrome and safe areas match the bar
+            const hide = this.getAttribute('hide');
+            if (hide) {
+                try {
+                    const page = new CSSStyleSheet();
+                    page.replaceSync(`@media (max-width: 1024px) { ${hide} { display: none !important; } }`);
+                    document.adoptedStyleSheets = [...document.adoptedStyleSheets, page];
+                } catch { /* very old browser: the app's own menu stays */ }
+            }
+            const vp = document.querySelector('meta[name="viewport"]');
+            if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover';
+            if (!document.querySelector('meta[name="theme-color"]')) {
+                const m = document.createElement('meta');
+                m.name = 'theme-color'; m.content = '#090b10';
+                document.head.appendChild(m);
+            }
+
+            this.links = this.collect();
+            this.render();
+
+            const update = () => { this.__moved = true; this.markCurrent(); };
+            addEventListener('popstate', update);
+            addEventListener('es-locationchange', update);
+            addEventListener('hashchange', update);
+            // The on-screen keyboard: get out of its way while a field has focus
+            const field = (el) => el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)
+                && !/^(checkbox|radio|button|submit|reset|range|color|file|image)$/.test(el.type));
+            document.addEventListener('focusin', (e) => { if (field(e.composedPath()[0])) this.classList.add('kb'); });
+            document.addEventListener('focusout', () => setTimeout(() => {
+                let a = document.activeElement; while (a && a.shadowRoot && a.shadowRoot.activeElement) a = a.shadowRoot.activeElement;
+                if (!field(a)) this.classList.remove('kb');
+            }, 0));
+            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && this.classList.contains('open')) this.toggle(false, true); });
+            matchMedia('(max-width: 1024px)').addEventListener?.('change', (e) => { if (!e.matches) this.toggle(false); });
+        }
+
+        collect() {
+            const seen = new Set();
+            const out = [];
+            const add = (a, fromSource) => {
+                const raw = a.getAttribute('href');
+                if (!raw || raw.startsWith('#') || /^javascript:/i.test(raw)) return;
+                const url = new URL(raw, location.href);
+                const key = url.origin + url.pathname.replace(/\/$/, '') + url.search;
+                if (seen.has(key)) return;
+                seen.add(key);
+                const label = (a.getAttribute('data-label') || a.textContent || a.getAttribute('aria-label') || '').replace(/[↗→]/g, '').replace(/\s+/g, ' ').trim();
+                if (!label) return;
+                out.push({
+                    url, label, icon: a.getAttribute('data-icon') || '', match: a.getAttribute('data-match') || '',
+                    target: a.getAttribute('target') || '', rel: a.getAttribute('rel') || '', type: a.getAttribute('type') || '', fromSource,
+                    current: a.getAttribute('aria-current') === 'page' || (fromSource && /(^|[\s_-])(active|current)/.test(a.className)),
+                });
+            };
+            this.querySelectorAll(':scope > a').forEach((a) => add(a, false));
+            const source = this.getAttribute('source');
+            if (source) document.querySelectorAll(source).forEach((root) => root.querySelectorAll('a[href]').forEach((a) => add(a, true)));
+            return out;
+        }
+
+        render() {
+            const moreBtn = this.getAttribute('more-button');
+            const all = this.links;
+            const own = all.filter((l) => !l.fromSource);
+            // Up to five tabs; otherwise four and More. Links from `source` always go under More.
+            const fits = !moreBtn && all.length <= 5 && all.length === own.length;
+            const tabs = fits ? all : own.slice(0, 4);
+            this.rest = fits ? [] : all.filter((l) => !tabs.includes(l));
+            this.hasMore = !!moreBtn || this.rest.length > 0;
+
+            const a = (l, cls, inner) => `<a class="${cls}" href="${esc(l.url.href)}"${l.target ? ` target="${esc(l.target)}"` : ''}`
+                + `${l.target === '_blank' ? ` rel="${esc(l.rel || 'noopener')}"` : ''}${l.type ? ` type="${esc(l.type)}"` : ''}>${inner}`
+                + `${l.target === '_blank' ? '<span class="sr">(opens in a new tab)</span>' : ''}</a>`;
+            this.shadowRoot.innerHTML = `${TAB_SHEET ? '' : `<style>${TAB_CSS}</style>`}
+                <div class="scrim" part="scrim"></div>
+                ${this.rest.length && !moreBtn ? `<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="More">
+                    <span class="grab" aria-hidden="true"></span>
+                    <p class="kicker">More</p>
+                    <div class="grid">${this.rest.map((l) => a(l, 'item', `<span class="tile">${tabIcon(l.icon, l.label)}</span><span>${esc(l.label)}</span>`)).join('')}</div>
+                </div>` : ''}
+                <nav class="bar" aria-label="Main">
+                    ${tabs.map((l) => a(l, 'tab', `<span class="ic">${tabIcon(l.icon, l.label)}</span><span class="lb">${esc(l.label)}</span>`)).join('')}
+                    ${this.hasMore ? `<button class="tab more" type="button" aria-expanded="false"${moreBtn ? '' : ' aria-controls="sheet" aria-haspopup="dialog"'}>
+                        <span class="ic">${tabIcon('more', '')}</span><span class="lb">More</span></button>` : ''}
+                </nav>`;
+            this.tabs = tabs;
+
+            const root = this.shadowRoot;
+            root.querySelector('.more')?.addEventListener('click', () => {
+                if (moreBtn) { document.querySelector(moreBtn)?.click(); return; }
+                this.toggle(!this.classList.contains('open'), true);
+            });
+            root.querySelector('.scrim').addEventListener('click', () => this.toggle(false));
+            root.querySelectorAll('.item').forEach((el) => el.addEventListener('click', () => this.toggle(false)));
+            this.markCurrent();
+        }
+
+        toggle(open, focus) {
+            if (!this.shadowRoot.querySelector('.sheet')) return;
+            this.classList.toggle('open', open);
+            const more = this.shadowRoot.querySelector('.more');
+            more?.setAttribute('aria-expanded', String(open));
+            if (open && focus) this.shadowRoot.querySelector('.item')?.focus();
+            else if (!open && focus) more?.focus();
+        }
+
+        markCurrent() {
+            const here = location.pathname.replace(/\/$/, '') || '/';
+            const score = (l) => {
+                if (l.url.origin !== location.origin) return -1;
+                if (l.match) return here.startsWith(l.match.replace(/\/$/, '')) ? l.match.length : -1;
+                const p = l.url.pathname.replace(/\/$/, '') || '/';
+                if (p === here) return p.length + 1;
+                return p !== '/' && here.startsWith(`${p}/`) ? p.length : -1;
+            };
+            // On load the page says which link is current; after a client-side navigation (or with no hint) the longest matching path wins
+            let current = this.__moved ? null : (this.links.find((l) => l.current && !l.fromSource) || this.links.find((l) => l.current));
+            if (!current) {
+                let best = -1;
+                for (const l of this.links) { const s = score(l); if (s > best) { best = s; current = l; } }
+            }
+            const i = this.links.indexOf(current);
+            this.shadowRoot.querySelectorAll('.tab[href], .item').forEach((el) => el.removeAttribute('aria-current'));
+            const els = [...this.shadowRoot.querySelectorAll('.tab[href]'), ...this.shadowRoot.querySelectorAll('.item')];
+            const order = [...this.tabs, ...this.rest];
+            const j = order.indexOf(this.links[i]);
+            if (j >= 0) els[j].setAttribute('aria-current', 'page');
+            this.shadowRoot.querySelector('.more')?.toggleAttribute('data-current', j >= this.tabs.length);
+        }
+    }
+
+    customElements.define('es-tabbar', EsTabbar);
+
     // Page loading bar: a thin ES-blue bar across the top while a page loads, and from the moment a link is
     // clicked or a form is sent until the next page shows. Styled through the CSSOM, so app CSPs allow it.
     const loader = (() => {
@@ -349,7 +630,9 @@
         addEventListener('load', loader.done, { once: true });
     }
     document.addEventListener('click', (e) => {
-        const a = e.target.closest && e.target.closest('a[href]');
+        // composedPath: links inside <es-tabbar>'s shadow root count too
+        const t = e.composedPath ? e.composedPath()[0] : e.target;
+        const a = t && t.closest && t.closest('a[href]');
         if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         if ((a.target && a.target !== '_self') || a.hasAttribute('download')) return;
         const url = new URL(a.href, location.href);

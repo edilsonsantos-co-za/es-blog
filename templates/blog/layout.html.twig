@@ -93,6 +93,14 @@
         </div>
     </div>
 </header>
+{# Phones and tablets: the app-style bottom tab bar every ES app shares (public/assets/es-apps.js); it replaces the ☰ menu.
+   The categories and menu items of #menu join it under More. #}
+<es-tabbar hide=".menu-btn, .mast-nav, .mast-search" source="#menu">
+    <a href="{{ path('app_blog_index') }}" data-icon="home"{% if current_route == 'app_blog_index' %} aria-current="page"{% endif %}>Home</a>
+    <a href="{{ path('app_blog_posts') }}" data-icon="posts"{% if current_route in ['app_blog_posts', 'app_blog_post'] %} aria-current="page"{% endif %}>Posts</a>
+    <a href="{{ path('app_blog_search') }}" data-icon="search"{% if current_route == 'app_blog_search' %} aria-current="page"{% endif %}>Search</a>
+    <a href="{{ path('app_newsletter_subscribe') }}" data-icon="newsletter"{% if current_route starts with 'app_newsletter' %} aria-current="page"{% endif %}>Newsletter</a>
+</es-tabbar>
 
 <div class="wrap page {% block page_class %}with-sidebar{% endblock %}">
     <main class="main-content" id="main" tabindex="-1">
