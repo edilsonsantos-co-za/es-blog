@@ -16,6 +16,8 @@
  *          dashboard-url="/admin">                 optional "Dashboard" link (opens in a new tab)
  *
  * Menu links that open in a new tab carry a small "opens in a new tab" arrow (and say so to screen readers).
+ * Page links do too: any target="_blank" link whose label ends in "↗" (or carries Docusaurus' external-link
+ * icon) gets that same arrow in its place, so every ES app shows one new-tab icon.
  *
  * Signing out here also writes the shared `es-signout` cookie, so the other ES apps sign out too.
  * Signed in here, it publishes who you are (display only) in the shared `es-user` cookie, so apps where
@@ -647,6 +649,71 @@
     const ready = () => Promise.race([document.fonts ? document.fonts.ready : null, new Promise((r) => setTimeout(r, 1500))])
         .then(() => document.documentElement.classList.add('es-ready'));
     document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', ready, { once: true }) : ready();
+    // One "opens in a new tab" icon everywhere: the launcher menu's box-and-arrow replaces the "↗" glyph (drawn by
+    // whichever fallback font has it, so it differed per app and OS) and Docusaurus' external-link icon on
+    // target="_blank" links. Built with DOM calls and CSSOM styles, so app CSPs allow it.
+    const SVGNS = 'http://www.w3.org/2000/svg';
+    const extIcon = () => {
+        const svg = document.createElementNS(SVGNS, 'svg');
+        const attrs = { viewBox: '0 0 24 24', width: '0.95em', height: '0.95em', fill: 'none', stroke: 'currentColor', 'stroke-width': '2',
+            'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true', focusable: 'false', class: 'es-ext' };
+        for (const k in attrs) svg.setAttribute(k, attrs[k]);
+        Object.assign(svg.style, { display: 'inline-block', flex: 'none', verticalAlign: '-0.1em', marginLeft: '0.3em' });
+        const path = document.createElementNS(SVGNS, 'path');
+        path.setAttribute('d', 'M14 4h6v6 M20 4l-9 9 M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5');
+        svg.appendChild(path);
+        return svg;
+    };
+    const srNote = () => {
+        const sr = document.createElement('span');
+        sr.textContent = ' (opens in a new tab)';
+        Object.assign(sr.style, { position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: '0' });
+        return sr;
+    };
+    const ARROW = /\s*[↗\u2197]\uFE0F?\s*$/;
+    const markNewTab = (a) => {
+        if (a.dataset.esExt || a.querySelector('.es-ext')) return;
+        const icon = a.querySelector('svg[class*="iconExternalLink"]');
+        // an app that hid the icon on purpose (Developers' coffee button) keeps it hidden
+        if (icon && getComputedStyle(icon).display === 'none') return;
+        let host = null;
+        if (!icon) {
+            // the last text node that ends in "↗" (it may sit in a child span, e.g. <span class="mono">View ↗</span>,
+            // or be followed by a screen-reader note)
+            const walk = document.createTreeWalker(a, NodeFilter.SHOW_TEXT);
+            let last = null;
+            for (let n = walk.nextNode(); n; n = walk.nextNode()) if (ARROW.test(n.nodeValue)) last = n;
+            if (!last) return;
+            last.nodeValue = last.nodeValue.replace(ARROW, '');
+            host = last.nodeValue ? last : last.parentNode !== a ? last.parentNode : null;
+            if (!last.nodeValue && last.parentNode !== a && !last.parentNode.textContent.trim()) {
+                // a bare arrow span (<span class="arrow">↗</span>): the icon takes its place
+                host = last.parentNode; host.textContent = '';
+            }
+        }
+        a.dataset.esExt = '1';
+        const svg = extIcon();
+        // Docusaurus' icon belongs to React: hide it and add ours beside it rather than removing it
+        if (icon) { icon.style.display = 'none'; icon.after(svg); }
+        else if (host && host.nodeType === 3) { host.after(svg); }
+        else if (host) { host.appendChild(svg); }
+        else { a.appendChild(svg); }
+        // flex/grid buttons (.btn) already space their children with a gap
+        const box = getComputedStyle(svg.parentNode);
+        if (/flex|grid/.test(box.display) && parseFloat(box.columnGap) > 0) svg.style.marginLeft = '0';
+        if (!/new tab/i.test(a.textContent + ' ' + (a.getAttribute('aria-label') || ''))) svg.after(srNote());
+    };
+    const scanNewTab = (root) => {
+        if (root.nodeType !== 1) return;
+        if (root.matches('a[target="_blank"]')) markNewTab(root);
+        root.querySelectorAll('a[target="_blank"]').forEach(markNewTab);
+    };
+    const watchNewTab = () => {
+        scanNewTab(document.body);
+        // admin panels and Docusaurus render on the client: catch links added later too
+        new MutationObserver((list) => list.forEach((m) => m.addedNodes.forEach(scanNewTab))).observe(document.body, { childList: true, subtree: true });
+    };
+    document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', watchNewTab, { once: true }) : watchNewTab();
     addEventListener('pageshow', loader.done);
     addEventListener('popstate', loader.done);
 })();
