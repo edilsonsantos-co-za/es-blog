@@ -2,7 +2,7 @@
     "name": "edilsonsantos-co-za/es-blog",
     "description": "ES Blog: a Symfony publishing workspace with the HTMLy content model.",
     "type": "project",
-    "license": "proprietary",
+    "license": "GPL-2.0-or-later",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
