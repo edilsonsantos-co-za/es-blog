@@ -40,7 +40,7 @@
 <meta name="twitter:title" content="{{ post.title }}">
 <meta name="twitter:description" content="{{ post.description ?? excerpt(post.body, 160) }}">
 <meta property="article:published_time" content="{{ (post.publishedAt ?? post.createdAt)|date('c') }}">
-<meta property="article:author" content="{{ post.author.username }}">
+<meta property="article:author" content="{{ post.author.displayName }}">
 {% endblock %}
 
 {% block content %}
@@ -58,7 +58,7 @@
         <h1 class="post-title">{{ post.title }}</h1>
 
         <div class="post-meta post-meta-large">
-            <span class="post-author">By <a href="{{ path('app_blog_author', {username: post.author.username}) }}">{{ post.author.username }}</a></span>
+            <span class="post-author">By <a href="{{ path('app_blog_author', {username: post.author.username}) }}">{{ post.author.displayName }}</a></span>
             <time datetime="{{ (post.publishedAt ?? post.createdAt)|date('c') }}">{{ (post.publishedAt ?? post.createdAt)|date('F j, Y') }}</time>
             <span class="post-views">{{ post.views }} views</span>
         </div>
@@ -99,14 +99,14 @@
 
     <div class="author-box">
         {% if avatar_url(post.author) %}
-        <img src="{{ avatar_url(post.author, 160) }}" alt="{{ post.author.username }}" class="author-avatar">
+        <img src="{{ avatar_url(post.author, 160) }}" alt="{{ post.author.displayName }}" class="author-avatar">
         {% else %}
-        <div class="author-avatar author-avatar-fallback" aria-hidden="true">{{ post.author.username|first|upper }}</div>
+        <div class="author-avatar author-avatar-fallback" aria-hidden="true">{{ post.author.displayName|first|upper }}</div>
         {% endif %}
         <div class="author-info">
             <p class="author-label">Written by</p>
             <h2 class="author-name">
-                <a href="{{ path('app_blog_author', {username: post.author.username}) }}">{{ post.author.username }}</a>
+                <a href="{{ path('app_blog_author', {username: post.author.username}) }}">{{ post.author.displayName }}</a>
             </h2>
             {% if post.author.about %}
             <p class="author-bio">{{ post.author.about }}</p>

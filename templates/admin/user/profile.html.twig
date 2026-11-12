@@ -55,6 +55,13 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="display_name">Display name</label>
+                        <input type="text" class="form-control" id="display_name" name="display_name" maxlength="120"
+                               value="{{ user.displayName == user.username ? '' : user.displayName }}" placeholder="{{ user.username }}">
+                        <small class="form-text text-muted">Shown to readers as the author of your posts. Empty uses the username.</small>
+                    </div>
+
+                    <div class="form-group">
                         <label for="about">About</label>
                         <textarea class="form-control" id="about" name="about" rows="4"
                                   placeholder="Tell us about yourself…">{{ user.about }}</textarea>

@@ -74,7 +74,7 @@ class PostController extends AbstractController
             $xml .= '<guid isPermaLink="true">' . htmlspecialchars($url, ENT_XML1) . '</guid>' . "\n";
             $xml .= '<pubDate>' . $pubAt->format(\DateTime::RFC2822) . '</pubDate>' . "\n";
             $xml .= '<description><![CDATA[' . ($post->getDescription() ?? mb_substr(strip_tags($post->getBody()), 0, 300)) . ']]></description>' . "\n";
-            $xml .= '<author>' . htmlspecialchars($post->getAuthor()->getUsername(), ENT_XML1) . '</author>' . "\n";
+            $xml .= '<author>' . htmlspecialchars($post->getAuthor()->getDisplayName(), ENT_XML1) . '</author>' . "\n";
             $xml .= '</item>' . "\n";
         }
 

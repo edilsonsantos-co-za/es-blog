@@ -91,7 +91,7 @@
                             <span class="badge badge-warning">Scheduled</span>
                         {% endif %}
                     </td>
-                    <td>{{ post.author.username }}</td>
+                    <td>{{ post.author.displayName }}</td>
                     <td>{{ post.category ? post.category.title : '—' }}</td>
                     <td>
                         {% for tag in post.tags %}

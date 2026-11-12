@@ -105,8 +105,11 @@ final class PostDrafter
         return $clusters;
     }
 
-    /** @param list<FeedItem> $items */
-    public function draft(array $items, string $topic, string $angle = ''): DraftedPost
+    /**
+     * @param list<FeedItem> $items
+     * @param string $curator name of the person who reviews and refines the draft, named in the AI disclosure
+     */
+    public function draft(array $items, string $topic, string $angle = '', string $curator = 'the author'): DraftedPost
     {
         $this->requireKey();
         if (count(array_unique(array_map(static fn (FeedItem $item): string => $item->getFingerprint(), $items))) < 2) {
@@ -140,10 +143,20 @@ final class PostDrafter
             str_replace(['(', ')', ' ', "\n", "\r"], ['%28', '%29', '%20', '', ''], $item->getLink()),
             str_replace(["\n", "\r"], '', $item->getTitle()),
         ), $items);
-        $draft->body .= "\n\n## Sources\n\n" . implode("\n", $references)
-            . "\n\n*AI-assisted synthesis. Reviewed by the author before publication.*";
+        $draft->body .= "\n\n## Sources and further reading\n\n"
+            . "This post brings together reporting from the articles below. Read them for the full detail and the original authors' views.\n\n"
+            . implode("\n", $references)
+            . "\n\n*" . self::disclosure($curator) . '*';
 
         return $draft;
+    }
+
+    /** How readers are told who did what on a feed-driven post */
+    public static function disclosure(string $curator): string
+    {
+        $curator = trim(str_replace(['*', '_', '[', ']', "\n", "\r"], '', $curator)) ?: 'the author';
+
+        return sprintf('A note on how this was made: this post was drafted with AI from the sources listed above, then curated, fact-checked against them and refined by %s for readers.', $curator);
     }
 
     private function requireKey(): void

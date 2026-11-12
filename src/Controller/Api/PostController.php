@@ -34,6 +34,7 @@ class PostController extends AbstractController
                 'slug'     => $post->getSlug(),
                 'excerpt'  => $post->getDescription() ?? mb_substr(strip_tags($post->getBody()), 0, 300),
                 'author'   => $post->getAuthor()->getUsername(),
+                'author_name' => $post->getAuthor()->getDisplayName(),
                 'date'     => $pubAt->format('Y-m-d\TH:i:sP'),
                 'tags'     => array_map(static fn ($t) => $t->getName(), $post->getTags()->toArray()),
                 'category' => $post->getCategory()?->getTitle(),

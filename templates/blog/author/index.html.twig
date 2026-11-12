@@ -1,17 +1,17 @@
 {% extends 'blog/layout.html.twig' %}
 
-{% block title %}{{ author.username }} — {{ site_title }}{% endblock %}
+{% block title %}{{ author.displayName }} — {{ site_title }}{% endblock %}
 
 {% block content %}
 <header class="author-header">
     {% if avatar_url(author) %}
-    <img src="{{ avatar_url(author, 240) }}" alt="{{ author.username }}" class="author-avatar-large">
+    <img src="{{ avatar_url(author, 240) }}" alt="{{ author.displayName }}" class="author-avatar-large">
     {% else %}
-    <div class="author-avatar-large author-avatar-fallback" aria-hidden="true">{{ author.username|first|upper }}</div>
+    <div class="author-avatar-large author-avatar-fallback" aria-hidden="true">{{ author.displayName|first|upper }}</div>
     {% endif %}
     <div class="author-header-info">
         <p class="archive-eyebrow">Author</p>
-        <h1>{{ author.username }}</h1>
+        <h1>{{ author.displayName }}</h1>
         {% if author.about %}
         <p class="author-bio">{{ author.about }}</p>
         {% endif %}
@@ -27,7 +27,7 @@
 </header>
 
 <section class="section-heading compact" aria-labelledby="author-posts-heading">
-    <p>Published by {{ author.username }}</p>
+    <p>Published by {{ author.displayName }}</p>
     <h2 id="author-posts-heading">Posts</h2>
 </section>
 

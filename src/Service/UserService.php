@@ -63,7 +63,7 @@ final class UserService
      */
     public function updateProfile(User $user, array $data): User
     {
-        foreach (['email', 'about', 'avatar', 'facebook', 'twitter', 'instagram', 'bluesky', 'linkedin', 'github'] as $field) {
+        foreach (['email', 'displayName', 'about', 'avatar', 'facebook', 'twitter', 'instagram', 'bluesky', 'linkedin', 'github'] as $field) {
             if (array_key_exists($field, $data)) {
                 $setter = 'set' . ucfirst($field);
                 $user->$setter($data[$field] !== '' ? (string) $data[$field] : null);

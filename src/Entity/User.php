@@ -47,6 +47,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, LegacyP
     #[ORM\Column(length: 255, options: ['default' => 'disabled'])]
     private string $mfaSecret = 'disabled';
 
+    /** Name readers see as the author (falls back to the username) */
+    #[ORM\Column(name: 'display_name', length: 120, nullable: true)]
+    private ?string $displayName = null;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $about = null;
 
@@ -210,6 +214,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface, LegacyP
         }
 
         return new TotpConfiguration($this->mfaSecret, TotpConfiguration::ALGORITHM_SHA1, 30, 6);
+    }
+
+    public function getDisplayName(): string
+    {
+        return $this->displayName ?? $this->username;
+    }
+
+    public function setDisplayName(?string $displayName): static
+    {
+        $displayName = $displayName !== null ? trim($displayName) : null;
+        $this->displayName = $displayName !== '' ? $displayName : null;
+
+        return $this;
     }
 
     public function getAbout(): ?string

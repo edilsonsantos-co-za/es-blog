@@ -206,6 +206,7 @@ class UserController extends AbstractController
 
                 $profileData = [
                     'email'     => $email,
+                    'displayName' => trim($request->request->get('display_name', '')),
                     'about'     => $request->request->get('about', ''),
                     'avatar'    => trim($request->request->get('avatar', '')),
                     'facebook'  => trim($request->request->get('facebook', '')),

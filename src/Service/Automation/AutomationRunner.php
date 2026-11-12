@@ -185,7 +185,7 @@ final class AutomationRunner
         $author ??= $this->users->findOneBy(['role' => UserRole::Admin], ['id' => 'ASC'])
             ?? throw new \RuntimeException('No admin user to author automated posts.');
 
-        $draft = $this->drafter->draft($items, $topic, $angle);
+        $draft = $this->drafter->draft($items, $topic, $angle, $author->getDisplayName());
         $slug = $this->slugs->makeUnique(
             mb_substr($this->slugs->generate($draft->title), 0, 120),
             fn (string $candidate): bool => $this->posts->findBySlug($candidate) !== null,

@@ -79,7 +79,9 @@ final class PostDrafterTest extends TestCase
 
             return $this->response();
         });
-        $draft = $this->drafter($http)->draft($this->sources(), 'php');
+        $draft = $this->drafter($http)->draft($this->sources(), 'php', '', 'Edilson Santos');
+        self::assertStringContainsString('## Sources and further reading', $draft->body);
+        self::assertStringContainsString('drafted with AI from the sources listed above, then curated, fact-checked against them and refined by Edilson Santos for readers', $draft->body);
         self::assertStringContainsString('[PHP news](https://example.com/php)', $draft->body);
         self::assertStringContainsString('[Backend notes](https://other.example/php)', $draft->body);
         self::assertNotEmpty($draft->linkedin);
