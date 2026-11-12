@@ -39,11 +39,6 @@ security:
                 path: app_logout
                 target: app_login
 
-            remember_me:
-                secret: '%kernel.secret%'
-                lifetime: 604800
-                path: /
-
     role_hierarchy:
         ROLE_ADMIN:  [ROLE_EDITOR, ROLE_AUTHOR]
         ROLE_EDITOR: [ROLE_AUTHOR]

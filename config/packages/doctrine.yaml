@@ -1,6 +1,8 @@
 doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
+        # `sessions` belongs to PdoSessionHandler, not to an entity: keep it out of schema diffs
+        schema_filter: '~^(?!sessions$)~'
         charset: utf8mb4
         default_table_options:
             charset: utf8mb4

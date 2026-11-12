@@ -2,8 +2,18 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
-    # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    # Sessions live in the database (table `sessions`), so they survive deploys and can be revoked.
+    # The cookie ends with the browser; 2 hours without a request ends the session (the SSO session
+    # itself lasts 8 hours, so after that "Sign in" asks for the password again).
+    session:
+        handler_id: Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        cookie_lifetime: 0
+        gc_maxlifetime: 7200
+        gc_probability: 1
+        gc_divisor: 100
+        cookie_secure: auto
+        cookie_httponly: true
+        cookie_samesite: lax
 
     assets:
         version_strategy: App\Asset\FileMtimeVersionStrategy

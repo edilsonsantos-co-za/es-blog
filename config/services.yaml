@@ -69,3 +69,9 @@ services:
     # Twig BlogExtension — tagged automatically via autoconfigure (GlobalsInterface)
     App\Twig\BlogExtension:
         tags: ['twig.extension']
+
+    # Session storage on the app's own database connection (see framework.session)
+    Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler:
+        arguments:
+            - !service { class: PDO, factory: ['@doctrine.dbal.default_connection', 'getNativeConnection'] }
+            - { lock_mode: 0 }
