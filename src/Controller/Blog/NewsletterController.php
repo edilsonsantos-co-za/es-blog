@@ -27,25 +27,26 @@ final class NewsletterController extends AbstractController
     public function subscribe(Request $request): Response
     {
         $message = null;
+        $sent = false;
         $status = 200;
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('newsletter_subscribe', $request->request->getString('_token'))) {
                 throw $this->createAccessDeniedException('Invalid form token.');
             }
             if (!$this->limiter->create($request->getClientIp() ?? 'unknown')->consume()->isAccepted()) {
-                return $this->page('newsletter/subscribe.html.twig', ['message' => 'Please wait before trying again.', 'ready' => $this->mailer->ready()], 429);
+                return $this->page('newsletter/subscribe.html.twig', ['message' => 'Please wait a few minutes before trying again.', 'sent' => false, 'ready' => $this->mailer->ready()], 429);
             }
             try {
                 $this->subscriptions->request($request->request->getString('email'),
                     $request->request->getString('posts') === '1', $request->request->getString('products') === '1');
-                $message = 'If this address is eligible and delivery is available, a confirmation email will arrive. Nothing is active until you confirm. Existing subscribers can use the management link in their emails.';
+                $sent = true;
             } catch (\InvalidArgumentException $e) {
                 $message = $e->getMessage();
                 $status = 422;
             }
         }
 
-        return $this->page('newsletter/subscribe.html.twig', ['message' => $message, 'ready' => $this->mailer->ready()], $status);
+        return $this->page('newsletter/subscribe.html.twig', ['message' => $message, 'sent' => $sent, 'ready' => $this->mailer->ready()], $status);
     }
 
     #[Route('/newsletter/confirm/{token}', name: 'app_newsletter_confirm', methods: ['GET', 'POST'])]

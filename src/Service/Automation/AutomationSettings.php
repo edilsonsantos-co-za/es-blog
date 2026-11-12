@@ -63,7 +63,7 @@ final class AutomationSettings
 
     public function voice(): string
     {
-        return $this->config->get('automation.voice') ?: 'Practical, direct and friendly backend developer (PHP, Symfony, Laravel, APIs, Docker, AWS) '
+        return $this->config->get('automation.voice') ?: 'Practical, direct and friendly full-stack engineer (PHP, Symfony, Laravel, APIs, Docker, AWS) '
             . 'based in Johannesburg. Shares lessons from shipping production systems. British English. No hype, no emojis.';
     }
 

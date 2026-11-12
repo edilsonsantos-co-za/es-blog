@@ -1,8 +1,21 @@
 {% extends 'newsletter/_layout.html.twig' %}
 {% block title %}Newsletter · {{ site_title }}{% endblock %}
-{% block heading %}New posts, straight to your inbox.{% endblock %}
-{% block lead %}<p>Notes on building software and shipping real products, from a full-time engineer's spare-time projects. Pick only what you want.</p>{% endblock %}
+{% block kicker %}Newsletter{% if sent %} · check your inbox{% endif %}{% endblock %}
+{% block heading %}{% if sent %}Check your inbox.{% else %}New posts, straight to your inbox.{% endif %}{% endblock %}
+{% block lead %}
+{% if sent %}
+<p>If that address can receive our emails, a confirmation link is on its way. Nothing starts until you click it.</p>
+{% else %}
+<p>Notes on building software and shipping real products, from a full-time engineer's spare-time projects. Pick only what you want.</p>
+{% endif %}
+{% endblock %}
 {% block form %}
+{% if sent %}
+<div class="contact-form">
+    <p class="notice" role="status"><b>Confirmation sent.</b> Open the email titled “Confirm your ES Blog subscription” and click the button inside. No email after a few minutes? Check your spam folder. Already subscribed? Use the link at the bottom of any of our emails.</p>
+    <div class="actions"><a class="btn btn-primary primary" href="{{ path('app_blog_posts') }}">Read the latest posts</a></div>
+</div>
+{% else %}
 <form method="post" class="contact-form">
     <input type="hidden" name="_token" value="{{ csrf_token('newsletter_subscribe') }}">
     <label><span class="label">Email</span><input id="newsletter-email" type="email" name="email" autocomplete="email" maxlength="254" placeholder="you@example.com" required></label>
@@ -11,8 +24,9 @@
         <label class="choice"><input type="checkbox" name="posts" value="1"><span><b>New blog posts</b><small>When a new post goes live.</small></span></label>
         <label class="choice"><input type="checkbox" name="products" value="1"><span><b>ES product and release updates</b><small>New apps, themes and releases.</small></span></label>
     </fieldset>
+    {% if message %}<p class="notice error" role="alert">{{ message }}</p>{% endif %}
+    {% if not ready %}<p class="notice" role="status">Subscriptions are paused right now and no emails are going out. Please try again later.</p>{% endif %}
     <div><button class="btn btn-primary primary" type="submit" {% if not ready %}disabled{% endif %}>Subscribe</button></div>
-    {% if not ready %}<p class="form-note" role="status">Subscriptions are paused right now and no emails are going out. Please try again later.</p>{% endif %}
-    {% if message %}<p class="form-note" role="status">{{ message }}</p>{% endif %}
 </form>
+{% endif %}
 {% endblock %}

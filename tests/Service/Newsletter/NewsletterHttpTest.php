@@ -54,7 +54,7 @@ final class NewsletterHttpTest extends WebTestCase
             'email' => $emailAddress, 'posts' => '1',
         ]));
         self::assertResponseIsSuccessful();
-        self::assertStringContainsString('Nothing is active until you confirm', $client->getResponse()->getContent());
+        self::assertStringContainsString('Check your inbox.', $client->getResponse()->getContent());
         $em->clear();
         $subscriber = $em->getRepository(NewsletterSubscriber::class)->findOneBy(['email' => $emailAddress]);
         self::assertNotNull($subscriber);

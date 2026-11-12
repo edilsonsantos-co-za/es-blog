@@ -5,7 +5,7 @@
 {% block lead %}<p>Change what you get, or stop everything. No account needed: this page is your link.</p>{% endblock %}
 {% block form %}
 <div class="contact-form">
-{% if saved %}<p class="form-note" role="status">Your newsletter choices have been saved.</p>{% endif %}
+{% if saved %}<p class="notice" role="status"><b>Saved.</b> Your newsletter choices have been updated.</p>{% endif %}
 {% if subscriber %}
     {% if subscriber.unsubscribedAt %}
     <p>You're unsubscribed from every email.</p>
@@ -30,4 +30,10 @@
     <p>This management link is invalid.</p>
 {% endif %}
 </div>
+{% endblock %}
+{% block promise %}
+<ul class="promise">
+    <li>No account needed: this page is your link</li>
+    <li>Unsubscribe from any email, in one click</li>
+</ul>
 {% endblock %}

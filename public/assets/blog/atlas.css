@@ -412,3 +412,18 @@ input, textarea { width: 100%; font: 500 16px 'Manrope', sans-serif; color: var(
     .search-bento .tile { padding: 22px 18px; border-radius: 20px; }
     .search-help-actions .btn, .suggest-actions .btn { flex: 1 1 auto; justify-content: center; }
 }
+
+/* Newsletter pages: one centred lead card (heading, form or result, promises as a footer strip). */
+.contact.newsletter { grid-template-columns: 1fr; max-width: 680px; margin-inline: auto; }
+.newsletter .cta { min-height: 0; gap: 24px; padding: clamp(24px, 4vw, 40px); }
+.newsletter .nl-head { display: grid; gap: 12px; }
+.newsletter .cta p { max-width: 56ch; }
+.newsletter .promise { margin: 0; padding-top: 20px; border-top: 1px solid var(--line); grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px 16px; font-size: 13px; }
+.newsletter .promise li { align-items: flex-start; }
+.notice { margin: 0; padding: 14px 16px; border-radius: 14px; font-size: 14px; line-height: 1.5; color: var(--text); background: color-mix(in srgb, var(--accent) 14%, var(--card-2)); border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent); }
+.notice.error { background: color-mix(in srgb, #e5484d 14%, var(--card-2)); border-color: color-mix(in srgb, #e5484d 60%, transparent); }
+.picked { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.picked li { display: grid; gap: 2px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 12%, var(--card-2)); border: 1px solid var(--accent); }
+.picked b { font-size: 15px; }
+.picked small { color: var(--muted); font-size: 13px; }
+.newsletter .cta .notice { max-width: none; }

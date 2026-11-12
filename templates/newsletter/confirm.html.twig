@@ -1,19 +1,30 @@
 {% extends 'newsletter/_layout.html.twig' %}
 {% block title %}Confirm newsletter · {{ site_title }}{% endblock %}
-{% block kicker %}Newsletter · confirm{% endblock %}
-{% block heading %}{% if confirmed %}You're in.{% else %}One last step.{% endif %}{% endblock %}
-{% block lead %}<p>{% if confirmed %}Your subscription is confirmed. The next post lands in your inbox.{% else %}Confirm below and your choices start right away.{% endif %}</p>{% endblock %}
+{% block kicker %}Newsletter · {% if confirmed %}confirmed{% else %}confirm{% endif %}{% endblock %}
+{% block heading %}{% if confirmed %}You're in.{% elseif subscriber %}One last step.{% else %}This link has expired.{% endif %}{% endblock %}
+{% block lead %}<p>{% if confirmed %}Your subscription is confirmed, and a welcome email is on its way.{% elseif subscriber %}Confirm below and your choices start right away.{% else %}It's invalid, already used or expired. Ask for a new one and it arrives in a minute.{% endif %}</p>{% endblock %}
 {% block form %}
 <div class="contact-form">
+{% if subscriber and (confirmed or not subscriber.confirmedAt) %}
+    <ul class="picked" aria-label="{% if confirmed %}You'll get{% else %}You asked for{% endif %}">
+        {% if subscriber.posts %}<li><b>New blog posts</b><small>When a new post goes live.</small></li>{% endif %}
+        {% if subscriber.products %}<li><b>ES product and release updates</b><small>New apps, themes and releases.</small></li>{% endif %}
+    </ul>
+{% endif %}
 {% if confirmed %}
-    <p class="form-note" role="status">Subscription confirmed.</p>
-    <div><a class="btn btn-primary primary" href="{{ path('app_blog_posts') }}">Read the latest posts</a></div>
+    <div class="actions"><a class="btn btn-primary primary" href="{{ path('app_blog_posts') }}">Read the latest posts</a></div>
 {% elseif subscriber %}
-    <p>You asked for {% if subscriber.posts %}<b>new blog posts</b>{% endif %}{% if subscriber.posts and subscriber.products %} and {% endif %}{% if subscriber.products %}<b>product and release updates</b>{% endif %}.</p>
     <form method="post"><input type="hidden" name="_token" value="{{ csrf_token('newsletter_confirm') }}"><button class="btn btn-primary primary" type="submit">Confirm my subscription</button></form>
 {% else %}
-    <p>This link is invalid, already used or expired.</p>
-    <div><a class="btn btn-primary primary" href="{{ path('app_newsletter_subscribe') }}">Request a new confirmation</a></div>
+    <div class="actions"><a class="btn btn-primary primary" href="{{ path('app_newsletter_subscribe') }}">Request a new confirmation</a></div>
 {% endif %}
 </div>
+{% endblock %}
+{% block promise %}
+{% if confirmed %}
+<ul class="promise">
+    <li>Change your choices from the link in any email</li>
+    <li>Unsubscribe from any email, in one click</li>
+</ul>
+{% else %}{{ parent() }}{% endif %}
 {% endblock %}
