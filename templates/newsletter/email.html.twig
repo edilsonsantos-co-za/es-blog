@@ -5,6 +5,6 @@
 <p style="margin:0 0 20px;">{{ body|nl2br }}</p>
 {% if confirmation %}{% include 'emails/_button.html.twig' with {href: confirmation, label: 'Confirm your subscription'} %}
 <p style="margin:0;font-size:13px;line-height:1.6;color:#6E6E79;">The link expires in 24 hours. Nothing is sent to you until you confirm.</p>{% endif %}
-{% if not confirmation and site_coffee_url|default(null) %}<p style="margin:0;">Enjoying these? You can <a href="{{ site_coffee_url }}" style="color:#2563EB;">buy me a coffee</a>.</p>{% endif %}
+{% if not confirmation and site_coffee_url|default(null) %}<p style="margin:0;">Enjoying these? You can <a href="{{ site_coffee_url }}" style="color:#3B82F6;">buy me a coffee</a>.</p>{% endif %}
 {% endblock %}
 {% block footer %}You get this because you subscribed on blog.edilsonsantos.co.za.<br><a href="{{ unsubscribe }}" style="color:#6E6E79;">Unsubscribe or manage preferences</a>{% endblock %}
