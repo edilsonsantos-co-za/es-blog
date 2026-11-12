@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\SiteConfig;
 use App\Repository\SiteConfigRepository;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -24,9 +25,23 @@ final class SiteConfigService
     public function __construct(
         private readonly SiteConfigRepository $repo,
         private readonly CacheInterface $cache,
+        #[Autowire('%env(default::SITE_URL)%')] private readonly ?string $siteUrlEnv = null,
     ) {}
 
     public function get(string $key, ?string $default = null): ?string
+    {
+        // site.url left empty in Admin → Settings falls back to SITE_URL from the server env, so the
+        // newsletter, share links and absolute URLs work on a fresh install
+        if ($key === 'site.url') {
+            $value = $this->read($key, null);
+
+            return ($value ?? '') !== '' ? $value : (rtrim((string) $this->siteUrlEnv, '/') ?: $default);
+        }
+
+        return $this->read($key, $default);
+    }
+
+    private function read(string $key, ?string $default): ?string
     {
         return $this->cache->get(
             $this->cacheKey($key),
