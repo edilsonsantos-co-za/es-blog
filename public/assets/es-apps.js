@@ -61,7 +61,8 @@
         .trigger { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--muted); }
         .trigger:hover, .trigger[aria-expanded="true"] { background: var(--bg-2); color: var(--text); }
         .trigger:focus { outline: none; }
-        .panel a:focus, .menu button:focus { outline: none; background: var(--bg-2); }
+        .panel a:focus, .menu button:focus { outline: none; }
+        .panel a:focus-visible, .menu button:focus-visible { background: var(--bg-2); box-shadow: inset 0 0 0 2px var(--accent); }
         .trigger svg { width: 20px; height: 20px; fill: currentColor; }
         .avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 12px; font-weight: 800; overflow: hidden; }
         .avatar.lg { width: 56px; height: 56px; font-size: 18px; }
@@ -71,7 +72,7 @@
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
         .app { display: grid; justify-items: center; gap: 6px; padding: 12px 6px; border-radius: 14px; text-decoration: none; color: var(--text); font-size: 13px; }
         .app:hover { background: var(--bg-2); }
-        .app[aria-current="page"] { background: var(--bg-2); box-shadow: inset 0 0 0 1px var(--line); }
+        .app[aria-current="page"] { background: rgba(59, 130, 246, .16); box-shadow: inset 0 0 0 1px rgba(59, 130, 246, .55); }
         /* One ES blue for every app tile (the ES mark's colour); apps differ by icon, not colour */
         .tile { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: #2563eb; }
         .tile svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -291,7 +292,8 @@
                 e.stopPropagation();
                 // Opening the apps menu re-checks apps last probed over 30s ago (started or stopped since)
                 if (t.dataset.for === 'apps') this.probeApps();
-                this.toggle(t.dataset.for, true);
+                // Focus moves into the panel only when it was opened from the keyboard (detail 0), not on a mouse click
+                this.toggle(t.dataset.for, e.detail === 0);
             }));
         }
 
@@ -552,9 +554,9 @@
             this.tabs = tabs;
 
             const root = this.shadowRoot;
-            root.querySelector('.more')?.addEventListener('click', () => {
+            root.querySelector('.more')?.addEventListener('click', (e) => {
                 if (moreBtn) { document.querySelector(moreBtn)?.click(); return; }
-                this.toggle(!this.classList.contains('open'), true);
+                this.toggle(!this.classList.contains('open'), e.detail === 0);
             });
             root.querySelector('.scrim').addEventListener('click', () => this.toggle(false));
             root.querySelectorAll('.item').forEach((el) => el.addEventListener('click', () => this.toggle(false)));
