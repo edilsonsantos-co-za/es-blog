@@ -1,30 +1,32 @@
-{# Shared frame for every blog email: same look as the SSO emails (brand row, white card, small footer).
-   Inline styles only, since mail clients drop most <style> rules. #}
+{# Port of ~/workspace/config/email/layout.html (EGNIMAX v2 ULTRA design, ES accent). Inline styles only. #}
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
 <title>{{ subject }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Unbounded:wght@600&display=swap" rel="stylesheet">
+<style>@media (max-width: 600px) { .card { padding: 28px 22px !important; } .h1 { font-size: 22px !important; } }</style>
 </head>
-<body style="margin:0;padding:0;background:#f3f5f9;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f5f9;padding:32px 12px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <tr><td align="center">
-    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">{% block preheader %}{% endblock %}</div>
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
-      <tr><td style="padding:0 4px 16px;">
+<body style="margin:0;padding:0;background:#F5F5F0;-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#F5F5F0;">{% block preheader %}{% endblock %}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F5F0;">
+  <tr><td align="center" style="padding:36px 12px 40px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+      <tr><td style="padding:0 4px 20px;">
+        <a href="https://blog.edilsonsantos.co.za" style="text-decoration:none;"><img src="https://edilsonsantos.co.za/email/edilsonsantos.png" alt="Edilson Santos" height="28" style="display:block;height:28px;width:auto;border:0;outline:none;"></a>
+      </td></tr>
+      <tr><td class="card" style="background:#FFFFFF;border:1px solid #DCDCD5;border-radius:20px;padding:40px 40px 36px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-          <td width="22" height="22" style="width:22px;height:22px;background:#2563eb;border-radius:7px;font-size:0;line-height:0;">&nbsp;</td>
-          <td style="padding-left:10px;font-size:17px;font-weight:700;color:#0f172a;">ES Blog</td>
+          <td style="background:#0B0B0F;color:#C9F24D;border-radius:999px;padding:6px 12px;font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;">{% block eyebrow %}ES Blog{% endblock %}</td>
         </tr></table>
+        <h1 class="h1" style="margin:18px 0 14px;font-family:Unbounded,Inter,-apple-system,'Segoe UI',Arial,sans-serif;font-size:26px;line-height:1.25;font-weight:600;letter-spacing:-.02em;color:#0B0B0F;">{{ subject }}</h1>
+        <div style="font-size:16px;line-height:1.6;color:#2E2E36;">{% block body %}{% endblock %}</div>
       </td></tr>
-      <tr><td style="background:#ffffff;border:1px solid #e3e8f0;border-radius:16px;padding:36px 36px 32px;font-size:15px;line-height:1.6;color:#334155;">
-        <h1 style="margin:0 0 14px;font-size:22px;line-height:1.3;font-weight:700;color:#0f172a;">{{ subject }}</h1>
-        {% block body %}{% endblock %}
-      </td></tr>
-      <tr><td style="padding:18px 8px 0;font-size:12px;line-height:1.6;color:#94a3b8;text-align:center;">
-        {% block footer %}Edilson Santos · blog.edilsonsantos.co.za{% endblock %}
+      <tr><td style="padding:22px 8px 0;font-size:12px;line-height:1.7;color:#9A9AA3;text-align:center;">
+        {% block footer %}ES Blog · blog.edilsonsantos.co.za{% endblock %}
       </td></tr>
     </table>
   </td></tr>
