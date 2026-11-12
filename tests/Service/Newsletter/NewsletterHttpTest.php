@@ -38,8 +38,10 @@ final class NewsletterHttpTest extends WebTestCase
         $config->setBulk(['newsletter.from' => 'newsletter@example.com', 'site.url' => 'https://blog.example.com']);
         $transport = $this->createMock(TransportInterface::class);
         $sent = null;
-        $transport->expects(self::once())->method('send')->willReturnCallback(function (Email $email) use (&$sent): null {
-            $sent = $email;
+        $sentAll = [];
+        $transport->expects(self::exactly(2))->method('send')->willReturnCallback(function (Email $email) use (&$sent, &$sentAll): null {
+            $sent ??= $email;
+            $sentAll[] = $email;
             return null;
         });
         $mailer = new NewsletterMailer($transport, $config, $container->get(UrlGeneratorInterface::class),
@@ -70,6 +72,8 @@ final class NewsletterHttpTest extends WebTestCase
         $subscriber = $em->getRepository(NewsletterSubscriber::class)->findOneBy(['email' => $emailAddress]);
         self::assertTrue($subscriber->eligible('post'));
         self::assertFalse($subscriber->eligible('product'));
+        self::assertSame('Welcome to ES Blog', $sentAll[1]->getSubject(), 'Confirming sends the reader welcome.');
+        self::assertStringContainsString('new blog posts', $sentAll[1]->getTextBody());
         $token = $mailer->unsubscribeToken($subscriber);
         $client->request('GET', '/newsletter/unsubscribe/' . $token);
         self::assertResponseIsSuccessful();

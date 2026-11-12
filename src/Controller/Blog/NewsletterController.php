@@ -60,6 +60,9 @@ final class NewsletterController extends AbstractController
             if ($subscriber !== null) {
                 $confirmed = $subscriber->confirm($token);
                 $this->em->flush();
+                if ($confirmed) {
+                    $this->subscriptions->welcome($subscriber);
+                }
             }
         }
 

@@ -55,6 +55,31 @@ final class NewsletterSubscriptions
         }
     }
 
+    public const WELCOME_SUBJECT = 'Welcome to ES Blog';
+
+    /** Body of the email a reader gets once they confirm (also used by the mail gallery). */
+    public function welcomeBody(NewsletterSubscriber $subscriber): string
+    {
+        $choices = implode(' and ', array_filter([
+            $subscriber->posts ? 'new blog posts' : null,
+            $subscriber->products ? 'product and release updates' : null,
+        ]));
+
+        return "Thanks for confirming. You'll get " . $choices . " from ES Blog, written by Edilson Santos.\n\n"
+            . 'Catch up on the latest posts: ' . $this->mailer->url('app_blog_index') . "\n\n"
+            . 'You can change what you get, or unsubscribe, with the link at the bottom of every email.';
+    }
+
+    /** Sent once, right after a reader confirms. Delivery problems never undo the confirmation. */
+    public function welcome(NewsletterSubscriber $subscriber): void
+    {
+        try {
+            $this->mailer->send($subscriber, self::WELCOME_SUBJECT, $this->welcomeBody($subscriber));
+        } catch (\Throwable $e) {
+            $this->logger->error('Newsletter welcome transport failed.', ['exception' => $e]);
+        }
+    }
+
     public function confirmation(string $token): ?NewsletterSubscriber
     {
         if (!preg_match('/^[a-f0-9]{64}$/D', $token)) {
