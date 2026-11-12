@@ -1,0 +1,8 @@
+{% extends 'emails/_layout.html.twig' %}
+{% block preheader %}Your ES Blog author account is ready.{% endblock %}
+{% block body %}
+<p style="margin:0 0 16px;">Hi {{ name }}, an author account on ES Blog has been created for you.</p>
+<p style="margin:0 0 24px;">Sign in with your DataSparkLab account using this email address ({{ email }}). From there you can write drafts, upload images and publish posts.</p>
+<p style="margin:0 0 24px;">{% include 'emails/_button.html.twig' with {href: login_url, label: 'Sign in to ES Blog'} %}</p>
+<p style="margin:0;font-size:13px;color:#64748b;">If you were not expecting this, you can ignore this email: nobody can sign in as you without your DataSparkLab password.</p>
+{% endblock %}

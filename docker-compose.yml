@@ -18,7 +18,7 @@ services:
       # DATABASE_URL="mysql://edfolio_blog_user:<password>@core-database-config-mysql:3306/edfolio_blog?serverVersion=8.0&charset=utf8mb4"
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env; see .env.example}
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
-      MAILER_DSN: "null://null"
+      # MAILER_DSN comes from .env.local (local useSend -> Mailpit), so local mail is real end to end
       # The store container on milkyway; store.edilsonsantos.local only resolves on the host.
       THEME_STORE_URL: http://es-marketplace-store
     networks:
@@ -38,7 +38,6 @@ services:
       APP_SECRET: ${APP_SECRET:-8f07e8904c675e1a885a7f20225ab8cc}
       DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL in .env; see .env.example}
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
-      MAILER_DSN: "null://null"
     depends_on:
       - php
     # Runs queued jobs (LinkedIn shares, scheduled publishing) and, every five minutes,

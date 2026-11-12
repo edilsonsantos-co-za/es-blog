@@ -1,8 +1,9 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>{{ subject }}</title></head><body>
-<h1>{{ subject }}</h1>
-<p>{{ body|nl2br }}</p>
-{% if confirmation %}<p><a href="{{ confirmation }}">Confirm your subscription choices</a> (expires in 24 hours)</p>{% endif %}
-{% if not confirmation and site_coffee_url|default(null) %}<p>Enjoying these? You can <a href="{{ site_coffee_url }}">buy me a coffee</a>.</p>{% endif %}
-<p><a href="{{ unsubscribe }}">Unsubscribe or manage preferences</a></p>
-</body></html>
+{% extends 'emails/_layout.html.twig' %}
+{% block preheader %}{{ body|split("\n")|first|slice(0, 120) }}{% endblock %}
+{% block body %}
+<p style="margin:0 0 20px;">{{ body|nl2br }}</p>
+{% if confirmation %}<p style="margin:0 0 8px;">{% include 'emails/_button.html.twig' with {href: confirmation, label: 'Confirm your subscription'} %}</p>
+<p style="margin:0 0 4px;font-size:13px;color:#64748b;">The link expires in 24 hours.</p>{% endif %}
+{% if not confirmation and site_coffee_url|default(null) %}<p style="margin:0;">Enjoying these? You can <a href="{{ site_coffee_url }}" style="color:#2563eb;">buy me a coffee</a>.</p>{% endif %}
+{% endblock %}
+{% block footer %}You get this because you subscribed on blog.edilsonsantos.co.za.<br><a href="{{ unsubscribe }}" style="color:#64748b;">Unsubscribe or manage preferences</a>{% endblock %}

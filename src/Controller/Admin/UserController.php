@@ -6,11 +6,13 @@ namespace App\Controller\Admin;
 
 use App\Entity\User;
 use App\Enum\UserRole;
+use App\Message\SendWelcomeEmailMessage;
 use App\Security\Voter\UserVoter;
 use App\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -18,6 +20,7 @@ class UserController extends AbstractController
 {
     public function __construct(
         private readonly UserService $userService,
+        private readonly MessageBusInterface $bus,
     ) {}
 
     #[Route('/admin/users', name: 'app_admin_users', methods: ['GET'])]
@@ -71,8 +74,9 @@ class UserController extends AbstractController
                     return $this->redirectToRoute('app_admin_user_new');
                 }
 
-                $this->userService->create($username, $password, $role, $email);
-                $this->addFlash('success', 'User created successfully.');
+                $user = $this->userService->create($username, $password, $role, $email);
+                $this->bus->dispatch(new SendWelcomeEmailMessage((int) $user->getId(), $email, $username));
+                $this->addFlash('success', 'User created; a welcome email is on its way.');
                 return $this->redirectToRoute('app_admin_users');
             } catch (\Exception $e) {
                 $this->addFlash('error', 'Error creating user: ' . $e->getMessage());
