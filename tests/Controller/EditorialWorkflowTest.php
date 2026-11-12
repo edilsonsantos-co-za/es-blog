@@ -82,9 +82,11 @@ final class EditorialWorkflowTest extends WebTestCase
         self::assertSelectorTextContains('.post-title', $post->getTitle());
         self::assertSelectorExists('.post-cover img');
         self::assertSelectorTextContains('.post-body', 'Original insight');
-        // Platform previews are tabs: the blog card shows first, the others wait behind their tab
-        self::assertSelectorCount(4, '.share-tabs [role="tab"]');
-        self::assertSelectorExists('#share-tab-blog[aria-selected="true"]');
+        // Full post and platform previews are tabs: the full post shows first, the others wait behind their tab
+        self::assertSelectorCount(5, '.share-tabs [role="tab"]');
+        self::assertSelectorExists('#share-tab-post[aria-selected="true"]');
+        self::assertSelectorExists('#share-panel-post .single-post');
+        self::assertSelectorExists('#share-panel-blog[hidden]');
         self::assertSelectorExists('#share-panel-linkedin[hidden]');
         self::assertSelectorExists('#share-panel-x[hidden]');
         self::assertResponseHeaderSame('X-Robots-Tag', 'noindex, nofollow, noarchive');

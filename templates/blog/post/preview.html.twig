@@ -11,20 +11,23 @@
 {# How the post will look on each platform, with the thumbnail every platform uses (the post image) #}
 {% set host = app.request.host %}
 {% set summary = post.description ?? excerpt(post.body, 160) %}
-<section class="share-previews" aria-label="Platform previews">
-    <h2 class="label">Platform previews</h2>
+<section class="share-previews" aria-label="Preview">
+    <h2 class="label">Preview</h2>
     {% if not post.image %}
     <p class="share-warning">No thumbnail yet: links will share without an image. Use <strong>Generate new banner</strong> in the editor.</p>
     {% endif %}
-    {% set platforms = {blog: 'Blog card', linkedin: 'LinkedIn', x: 'X', banner: 'Banner'} %}
-    <div class="share-tabs" role="tablist" aria-label="Platform">
+    {% set platforms = {post: 'Full post', blog: 'Blog card', linkedin: 'LinkedIn', x: 'X', banner: 'Banner'} %}
+    <div class="share-tabs" role="tablist" aria-label="What to preview">
         {% for key, label in platforms %}
         <button type="button" role="tab" id="share-tab-{{ key }}" aria-controls="share-panel-{{ key }}"
                 aria-selected="{{ loop.first ? 'true' : 'false' }}" tabindex="{{ loop.first ? 0 : -1 }}">{{ label }}</button>
         {% endfor %}
     </div>
     <div class="share-panels">
-        <figure class="share-card" role="tabpanel" id="share-panel-blog" aria-labelledby="share-tab-blog">
+        <div class="share-panel-post" role="tabpanel" id="share-panel-post" aria-labelledby="share-tab-post">
+            {{ parent() }}
+        </div>
+        <figure class="share-card" role="tabpanel" id="share-panel-blog" aria-labelledby="share-tab-blog" hidden>
             <figcaption>How the link card looks on the blog and in search/link previews</figcaption>
             <div class="share-link">
                 {% if post.image %}<img src="{{ post.image }}" alt="">{% endif %}
@@ -78,5 +81,4 @@
     if (saved && tabs.includes(saved)) select(saved);
 })();
 </script>
-{{ parent() }}
 {% endblock %}
