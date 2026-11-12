@@ -6,6 +6,9 @@
 parameters:
     env(ANTHROPIC_API_KEY): ''
     env(AUTOMATION_AI_MODEL): 'claude-opus-5-5'
+    # Optional: AI banner illustrations (OpenAI Images). Empty uses generative art.
+    env(OPENAI_API_KEY): ''
+    env(BANNER_IMAGE_MODEL): 'gpt-image-1'
     env(LINKEDIN_CLIENT_ID): ''
     env(LINKEDIN_CLIENT_SECRET): ''
     env(LINKEDIN_REDIRECT_URI): ''
@@ -31,6 +34,8 @@ services:
             string $projectDir: '%kernel.project_dir%'
             string $anthropicApiKey: '%env(ANTHROPIC_API_KEY)%'
             string $automationModel: '%env(AUTOMATION_AI_MODEL)%'
+            string $openAiApiKey: '%env(OPENAI_API_KEY)%'
+            string $bannerImageModel: '%env(BANNER_IMAGE_MODEL)%'
             string $linkedInClientId: '%env(LINKEDIN_CLIENT_ID)%'
             string $linkedInClientSecret: '%env(LINKEDIN_CLIENT_SECRET)%'
             string $linkedInRedirectUri: '%env(LINKEDIN_REDIRECT_URI)%'

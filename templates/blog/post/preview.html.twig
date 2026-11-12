@@ -16,31 +16,67 @@
     {% if not post.image %}
     <p class="share-warning">No thumbnail yet: links will share without an image. Use <strong>Generate new banner</strong> in the editor.</p>
     {% endif %}
-    <div class="share-grid">
-        <figure class="share-card">
-            <figcaption>Blog</figcaption>
+    {% set platforms = {blog: 'Blog card', linkedin: 'LinkedIn', x: 'X', banner: 'Banner'} %}
+    <div class="share-tabs" role="tablist" aria-label="Platform">
+        {% for key, label in platforms %}
+        <button type="button" role="tab" id="share-tab-{{ key }}" aria-controls="share-panel-{{ key }}"
+                aria-selected="{{ loop.first ? 'true' : 'false' }}" tabindex="{{ loop.first ? 0 : -1 }}">{{ label }}</button>
+        {% endfor %}
+    </div>
+    <div class="share-panels">
+        <figure class="share-card" role="tabpanel" id="share-panel-blog" aria-labelledby="share-tab-blog">
+            <figcaption>How the link card looks on the blog and in search/link previews</figcaption>
             <div class="share-link">
                 {% if post.image %}<img src="{{ post.image }}" alt="">{% endif %}
                 <div class="share-link-text"><span>{{ host }}</span><strong>{{ post.title }}</strong><p>{{ summary }}</p></div>
             </div>
         </figure>
-        <figure class="share-card">
-            <figcaption>LinkedIn</figcaption>
+        <figure class="share-card" role="tabpanel" id="share-panel-linkedin" aria-labelledby="share-tab-linkedin" hidden>
+            <figcaption>LinkedIn post · {{ (post.customFieldValue('linkedin_text') ?: '')|length }} / 3000 characters</figcaption>
             <p class="share-text">{{ post.customFieldValue('linkedin_text') ?: 'No LinkedIn draft saved yet.' }}</p>
             <div class="share-link">
                 {% if post.image %}<img src="{{ post.image }}" alt="">{% endif %}
                 <div class="share-link-text"><strong>{{ post.title }}</strong><span>{{ host }}</span></div>
             </div>
         </figure>
-        <figure class="share-card">
-            <figcaption>X</figcaption>
+        <figure class="share-card" role="tabpanel" id="share-panel-x" aria-labelledby="share-tab-x" hidden>
+            <figcaption>X post · {{ (post.customFieldValue('twitter_text') ?: '')|length }} / 250 characters before the link</figcaption>
             <p class="share-text">{{ post.customFieldValue('twitter_text') ?: 'No X draft saved yet.' }}</p>
             <div class="share-link share-link-x">
                 {% if post.image %}<img src="{{ post.image }}" alt="">{% endif %}
                 <div class="share-link-text"><span>From {{ host }}</span><strong>{{ post.title }}</strong></div>
             </div>
         </figure>
+        <figure class="share-card share-card-wide" role="tabpanel" id="share-panel-banner" aria-labelledby="share-tab-banner" hidden>
+            <figcaption>Full-size banner (1200 × 630): blog header and the thumbnail on every platform</figcaption>
+            {% if post.image %}<img class="share-banner" src="{{ post.image }}" alt="Banner for {{ post.title }}">{% else %}<p class="share-text">No banner yet.</p>{% endif %}
+            <a href="{{ path('app_admin_post_edit', {id: post.id}) }}">Generate a new one in the editor</a>
+        </figure>
     </div>
 </section>
+<script>
+(() => {
+    const tabs = [...document.querySelectorAll('.share-tabs [role="tab"]')];
+    const select = (tab) => {
+        tabs.forEach((t) => {
+            const on = t === tab;
+            t.setAttribute('aria-selected', on);
+            t.tabIndex = on ? 0 : -1;
+            document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+        });
+        try { sessionStorage.setItem('es-share-tab', tab.id); } catch (e) {}
+    };
+    tabs.forEach((tab, i) => {
+        tab.addEventListener('click', () => select(tab));
+        tab.addEventListener('keydown', (e) => {
+            const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+            if (step) { const next = tabs[(i + step + tabs.length) % tabs.length]; select(next); next.focus(); }
+        });
+    });
+    let saved = null;
+    try { saved = document.getElementById(sessionStorage.getItem('es-share-tab')); } catch (e) {}
+    if (saved && tabs.includes(saved)) select(saved);
+})();
+</script>
 {{ parent() }}
 {% endblock %}
