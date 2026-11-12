@@ -1,6 +1,6 @@
 {% extends 'emails/_layout.html.twig' %}
 {% block preheader %}{{ body|split("\n")|first|slice(0, 120) }}{% endblock %}
-{% block eyebrow %}{{ confirmation ? 'Confirm subscription' : 'ES Blog newsletter' }}{% endblock %}
+{% block eyebrow %}{{ confirmation ? 'Confirm subscription' : 'Newsletter' }}{% endblock %}
 {% block body %}
 <p style="margin:0 0 20px;">{{ body|nl2br }}</p>
 {% if confirmation %}{% include 'emails/_button.html.twig' with {href: confirmation, label: 'Confirm your subscription'} %}
