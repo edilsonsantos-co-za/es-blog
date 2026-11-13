@@ -255,7 +255,7 @@ server's `.env`, and changing a secret and redeploying updates them:
 |---|---|
 | `SMTP_HOST`, `SMTP_PORT` | `live.smtp.mailtrap.io`, `587` (Mailtrap Email Sending; any SMTP provider works) |
 | `SMTP_USERNAME`, `SMTP_PASSWORD` | the provider's SMTP login (for Mailtrap Sending: `api` and an API token) |
-| `MAIL_FROM_ADDRESS` | `hello@edilsonsantos.co.za`, an address on the domain you verified with the provider |
+| `MAIL_FROM_ADDRESS` | `noreply@edilsonsantos.co.za`, an address on the domain you verified with the provider |
 
 The same secrets serve ES Portfolio and ES Journal. Without them, the deploy falls back to the Mailtrap **sandbox**
 (`MAILTRAP_USERNAME` and `MAILTRAP_PASSWORD`). The sandbox catches mail in a test inbox and delivers nothing, and it
