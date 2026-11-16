@@ -1,4 +1,4 @@
-# workspace-managed-sha256: b5dd65136ee4b386eb557ab9b8da27cdcb61fa105d4d1960a8d86c538dbd0354
+# workspace-managed-sha256: e41855bc258186007732b5d90cf5de24f6fbda9c9bb67114d2ad032f2cabca60
 name: Workspace status
 
 on:
@@ -7,7 +7,7 @@ on:
         types: [completed]
 
 permissions:
-    contents: read
+    contents: read # also lets the card list the commit's files
 
 jobs:
     notify:
@@ -24,6 +24,8 @@ jobs:
                   RUN_URL: ${{ github.event.workflow_run.html_url }}
                   RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
                   RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+                  RUN_ACTOR: ${{ github.event.workflow_run.actor.login }}
+                  GH_TOKEN: ${{ github.token }}
               run: |
                   python3 - <<'PY'
                   import json, os, urllib.request, urllib.parse
@@ -41,14 +43,37 @@ jobs:
                   repo, name = os.environ["GITHUB_REPOSITORY"], os.environ["RUN_NAME"]
                   status = (os.environ.get("RUN_STATUS") or "unknown").lower()
                   branch, sha, run_url = os.environ["RUN_BRANCH"], os.environ["RUN_SHA"], os.environ["RUN_URL"]
-                  text = f"{repo}: {name} {status.upper()}\n{branch} @ {sha[:12]}\n{run_url}"
+                  # What changed: the commit's author, message and files (first 15). Without a token, or if GitHub
+                  # does not answer, the card is sent without them.
+                  author = message = ""; files = []; more = 0
+                  try:
+                      req = urllib.request.Request(f"https://api.github.com/repos/{repo}/commits/{sha}", headers={
+                          "Authorization": f"Bearer {os.environ['GH_TOKEN']}", "Accept": "application/vnd.github+json",
+                          "X-GitHub-Api-Version": "2022-11-28", "User-Agent": "workspace-status"})
+                      with urllib.request.urlopen(req, timeout=20) as response:
+                          commit = json.loads(response.read().decode())
+                      author = commit["commit"]["author"]["name"]
+                      message = commit["commit"]["message"].splitlines()[0]
+                      changed = commit.get("files") or []
+                      files = [f"{f.get('status', 'modified')}: {f['filename']}" for f in changed[:15]]
+                      more = max(len(changed) - 15, 0)
+                  except Exception:
+                      pass
+                  actor = os.environ.get("RUN_ACTOR", "")
+                  details = [f"Message: {message}"] * bool(message) + [f"Author: {author}"] * bool(author) + [f"Triggered by: {actor}"] * bool(actor)
+                  listing = [f"- {f}" for f in files] + [f"- ...and {more} more"] * bool(more)
+                  text = "\n".join([f"{repo}: {name} {status.upper()}", f"{branch} @ {sha[:12]}", *details, run_url,
+                                    "Files changed:", *(listing or ["- No file list available"])])
                   icon = {"success": "✅", "failure": "❌", "cancelled": "⏹️", "skipped": "⏭️"}.get(status, "⚠️")
                   esc = lambda v: str(v).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                   card = {"cardsV2": [{"cardId": "run", "card": {
                       "header": {"title": f"{icon} {name}: {status}"[:200], "subtitle": repo[:200]},
                       "sections": [{"widgets": [
                           {"decoratedText": {"topLabel": "Branch", "text": esc(branch)}},
-                          {"decoratedText": {"topLabel": "Commit", "text": esc(sha[:12])}},
+                          {"decoratedText": {"topLabel": "Commit", "text": esc(sha[:12] + (" " + message if message else "")), "wrapText": True}},
+                          *([{"decoratedText": {"topLabel": "Author", "text": esc(author)}}] if author else []),
+                          *([{"decoratedText": {"topLabel": "Triggered by", "text": esc(actor)}}] if actor else []),
+                          {"textParagraph": {"text": "<b>Files changed</b><br>" + ("<br>".join(esc(f) for f in listing) or "No file list available")}},
                           {"buttonList": {"buttons": [
                               {"text": "Open run", "onClick": {"openLink": {"url": run_url}}},
                               {"text": "Commit", "onClick": {"openLink": {"url": f"https://github.com/{repo}/commit/{sha}"}}},
