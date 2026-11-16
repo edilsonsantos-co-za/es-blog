@@ -1,0 +1,42 @@
+# The blog's background worker: one copy. It runs queued jobs (LinkedIn shares, scheduled publishing)
+# and, every five minutes, the scheduler tick that starts the feed automation when it is due.
+# Two workers would run the scheduler twice, so a deploy stops the old one before starting the new.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: es-blog-worker
+  labels: {app: es-blog-worker, part-of: es-blog}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy: {type: Recreate}
+  selector:
+    matchLabels: {app: es-blog-worker}
+  template:
+    metadata:
+      labels: {app: es-blog-worker, part-of: es-blog}
+    spec:
+      terminationGracePeriodSeconds: 60   # let a running job finish
+      securityContext: {runAsUser: 33, runAsGroup: 33}   # www-data, as in docker-compose.prod.yml
+      containers:
+        - name: worker
+          image: es-blog
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef: {name: es-blog-env}
+          command: ["sh", "-c"]
+          args:
+            - |
+              until php bin/console doctrine:migrations:up-to-date --no-interaction >/dev/null 2>&1; do sleep 5; done
+              while true; do
+                php bin/console app:scheduler:tick --no-interaction || true
+                php bin/console messenger:consume async --time-limit=300 --memory-limit=256M --no-interaction || sleep 10
+              done
+          volumeMounts:
+            - {name: uploads, mountPath: /var/www/html/public/uploads}
+          resources:
+            requests: {cpu: 20m, memory: 64Mi}
+            limits: {memory: 384Mi}
+      volumes:
+        - name: uploads
+          hostPath: {path: /var/lib/docker/volumes/edfolio-blog-v2_uploads/_data, type: Directory}

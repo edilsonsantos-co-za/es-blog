@@ -1,0 +1,62 @@
+# The blog's web server: two copies. Sign-in sessions are in the database and uploads are a shared
+# folder, so either copy can answer any request. On a deploy Kubernetes replaces them one at a time
+# and only sends traffic to a copy that answers, so a deploy has no downtime.
+#
+# The disks are the same folders the Docker containers used (hostPath): no data was copied, the nightly
+# backups keep covering them, and going back to Docker is one command. They tie the app to this
+# server; they become S3 or real cluster volumes when the apps move to AWS.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: es-blog
+  labels: {app: es-blog, part-of: es-blog}
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: {maxUnavailable: 0, maxSurge: 1}
+  selector:
+    matchLabels: {app: es-blog}
+  template:
+    metadata:
+      labels: {app: es-blog, part-of: es-blog}
+    spec:
+      containers:
+        - name: web
+          image: es-blog                # tag set per deploy (kustomize `images`)
+          imagePullPolicy: IfNotPresent # on k3s the image is imported, not pulled
+          ports: [{name: http, containerPort: 80}]
+          envFrom:
+            - secretRef: {name: es-blog-env}   # made from the server's .env by deploy-k3s.sh
+          volumeMounts:
+            - {name: uploads, mountPath: /var/www/html/public/uploads}
+            - {name: themes, mountPath: /var/www/html/var/themes}
+          # Keep serving for a few seconds after Kubernetes decides to stop this copy: Traefik needs a
+          # moment to learn it is gone, and without the pause a request can land on a closed pod.
+          lifecycle:
+            preStop:
+              exec: {command: ["sleep", "8"]}
+          # The entrypoint runs database migrations and warms the cache before Apache starts.
+          # /login answers with a redirect and touches no database content.
+          startupProbe:
+            httpGet: {path: /login, port: http}
+            periodSeconds: 5
+            failureThreshold: 48
+          readinessProbe:
+            httpGet: {path: /login, port: http}
+            periodSeconds: 10
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet: {path: /login, port: http}
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5
+          resources:
+            requests: {cpu: 50m, memory: 96Mi}
+            limits: {memory: 512Mi}
+      volumes:
+        - name: uploads
+          hostPath: {path: /var/lib/docker/volumes/edfolio-blog-v2_uploads/_data, type: Directory}
+        - name: themes
+          hostPath: {path: /var/lib/docker/volumes/edfolio-blog-v2_themes/_data, type: Directory}

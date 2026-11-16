@@ -1,0 +1,16 @@
+# Routes the public hostname to the Service. On the VPS, Nginx Proxy Manager still terminates
+# HTTPS and forwards to Traefik (the cluster's entry point).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: es-blog
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: blog.edilsonsantos.co.za
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service: {name: es-blog, port: {name: http}}

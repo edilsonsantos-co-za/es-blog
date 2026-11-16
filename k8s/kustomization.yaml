@@ -1,0 +1,10 @@
+# ES Blog on Kubernetes. Applied through /usr/local/lib/workspace/deploy-k3s.sh (source: workspace
+# config, kubernetes/scripts/deploy-k3s.sh), which sets the image tag and makes the es-blog-env Secret.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: apps
+resources:
+  - deployment.yaml
+  - worker.yaml
+  - service.yaml
+  - ingress.yaml
