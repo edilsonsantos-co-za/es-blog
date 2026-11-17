@@ -124,7 +124,7 @@ jobs:
           in_pod() { k3s kubectl -n apps exec deploy/es-blog -- "$@" < /dev/null; }
           # The owner signs in through the SSO with the same email as ES Portfolio's admin: make sure the
           # blog has an admin with it (fresh database; the email and the unused password aren't printed)
-          email="$(docker exec es-portfolio php artisan tinker --execute='echo App\Models\Admin::orderBy("id")->value("email");' < /dev/null 2>/dev/null | tail -1 || true)"
+          email="$(k3s kubectl -n apps exec deploy/es-portfolio -- php artisan tinker --execute='echo App\Models\Admin::orderBy("id")->value("email");' < /dev/null 2>/dev/null | tail -1 || true)"
           if [ -n "$email" ]; then
             if in_pod php bin/console app:user:create "${email%%@*}" "$email" --role=admin --password="$(openssl rand -hex 24)" > /dev/null 2>&1; then
               echo "created the blog admin for the SSO email"
